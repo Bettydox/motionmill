@@ -542,6 +542,6 @@ if ( ! class_exists('MM_Settings') )
 		return $plugins;
 	}
 
-	add_action( 'motionmill_plugins', 'mm_settings_register', 1 );
+	add_action( 'motionmill_plugins', 'mm_settings_register', 0 );
 }
 ?>
