@@ -15,14 +15,14 @@ if ( ! class_exists('MM_Log') )
         
             $this->file = plugin_dir_path(__FILE__) . 'log.txt';
 
-            if ( ! is_readable($this->file) )
+            if ( ! file_exists($this->file) )
             {
-                trigger_error( sprintf('Log file %s does not exist or is not readable.', $this->file), E_WARNING );
+                trigger_error( sprintf('Log file %s does not exist.', $this->file), E_USER_WARNING );
             }
 
-            if ( ! is_writeable($this->file) )
+            if ( ! is_readable($this->file) || ! is_writeable($this->file) )
             {
-                trigger_error( sprintf('Log file %s does not exist or is not writable.', $this->file), E_WARNING );
+                trigger_error( sprintf('Log file %s must be readable and writable.', $this->file), E_USER_WARNING );
             }
         }
 
@@ -330,7 +330,7 @@ if ( ! class_exists('MM_Log') )
         return $plugins;
     }
 
-    add_action( 'motionmill_plugins', 'motionmill_log_register', 0 );
+    add_action( 'motionmill_plugins', 'motionmill_log_register', 1 );
 }
 
 ?>
