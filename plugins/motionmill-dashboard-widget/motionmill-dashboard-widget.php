@@ -13,6 +13,6 @@
 */
 
 // loads plugin when motionmill is loaded 
-add_action( 'motionmill_loaded', function(){ include('plugin.php'); } );
+add_action( 'motionmill_loaded', create_function('$a', "include('plugin.php');" ) );
 
 ?>
