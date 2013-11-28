@@ -24,9 +24,4 @@ Customizes the WordPress login page.
 Possibility to create and edit mail templates for WordPress mails
 
 #### settings
-Creates a settings page
-
-### Releases
-
-#### 1.0
-current release
+Creates a hookable and hiërarchical settings page
