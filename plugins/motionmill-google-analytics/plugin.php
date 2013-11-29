@@ -25,8 +25,8 @@ if ( ! class_exists('MM_Google_Analytics') )
 			$sections[] = array
 			(
 				'name' 		  => 'google_analytics',
-				'title' 	  => __('Google analytics', MM_TEXTDOMAIN),
-				'description' => __('Connects your blog with Google analytics.', MM_TEXTDOMAIN),
+				'title' 	  => __('Google Analytics', MM_TEXTDOMAIN),
+				'description' => __('Connects your blog with Google Analytics.', MM_TEXTDOMAIN),
 				'parent'      => ''
 			);
 
