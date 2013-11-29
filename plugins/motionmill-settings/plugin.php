@@ -144,6 +144,13 @@ if ( ! class_exists('MM_Settings') )
 			}
 		}
 
+		public function on_print_section_description($args)
+		{
+			$section = mm_get_element_by( 'id='.$args['id'], $this->sections );
+
+			echo $section['description'];
+		}
+
 		public function on_admin_init()
 		{
 			// registers a setting for our page
@@ -163,7 +170,7 @@ if ( ! class_exists('MM_Settings') )
 				}
 				else
 				{
-					$callback = create_function('$a', 'echo "' . $section['description'] . '";');
+					$callback = array(&$this, 'on_print_section_description');
 				}
 
 				add_settings_section( $section['id'], $section['title'], $callback, $section['id'] );
