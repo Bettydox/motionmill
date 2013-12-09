@@ -4,16 +4,12 @@ if ( ! class_exists('MM_Settings') )
 {
 	class MM_Settings extends MM_Plugin
 	{
-		private $option_name     = '';
 		private $page_slug       = '';
-		private $page_title      = '';
-		private $page_menu_title = '';
-		private $page_capability = '';
 		private $page_hook       = '';
-		private $page_parent     = '';
+		private $pages        	 = array();
 		private $sections        = array();
 		private $fields          = array();
-		private $current_section = null;
+		private $current_page    = null;
 
 		public function __construct()
 		{
@@ -25,12 +21,8 @@ if ( ! class_exists('MM_Settings') )
 
 		public function initialize()
 		{
-			$this->page_slug       = 'motionmill_settings';
-			$this->option_name     = 'motionmill_options';
-			$this->page_title      = __('Motionmill Settings', MM_TEXTDOMAIN);
-			$this->page_menu_title = __('Settings', MM_TEXTDOMAIN);
-			$this->page_capability = 'manage_options';
-			$this->page_parent     = $this->mm->menu_page;
+			$this->option_name = 'motionmill_options';
+			$this->page_slug   = 'motionmill_settings';
 
 			add_action( 'init', array(&$this, 'on_init'), 100 );
 			add_action( 'admin_init', array(&$this, 'on_admin_init') );
@@ -39,56 +31,41 @@ if ( ! class_exists('MM_Settings') )
 
 			add_action( 'motionmill_admin_menu', array(&$this, 'on_admin_menu') );
 
-			register_deactivation_hook( MM_FILE, array(&$this, 'on_motionmill_deactivate') );
-			add_action( 'motionmill_uninstall', array(&$this, 'on_motionmill_uninstall') );
+			register_deactivation_hook( MM_FILE, array(&$this, 'on_deactivate') );
+			add_action( 'motionmill_uninstall', array(&$this, 'on_uninstall') );
 		}
 
-		public function get_option($section = '', $name = null, $default = '')
+		public function get_option($page_id, $name = null, $default = '')
 		{
-			$section = mm_clean_path($section);
+			$page = mm_get_element_by('id='.$page_id, $this->pages);
 
-			$options = get_option( $this->option_name, $this->get_default_options() );
-
-			if ( $section == '' )
+			if ( $page )
 			{
-				return $options;
-			}
+				$options = get_option( $page['option_name'], $this->get_default_options($page_id) );
 
-			$options = isset($options[$section]) ? $options[$section] : $this->get_default_options($section);
+				if ( ! $name )
+				{
+					return $options;
+				}
 
-			if ( ! $name )
-			{
-				return $options;
-			}
-
-			if ( isset($options[$name]) )
-			{
-				return $options[$name];
+				if ( isset($options[$name]) )
+				{
+					return $options[$name];
+				}
 			}
 
 			return $default;
 		}
 
-		public function get_default_options($section = '')
+		public function get_default_options($page_id)
 		{
 			$options = array();
 			
-			if ( $section )
+			foreach ( mm_get_elements_by( 'page='.$page_id, $this->fields ) as $field )
 			{
-				foreach ( mm_get_elements_by( 'section='.mm_clean_path($section), $this->fields ) as $field )
-				{
-					$options[ $field['name'] ] = $field['value'];
-				}
+				$options[ $field['id'] ] = $field['value'];
 			}
-
-			else
-			{
-				foreach ( $this->sections as $section )
-				{
-					$options[ $section['path'] ] = $this->get_default_options( $section['path'] );
-				}
-			}
-
+			
 			return $options;
 		}
 
@@ -97,50 +74,55 @@ if ( ! class_exists('MM_Settings') )
 			// following code is not placed inside admin_init handler cause
 			// the default options (set in the field data) won't be accessible in frontend
 
+			// sets settings pages
+			foreach ( apply_filters( 'motionmill_settings_pages', array() ) as $data )
+			{
+				if ( empty($data['id']) )
+					continue;
+
+				$this->pages[] = array_merge(array
+				(
+					'id'            => $data['id'],
+					'title'         => $data['id'],
+					'description'   => '',
+					'option_name'   => $data['id'],
+					'sanitize_cb'   => array(&$this, 'on_sanitize_options'),
+					'submit_button' => true
+				), (array) $data );
+			}
+
 			// sets settings sections
 			foreach( apply_filters( 'motionmill_settings_sections', array() ) as $data )
 			{
-				if ( empty($data['name']) )
+				if ( empty($data['id']) )
 					continue;
 
-				$section = array_merge(array
+				$this->sections[] = array_merge(array
 				(
-					'id'            => $this->page_slug . '-section-' . ( count($this->sections) + 1 ),
-					'name'          => $data['name'],
-					'title'         => $data['name'],
+					'id'            => $data['id'],
+					'title'         => $data['id'],
 					'description'   => '',
-					'path'          => ! empty($data['parent']) ? mm_clean_path($data['parent']) . '/' . $data['name'] : $data['name'],
-					'parent'	    => ! empty($data['parent']) ? mm_clean_path($data['parent']) : '',
-					'link'          => '',
-					'sanitize_cb'   => '',
-					'submit_button' => true
+					'page'          => ''
 				), (array) $data );
-
-				if ( $section['link'] == '' )
-					$section['link'] = $section['path'];
-				
-				// defaults
-				$this->sections[] = $section;
 			}
 
 			// sets settings fields
-			foreach ( apply_filters( 'motionmill_settings_fields', array() ) as $field )
+			foreach ( apply_filters( 'motionmill_settings_fields', array() ) as $data )
 			{
-				if ( empty($field['name']) )
+				if ( empty($data['id']) )
 					continue;
 
-				// defaults
 				$this->fields[] = array_merge(array
 				(
-					'id'          => $this->page_slug . '-field-' . ( count($this->fields) + 1 ),
-					'name'        => $field['name'],
-					'title'       => $field['name'],
+					'id'          => $data['id'],
+					'title'       => $data['id'],
 					'description' => '',
 					'type'        => 'textfield',
 					'value'       => '',
-					'section'     => ! empty($field['section']) ? mm_clean_path($field['section']) : '',
-					'tooltip'     => true
-				), $field);
+					'tooltip'     => true,
+					'page'        => '',
+					'section'     => ''
+				), $data);
 			}
 		}
 
@@ -153,8 +135,11 @@ if ( ! class_exists('MM_Settings') )
 
 		public function on_admin_init()
 		{
-			// registers a setting for our page
-			register_setting( $this->page_slug, $this->option_name, array(&$this, 'on_sanitize_options') );
+			// registers a setting per page
+			foreach ( $this->pages as $page )
+			{
+				register_setting( $page['id'], $page['option_name'], $page['sanitize_cb'] );
+			}
 
 			// registers sections
 			foreach ( $this->sections as $section )
@@ -173,55 +158,50 @@ if ( ! class_exists('MM_Settings') )
 					$callback = array(&$this, 'on_print_section_description');
 				}
 
-				add_settings_section( $section['id'], $section['title'], $callback, $section['id'] );
+				add_settings_section( $section['id'], $section['title'], $callback, $section['page'] );
 			}
 
 			// registers fields
 			foreach ( $this->fields as $field )
 			{
-				$section = mm_get_element_by( 'path='.$field['section'], $this->sections );
+				$page = mm_get_element_by( 'id='.$field['page'], $this->pages );
 
-				if ( ! $section )
+				if ( ! $page )
 					continue;
 
-				add_settings_field( $field['id'], $field['title'] , array(&$this, 'form_' . $field['type']), $section['id'], $section['id'], array_merge($field, array
+				add_settings_field( $field['id'], $field['title'] , array(&$this, 'form_' . $field['type']), $field['page'], $field['section'], array_merge($field, array
 				(
-					'label_for' => $this->page_slug . '-' . $field['name'],
-					'id' 		=> $this->page_slug . '-' . $field['name'],
-					'name'      => esc_attr( $this->option_name . '[' . $section['path'] . '][' . $field['name'] . ']' ),
-					'value'     => $this->get_option( $section['path'], $field['name'] )
+					'label_for' => $this->page_slug . '-' . $field['id'],
+					'id' 		=> $this->page_slug . '-' . $field['id'],
+					'name'      => esc_attr( $page['option_name'] . '[' . $field['id'] . ']' ),
+					'value'     => $this->get_option( $page['id'], $field['id'] )
 				)));
 			}
 
-			// sets current section
-			if ( ! empty($_GET['section']) )
+			// sets current page
+			if ( ! empty($_GET['sub']) )
 			{
 				// user defined
-				$this->current_section = mm_get_element_by( 'path='.mm_clean_path($_GET['section']), $this->sections );
+				$this->current_page = mm_get_element_by( 'id='.$_GET['sub'], $this->pages );
+			}
+
+			elseif ( count($this->pages) > 0 )
+			{
+				$this->current_page = $this->pages[0];
 			}
 
 			else
 			{
-				// default section (first level 0 section)
-				$this->current_section = mm_get_element_by( 'parent=', $this->sections );
-
-				while ( $this->current_section && $this->current_section['path'] != $this->current_section['link'] ) {
-				
-					$this->current_section = mm_get_element_by( 'path='.$this->current_section['link'], $this->sections );
-
-				}
+				$this->current_page = null;
 			}
 		}
 
 		public function on_sanitize_options($input)
 		{
-			$section_id = isset($_POST['section']) ? $_POST['section'] : null;
-
-			$section = mm_get_element_by( 'id='.$section_id, $this->sections );
-
-			if ( $section && is_callable($section['sanitize_cb']) )
+			// notifies observers
+			if ( $this->current_page )
 			{
-				$input = call_user_func( $section['sanitize_cb'], $input );
+				$input = apply_filters( 'motionmill_settings_sanitize_options_' . $this->current_page['id'], $input );
 			}
 
 			return $input;
@@ -229,7 +209,7 @@ if ( ! class_exists('MM_Settings') )
 
 		public function on_admin_menu()
 		{
-			$this->page_hook = add_submenu_page( $this->page_parent, $this->page_title, $this->page_menu_title, $this->page_capability, $this->page_slug, array(&$this, 'on_print_menu_page') );
+			$this->page_hook = add_submenu_page( $this->mm->menu_page, __('Motionmill Settings', MM_TEXTDOMAIN), __('Settings', MM_TEXTDOMAIN), 'manage_options', $this->page_slug, array(&$this, 'on_print_menu_page') );
 		}
 
 		public function on_admin_head()
@@ -241,9 +221,9 @@ if ( ! class_exists('MM_Settings') )
 				return;
 
 			// notifies observers
-			if ( $this->current_section )
+			if ( $this->current_page )
 			{
-				do_action( $this->page_slug . '_head', $this->current_section['path'] );
+				do_action( 'motionmill_settings_head', $this->current_page['id'] );
 			}
 		}
 
@@ -267,97 +247,46 @@ if ( ! class_exists('MM_Settings') )
 			wp_enqueue_script( 'motionmill-settings-script',  plugins_url('js/settings.js', __FILE__), array('jquery'), '1.0.0', true );
 
 			// notifies observers
-			if ( $this->current_section )
+			if ( $this->current_page )
 			{
-				do_action( $this->page_slug . '_enqueue_scripts', $this->current_section['path'] );
+				do_action( 'motionmill_settings_enqueue_scripts', $this->current_page['id'] );
 			}
 		}
 
 		public function on_print_menu_page()
 		{
-			// gets navigation items
-			$nav_items = array();
-
-			if ( $this->current_section )
-			{
-				$current_path = explode( '/', $this->current_section['path'] );
-
-				for ( $i = 0; $i < count($current_path); $i++ )
-				{ 
-					$path = implode( '/', array_slice($current_path, 0, $i + 1) );
-
-					$s = mm_get_element_by( 'path='.$path, $this->sections );
-					$siblings = mm_get_elements_by( 'parent='.$s['parent'], $this->sections );
-					
-					$nav_items[] = array
-					(
-						'selected' => $s['id'],
-						'items'    => $siblings
-					);
-				}
-
-				$children = mm_get_elements_by('parent='.$this->current_section['path'], $this->sections );
-			}
-			else
-			{
-				$children = mm_get_elements_by('parent=', $this->sections );
-			}
-			
-			// adds the child sections of the current section
-			if ( count($children) > 0 )
-			{
-				$nav_items[] = array
-				(
-					'selected' => '',
-					'items'    => $children
-				);
-			}
-			
 			?>
 
 			<div class="wrap">
 
 				<!-- heading -->
 				<?php screen_icon('options-general'); ?>
-				<h2><?php echo esc_html( $this->page_title ); ?></h2>
+				<h2><?php _e('Motionmill Settings', MM_TEXTDOMAIN); ?></h2>
 				
-				<?php if ( count($this->sections) == 0 ) : ?>
+				<?php if ( count($this->pages) == 0 ) : ?>
 				<p><?php _e('No settings available', MM_TEXTDOMAIN); ?></p>
 				<?php else : ?>
 
 				<!-- navigation -->
-				<?php foreach ( $nav_items as $depth => $nav ) : ?>
-				<?php if ( $depth == 0 ) : ?>
-				<h2 class="nav-tab-wrapper depth-<?php echo $depth; ?>">
-					<?php foreach ( $nav['items'] as $item ) : ?>
-					<a href="?page=<?php echo esc_attr($this->page_slug); ?>&section=<?php echo esc_attr($item['link']); ?>" class="nav-tab<?php echo $item['id'] == $nav['selected'] ? ' nav-tab-active' : ''; ?>"><?php echo esc_html($item['title']); ?></a>
-					<?php endforeach; ?>
-				</h2>
-				<?php else : ?>
-				<ul class="subsubsub depth-<?php echo $depth; ?>">
-					<?php $i=0; foreach ($nav['items'] as $item ) : ?>
-					<li><a href="?page=<?php echo esc_attr($this->page_slug); ?>&section=<?php echo esc_attr($item['link']); ?>" class="<?php echo $item['id'] == $nav['selected'] ? 'current' : ''; ?>"><?php echo esc_html($item['title']); ?></a></li>
-					<?php if ( $i < count($nav['items']) - 1 ) : ?> | <?php endif; ?>
-					<?php $i++; endforeach; ?>
-				</ul><br class="clear" />
-				<?php endif; ?>
+				<h2 class="nav-tab-wrapper">
+				<?php foreach ( $this->pages as $page ) : ?>
+					<a href="?page=<?php echo esc_attr($this->page_slug); ?>&sub=<?php echo esc_attr($page['id']); ?>" class="nav-tab<?php echo $this->current_page && $page['id'] == $this->current_page['id'] ? ' nav-tab-active' : ''; ?>"><?php echo esc_html($page['title']); ?></a>
 				<?php endforeach; ?>
-
+				</h2>
+				
 				<!-- content -->
-				<?php if ( ! $this->current_section ) : ?>
-				<p><?php _e('The requested section could not be found.', MM_TEXTDOMAIN); ?></p>
+				<?php if ( ! $this->current_page ) : ?>
+				<p><?php _e('The requested page could not be found.', MM_TEXTDOMAIN); ?></p>
 				<?php else : ?>
 
-				<?php settings_errors( $this->page_slug ); ?>
+				<?php settings_errors( $this->current_page['id'] ); ?>
 
 				<form action="options.php" method="post">
 
-					<input type="hidden" name="section" value="<?php echo esc_attr( $this->current_section['id'] ); ?>">
+					<?php settings_fields( $this->current_page['id'] ); ?>
+					<?php do_settings_sections( $this->current_page['id'] ); ?>
 
-					<?php settings_fields( $this->page_slug ); ?>
-					<?php do_settings_sections( $this->current_section['id'] ); ?>
-
-					<?php if ( $this->current_section['submit_button'] ) : ?>
+					<?php if ( $this->current_page['submit_button'] ) : ?>
 					<?php submit_button(); ?>
 					<?php endif; ?>
 					
@@ -371,15 +300,21 @@ if ( ! class_exists('MM_Settings') )
 			<?php
 		}
 
-		public function on_motionmill_deactivate()
+		public function on_deactivate()
 		{
-			unregister_setting( $this->page_slug, $this->option_name, array(&$this, 'on_sanitize_options') );
+			foreach ( $this->pages as $page )
+			{
+				unregister_setting( $page['id'], $page['option_name'], $page['sanitize_cb'] );
+			}
 		}
 
-		public function on_motionmill_uninstall()
+		public function on_uninstall()
 		{
 			// deletes options from database
-			delete_option( $this->option_name );
+			foreach ( $this->pages as $page )
+			{
+				delete_option( $page['option_name'] );
+			}
 		}
 
 		private function form_input($args = array())
@@ -542,13 +477,13 @@ if ( ! class_exists('MM_Settings') )
 		}
 	}
 
-	function mm_settings_register($plugins)
+	function motionmill_settings_register($plugins)
 	{
 		$plugins[] = 'MM_Settings';
 
 		return $plugins;
 	}
 
-	add_action( 'motionmill_plugins', 'mm_settings_register', 0 );
+	add_action( 'motionmill_plugins', 'motionmill_settings_register', 0 );
 }
 ?>
