@@ -6,16 +6,14 @@ if ( ! class_exists('MM_Botnet_Protect') )
 	{
 		public function __construct()
 		{
-			parent::__construct(array
-            (
-                'helpers' => array()
-            ));
+			parent::__construct();
 		}
 
 		public function initialize()
 		{			
-			register_deactivation_hook( MM_FILE, array(&$this, 'on_motionmill_deactivate') );
+			register_deactivation_hook( MM_FILE, array(&$this, 'on_deactivate') );
 
+			add_filter( 'motionmill_settings_pages', array(&$this, 'on_settings_pages') );
 			add_filter( 'motionmill_settings_sections', array(&$this, 'on_settings_sections') );
 			add_filter( 'motionmill_settings_enqueue_scripts', array(&$this, 'on_settings_enqueue_scripts') );
 			
@@ -26,15 +24,27 @@ if ( ! class_exists('MM_Botnet_Protect') )
 			add_action( 'motionmill_deactivate', array(&$this, 'on_deactivate') );
 		}
 
+		public function on_settings_pages($pages)
+		{
+			$pages[] = array
+			(
+				'id'            => 'motionmill_botnet_protect',
+				'title'         => __('Botnet protect', MM_TEXTDOMAIN),
+				'description'   => __('Protects against Botnet attack directly targeting wp-login.php.', MM_TEXTDOMAIN),
+				'submit_button' => false
+			);
+
+			return $pages;
+		}
+
 		public function on_settings_sections($sections)
 		{
 			$sections[] = array
 			(
-			  'name'          => 'botnet-protect',
-			  'title'         => __('Botnet protect', MM_TEXTDOMAIN),
-			  'description'   => array(&$this, 'on_settings_section_content'),
-			  'submit_button' => false,
-			  'parent' 		  => ''
+				'id'          => 'general',
+				'title'       => __('', MM_TEXTDOMAIN),
+				'description' => array(&$this, 'on_settings_section_content'),
+				'page'        => 'motionmill_botnet_protect'
 			);
 
 			return $sections;
@@ -55,8 +65,6 @@ RewriteRule wp-login.php - [R=404]
 		public function on_settings_section_content()
 		{
 			?>
-
-			<p><?php _e('Protects against Botnet attack directly targeting wp-login.php.', MM_TEXTDOMAIN); ?></p>
 
 			<p><?php _e('These are the mod_rewrite rules you should have at the beginning of your <code>.htaccess</code> file.', MM_TEXTDOMAIN); ?></p>
 
@@ -200,28 +208,28 @@ RewriteRule wp-login.php - [R=404]
 			setcookie( 'mm_enigma_prime', 'd966373717658638de006bb7d2958b33', strtotime('-1 day'), '/' );
 		}
 
-		public function on_settings_enqueue_scripts($section)
+		public function on_settings_enqueue_scripts($page)
 		{
-			if ( $section != 'botnet-protect' )
+			if ( $page != 'motionmill_botnet_protect' )
 				return;
 
 			wp_enqueue_script( 'mm-botnet-protect-scripts', plugins_url('js/scripts.js', __FILE__), array('jquery'), '1.0.0', false );
 		}
 
-		public function on_motionmill_deactivate()
+		public function on_deactivate()
 		{
 			$this->remove_from_htaccess();
 		}
 	}
 
-	function mm_botnet_protect_register($plugins)
+	function motionmill_botnet_protect_register($plugins)
 	{
 		$plugins[] = 'MM_Botnet_Protect';
 
 		return $plugins;
 	}
 
-	add_action( 'motionmill_plugins', 'mm_botnet_protect_register', 5 );
+	add_action( 'motionmill_plugins', 'motionmill_botnet_protect_register', 5 );
 
 }
 

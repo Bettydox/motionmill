@@ -6,32 +6,39 @@ if ( ! class_exists('MM_Dashboard_Widget') )
 	{
 		public function __construct()
 		{
-			parent::__construct(array
-			(
-				'helpers' => array()
-			));
+			parent::__construct();
 		}
 
 		public function initialize()
 		{
+			add_filter( 'motionmill_settings_pages', array(&$this, 'on_settings_pages') );
 			add_filter( 'motionmill_settings_sections', array(&$this, 'on_settings_sections') );
 			add_filter( 'motionmill_settings_fields', array(&$this, 'on_settings_fields') );
 
-			if ( $this->_('MM_Settings')->get_option('dashboard_widget', 'enabled') == 1 )
-			{
-				add_action( 'wp_dashboard_setup', array(&$this, 'on_dashboard_setup') );
-				add_action( 'admin_head', array(&$this, 'on_admin_head') );
-			}
+			add_action( 'wp_dashboard_setup', array(&$this, 'on_dashboard_setup') );
+			add_action( 'admin_head', array(&$this, 'on_admin_head') );
+		}
+
+		public function on_settings_pages($pages)
+		{
+			$pages[] = array
+			(
+				'id' 		  => 'motionmill_dashboard_widget',
+				'title' 	  => __('Dashboard widget', MM_TEXTDOMAIN),
+				'description' => __('Creates an editable widget on the dashboard.', MM_TEXTDOMAIN),
+			);
+
+			return $pages;
 		}
 
 		public function on_settings_sections($sections)
 		{
 			$sections[] = array
 			(
-				'name' 		  => 'dashboard_widget',
-				'title' 	  => __('Dashboard widget', MM_TEXTDOMAIN),
-				'description' => __('Creates an editable widget on the dashboard.', MM_TEXTDOMAIN),
-				'parent'      => ''
+				'id' 		  => 'general',
+				'title' 	  => __('', MM_TEXTDOMAIN),
+				'description' => __('', MM_TEXTDOMAIN),
+				'page'        => 'motionmill_dashboard_widget'
 			);
 
 			return $sections;
@@ -41,52 +48,57 @@ if ( ! class_exists('MM_Dashboard_Widget') )
 		{
 			$fields[] = array
 			(
-				'name' 		  => 'title',
+				'id' 		  => 'title',
 				'title' 	  => __('Title', MM_TEXTDOMAIN),
 				'description' => __('', MM_TEXTDOMAIN),
 				'type'		  => 'textfield',
 				'value'       => __('My Dashboard Widget', MM_TEXTDOMAIN),
-				'section'     => 'dashboard_widget'
+				'page'        => 'motionmill_dashboard_widget',
+				'section'     => 'general'
 			);
 
 			$fields[] = array
 			(
-				'name' 		  => 'content',
+				'id' 		  => 'content',
 				'title' 	  => __('Content', MM_TEXTDOMAIN),
 				'description' => __('', MM_TEXTDOMAIN),
 				'type'		  => 'editor',
 				'value'       => '',
-				'section'     => 'dashboard_widget'
+				'page'        => 'motionmill_dashboard_widget',
+				'section'     => 'general'
 			);
 
 			$fields[] = array
 			(
-				'name' 		  => 'textcolor',
+				'id' 		  => 'textcolor',
 				'title' 	  => __('Header text color', MM_TEXTDOMAIN),
 				'description' => __('Leave empty to use defaults.', MM_TEXTDOMAIN),
 				'type'		  => 'colorpicker',
 				'value'       => '#FFFFFF',
-				'section'     => 'dashboard_widget'
+				'page'        => 'motionmill_dashboard_widget',
+				'section'     => 'general'
 			);
 
 			$fields[] = array
 			(
-				'name' 		  => 'bgcolor',
+				'id' 		  => 'bgcolor',
 				'title' 	  => __('Header background color', MM_TEXTDOMAIN),
 				'description' => __('Leave empty to use defaults.', MM_TEXTDOMAIN),
 				'type'		  => 'colorpicker',
 				'value'       => '#2787B2',
-				'section'     => 'dashboard_widget'
+				'page'        => 'motionmill_dashboard_widget',
+				'section'     => 'general'
 			);
 
 			$fields[] = array
 			(
-				'name' 		  => 'enabled',
+				'id' 		  => 'enabled',
 				'title' 	  => __('Enable', MM_TEXTDOMAIN),
 				'description' => __('Check/uncheck to enable/disable.', MM_TEXTDOMAIN),
 				'type'		  => 'checkbox',
 				'value'       => 0,
-				'section'     => 'dashboard_widget'
+				'page'        => 'motionmill_dashboard_widget',
+				'section'     => 'general'
 			);
 
 			return $fields;
@@ -94,14 +106,22 @@ if ( ! class_exists('MM_Dashboard_Widget') )
 
 		public function on_dashboard_setup()
 		{
-			$options = $this->_('MM_Settings')->get_option('dashboard_widget');
+			$options = $this->_('MM_Settings')->get_option('motionmill_dashboard_widget');
+
+			if ( empty($options['enabled']) )
+				return;
 
 			wp_add_dashboard_widget( 'mm_dashboard_widget', $options['title'], array(&$this, 'print_dashboard_widget') );
 		}
 
 		public function print_dashboard_widget()
 		{
-			echo $this->_('MM_Settings')->get_option('dashboard_widget', 'content');
+			$options = $this->_('MM_Settings')->get_option('motionmill_dashboard_widget');
+
+			if ( empty($options['enabled']) )
+				return;
+
+			echo $options['content'];
 		}
 
 		public function on_admin_head()
@@ -111,7 +131,10 @@ if ( ! class_exists('MM_Dashboard_Widget') )
 			if ( $screen->id != 'dashboard' )
 				return;
 
-			$options = $this->_('MM_Settings')->get_option('dashboard_widget');
+			$options = $this->_('MM_Settings')->get_option('motionmill_dashboard_widget');
+
+			if ( empty($options['enabled']) )
+				return;
 
 			?>
 
@@ -119,13 +142,13 @@ if ( ! class_exists('MM_Dashboard_Widget') )
 		
 				#mm_dashboard_widget h3.hndle
 				{
-					<?php if ( $this->_('MM_Settings')->get_option('dashboard_widget', 'textcolor') != '' ) : ?>
+					<?php if ( $options['textcolor'] != '' ) : ?>
 					text-shadow: none;
-					color: <?php echo esc_html( $this->_('MM_Settings')->get_option('dashboard_widget', 'textcolor') ); ?>;
+					color: <?php echo esc_html( $options['textcolor'] ); ?>;
 					<?php endif; ?>
 
-					<?php if ( $this->_('MM_Settings')->get_option('dashboard_widget', 'bgcolor') != '' ) : ?>
-					background: <?php echo esc_html( $this->_('MM_Settings')->get_option('dashboard_widget', 'bgcolor') ); ?>;
+					<?php if ( $options['bgcolor'] != '' ) : ?>
+					background: <?php echo esc_html( $options['bgcolor'] ); ?>;
 					<?php endif; ?>
 				}
 
@@ -135,14 +158,14 @@ if ( ! class_exists('MM_Dashboard_Widget') )
 		}
 	}
 
-	function mm_dashboard_widget_register($plugins)
+	function motionmill_dashboard_widget_register($plugins)
 	{
 		$plugins[] = 'MM_Dashboard_Widget';
 
 		return $plugins;
 	}
 
-	add_action( 'motionmill_plugins', 'mm_dashboard_widget_register', 5 );
+	add_action( 'motionmill_plugins', 'motionmill_dashboard_widget_register', 5 );
 }
 
 
