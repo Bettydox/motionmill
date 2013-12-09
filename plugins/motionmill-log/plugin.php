@@ -4,7 +4,7 @@ if ( ! class_exists('MM_Log') )
 {
     class MM_Log extends MM_Plugin
     {
-        protected $file    = null;
+        protected $file = null;
 
         public function __construct()
         {
@@ -12,7 +12,10 @@ if ( ! class_exists('MM_Log') )
             (
                 'helpers' => array('array', 'wordpress')
             ));
-        
+        }
+
+        public function initialize()
+        {
             $this->file = plugin_dir_path(__FILE__) . 'log.txt';
 
             if ( ! file_exists($this->file) )
@@ -24,10 +27,7 @@ if ( ! class_exists('MM_Log') )
             {
                 trigger_error( sprintf('Log file %s must be readable and writable.', $this->file), E_USER_WARNING );
             }
-        }
-
-        public function initialize()
-        {
+            
             add_action( 'motionmill_admin_menu', array(&$this, 'on_admin_menu') );
             add_action( 'admin_enqueue_scripts', array(&$this, 'on_admin_enqueue_scripts') );
         }
