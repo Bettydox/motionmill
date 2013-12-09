@@ -7,7 +7,7 @@
  Description: Protects against Botnet attack directly targeting wp-login.php.
  Author: Motionmill
  Author URI: http://motionmill.com
- Version: 1.0
+ Version: 1.1
  License : GPL2
 ------------------------------------------------------------------------------------------------------------------------
 */

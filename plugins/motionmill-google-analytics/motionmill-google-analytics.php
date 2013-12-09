@@ -5,7 +5,7 @@
  Plugin Name: Motionmill Google Analytics
  Plugin URI: http://motionmill.com
  Description: Connects your blog with Google Analytics.
- Version: 1.0
+ Version: 1.1
  Author: Motionmill
  Author URI: http://motionmill.com
  License: GPL2

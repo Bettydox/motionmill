@@ -5,7 +5,7 @@
  Plugin Name: Motionmill Log
  Plugin URI: http://motionmill.com
  Description: Enables Logging. A log overview is available in the admin.
- Version: 0.1
+ Version: 1.1
  Author: Motionmill
  Author URI: http://motionmill.com
  License: GPL2

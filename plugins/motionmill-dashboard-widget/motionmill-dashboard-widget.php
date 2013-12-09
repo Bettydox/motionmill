@@ -5,7 +5,7 @@
  Plugin Name: Motionmill Dashboard Widget
  Plugin URI: http://motionmill.com
  Description: Creates an editable widget on the dashboard.
- Version: 1.0
+ Version: 1.1
  Author: Motionmill
  Author URI: http://motionmill.com
  License : GPL2

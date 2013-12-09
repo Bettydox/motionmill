@@ -5,7 +5,7 @@
  Plugin Name: Motionmill Login
  Plugin URI: http://motionmill.com
  Description: Customizes the WordPress login page.
- Version: 0.2
+ Version: 1.1
  Author: Motionmill
  Author URI: http://motionmill.com
  License: GPL2

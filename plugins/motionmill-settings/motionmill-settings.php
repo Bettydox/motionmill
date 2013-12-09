@@ -5,7 +5,7 @@
  Plugin Name: Motionmill Settings
  Plugin URI: http://motionmill.com
  Description: Creates a settings page
- Version: 0.1
+ Version: 1.1
  Author: Motionmill
  Author URI: http://motionmill.com
  License: GPL2
