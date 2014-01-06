@@ -2,6 +2,6 @@
 
 global $wpdb;
 
-$wpdb->delete( $wpdb->prefix . 'options', "option_name LIKE 'motionmill_%'" );
+$wpdb->query("DELETE FROM $wpdb->options WHERE option_name LIKE 'motionmill_%';");
 
 ?>
