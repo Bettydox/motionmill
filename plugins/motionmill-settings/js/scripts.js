@@ -1,32 +1,7 @@
 (function($, window, document, undefined)
 {
-	$.ajaxSetup(
-	{
-		cache    : false,
-		dataType : 'json'
-	});
-
 	$(document).ready(function()
 	{
-		// tooltip
-		$('.wrap .description.tooltip-content').each(function(i, elem)
-		{
-			var $tip = $('<a href="#" class="tooltip"></a>');
-
-			$tip.tipTip(
-			{ 
-				content        : $(elem).html(),
-				defaultPosition: 'top', 
-				maxWidth       : '250px'
-			})
-			.click(function(e)
-			{
-				e.preventDefault();
-			});
-
-			$tip.insertAfter( $('label[for="' + $(this).attr('data-field' ) + '"]') );
-		});
-
 		// colorpicker
 		$('.wrap .colorpicker').each(function()
 		{
@@ -36,6 +11,7 @@
 				.data('set', false)
 				.css( 'color', color.getMaxContrastColor().toString() )
 		    	.css( 'background-color', color.toString() )
+		    	.attr( 'readonly', 'readonly' )
 				.iris(
 				{
 					hide: true,

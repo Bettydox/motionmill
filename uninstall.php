@@ -1,14 +1,11 @@
-<?php
+<?php if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) exit;
 
-// checks if request is comming from WordPress
-if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) 
-    exit;
+if ( ! class_exists('Motionmill') )
+{
+	require_once( dirname(__FILE__) . '/motionmill.php');
+}
 
-// checks if this plugin needs to be uninstalled
-if ( WP_UNINSTALL_PLUGIN != plugin_basename(__FILE__) ) 
-    exit;
-
-// notifies observers
-do_action( 'motionmill_uninstall' );
+$motionmill = Motionmill::get_instance();
+$motionmill->on_uninstall();
 
 ?>
