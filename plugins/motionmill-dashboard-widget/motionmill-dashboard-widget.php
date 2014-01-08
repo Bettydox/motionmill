@@ -39,8 +39,7 @@ if ( ! class_exists('MM_Dashboard_Widget') )
 			(
 				'id' 		  => 'motionmill_dashboard_widget',
 				'title' 	  => __('Dashboard Widget', MM_TEXTDOMAIN),
-				'description' => __('<p>Creates an editable widget on the dashboard.</p>', MM_TEXTDOMAIN),
-				'type' 	      => ''
+				'description' => __('<p>Creates an editable widget on the dashboard.</p>', MM_TEXTDOMAIN)
 			);
 
 			return $pages;
