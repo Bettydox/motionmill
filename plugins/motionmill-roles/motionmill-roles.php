@@ -4,7 +4,7 @@
 ------------------------------------------------------------------------------------------------------------------------
  Plugin Name: Motionmill Roles
  Plugin URI: http://motionmill.com
- Description: Customizes the WordPress roles.
+ Description: Manages role capabilities.
  Version: 1.0.0
  Author: Motionmill
  Author URI: http://motionmill.com
@@ -47,18 +47,11 @@ if ( ! class_exists('MM_Roles') )
 			{
 				add_role( 'motionmill-client', __( 'Motionmill Client', MM_TEXTDOMAIN ), array
 				(
-					'switch_themes'          => false,
-					'edit_themes'            => false,
-					'activate_plugins'       => false,
-					'edit_plugins'           => false,
-					'edit_users'             => true,
 					'edit_files'             => true,
-					'manage_options'         => false,
 					'moderate_comments'      => true,
 					'manage_categories'      => true,
 					'manage_links'           => true,
 					'upload_files'           => true,
-					'import'                 => true,
 					'unfiltered_html'        => true,
 					'edit_posts'             => true,
 					'edit_others_posts'      => true,
@@ -81,24 +74,14 @@ if ( ! class_exists('MM_Roles') )
 					'delete_private_pages'   => true,
 					'edit_private_pages'     => true,
 					'read_private_pages'     => true,
-					'delete_users'           => true,
 					'create_users'           => true,
 					'unfiltered_upload'      => true,
 					'edit_dashboard'         => true,
-					'update_plugins'         => false,
-					'delete_plugins'         => false,
-					'install_plugins'        => false,
-					'update_themes'          => false,
-					'install_themes'         => false,
-					'update_core'            => false,
 					'list_users'             => true,
-					'remove_users'           => true,
 					'add_users'              => true,
-					'promote_users'          => false,
-					'edit_theme_options'     => false,
-					'delete_themes'          => false,
 					'export'                 => true,
-					'copy_posts'             => true
+					'copy_posts'             => true,
+					'edit_theme_options'     => true
 				));
 			}
 		}
@@ -198,7 +181,7 @@ if ( ! class_exists('MM_Roles') )
 
 					if ( $cap )
 					{
-						printf( '<label><input type="checkbox" name="motionmill_roles[%s][%s]"%s />%s</label>', 
+						printf( '<label><input type="checkbox" name="motionmill_roles[%s][%s]"%s value="1" />%s</label>', 
 							esc_attr( $role_id ), esc_attr( $cap ), checked( ! empty($role['capabilities'][$cap]), true, false ), esc_html( str_replace( '_', ' ', $cap ) ) );
 					}
 
