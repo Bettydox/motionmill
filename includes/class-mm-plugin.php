@@ -8,8 +8,8 @@ if ( ! class_exists('MM_Plugin') )
 
 		public function __construct()
 		{			
-			$this->motionmill = Motionmill::get_instance();
-			
+			$this->motionmill = Motionmill::get_instance();			
+
 			add_action( 'motionmill_init', array(&$this, 'initialize') );
 		}
 
