@@ -4,7 +4,7 @@
  Plugin Name: Motionmill
  Plugin URI: http://motionmill.com
  Description: Motionmill's HQ
- Version: 1.0.4
+ Version: 1.1.0
  Author: Motionmill
  Author URI: http://motionmill.com
  License: GPL2
