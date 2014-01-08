@@ -3,22 +3,22 @@ motionmill
 
 Motionmill is a WordPress plugin that has following modules:
 
-**Motionmill Settings**
+**Settings Module**
 
 Generates a hookable Settings page.
 
-**Mail**
+**Mail Module**
 
 Customizes the WordPress email settings.
 
-**Google Analytics**
+**Google Analytics Module**
 
 Connects your blog with Google Analytics.
 
-**Dashboard Widget**
+**Dashboard Widget Module**
 
 Creates an editable widget on the dashboard.
 
-**Roles**
+**Roles Module**
 
 Manages role capabilities.
