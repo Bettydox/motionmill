@@ -64,7 +64,7 @@ if ( ! class_exists('MM_Google_Analytics') )
 			(
 				'id' 		  => 'tracking_code',
 				'title' 	  => __('Tracking Code', MM_TEXTDOMAIN),
-				'description' => __('', MM_TEXTDOMAIN),
+				'description' => __('e.g. UA-XXXXX-2', MM_TEXTDOMAIN),
 				'type'		  => 'textfield',
 				'class'       => 'regular-text',
 				'value'       => __('', MM_TEXTDOMAIN),
