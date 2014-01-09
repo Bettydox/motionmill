@@ -146,7 +146,7 @@ if ( ! class_exists('MM_Login') )
 			if ( empty( $options['enabled'] ) || $options['header_image'] == '' )
 				return;
 
-			$header_image_sizes = @getimagesize( $options['header_image'] );
+			$header_image_sizes =  MM_Helper::get_image_size( $options['header_image'] );
 
 			if ( ! is_array($header_image_sizes)  )
 				return;
@@ -157,8 +157,8 @@ if ( ! class_exists('MM_Login') )
 					.login h1 a
 					{ 
 						width            : 100%;
-						height           : <?php echo esc_html( $header_image_sizes[1] ); ?>px;
-						background-size  : <?php echo esc_html( $header_image_sizes[0] ); ?>px <?php echo esc_html( $header_image_sizes[1] ); ?>px;
+						height           : <?php echo esc_html( $header_image_sizes['height'] ); ?>px;
+						background-size  : <?php echo esc_html( $header_image_sizes['width'] ); ?>px <?php echo esc_html( $header_image_sizes['height'] ); ?>px;
 						background-image : url("<?php echo esc_html( $options['header_image'] ); ?>");
 					}
 
