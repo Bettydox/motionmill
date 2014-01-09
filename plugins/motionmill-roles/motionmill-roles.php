@@ -30,10 +30,9 @@ if ( ! class_exists('MM_Roles') )
 		{	
 			add_filter( 'motionmill_settings_pages', array(&$this, 'on_settings_pages') );
 			add_filter( 'motionmill_settings_sections', array(&$this, 'on_settings_sections') );
-			add_filter( 'motionmill_settings_fields', array(&$this, 'on_settings_fields') );
+			add_action( 'motionmill_settings_print_section', array(&$this, 'on_print_settings_sections') );
 			add_filter( 'motionmill_settings_sanitize_input', array(&$this, 'on_sanitize_input'), 10, 2 );
-			add_action( 'motionmill_settings_print_field_type_role_caps', array(&$this, 'on_print_field_type_role_caps') );
-
+			
 			register_deactivation_hook( MM_FILE, array(&$this, 'on_deactivate') );
 
 			global $wp_roles;
@@ -131,36 +130,20 @@ if ( ! class_exists('MM_Roles') )
 					'id' 		  => 'role_' . $role_id,
 					'title' 	  => $role['name'],
 					'description' => __( '', MM_TEXTDOMAIN ),
-					'page'        => 'motionmill_roles'
+					'page'        => 'motionmill_roles',
+					'_role'       => $role_id
 				);
 			}
 
 			return $sections;
 		}
 
-		public function on_settings_fields($fields)
+		public function on_print_settings_sections($section)
 		{
-			foreach ( $this->roles as $role_id => $role )
-			{
-				$fields[] = array
-				(
-					'id' 		  => 'role_' . $role_id . '_caps',
-					'title' 	  => __( 'Capabilities', MM_TEXTDOMAIN ),
-					'description' => __( '', MM_TEXTDOMAIN ),
-					'type'		  => 'role_caps',
-					'value'       => array(),
-					'page'        => 'motionmill_roles',
-					'section'     => 'role_' . $role_id,
-					'_role'       => $role_id
-				);
-			}
+			if ( $section['page'] != 'motionmill_roles' )
+				return;
 
-			return $fields;
-		}
-
-		public function on_print_field_type_role_caps( $field )
-		{
-			$role_id = $field['_role'];
+			$role_id = $section['_role'];
 			$role    = $this->roles[ $role_id ];
 
 			$cols = 4;
