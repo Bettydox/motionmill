@@ -4,12 +4,13 @@
  Plugin Name: Motionmill
  Plugin URI: http://motionmill.com
  Description: Motionmill's HQ
- Version: 1.1.4
+ Version: 1.1.6
  Author: Motionmill
  Author URI: http://motionmill.com
  License: GPL2
 ------------------------------------------------------------------------------------------------------------------------
 */
+
 if ( ! class_exists('Motionmill') )
 {
 	define( 'MM_FILE', __FILE__ );
@@ -35,11 +36,12 @@ if ( ! class_exists('Motionmill') )
 
 		public function __construct()
 		{
+			// loads assets
 			require_once( MM_INCLUDE_DIR . 'class-mm-helper.php' );
-
-			// loads plugins
+			require_once( MM_INCLUDE_DIR . 'class-mm-error.php' );
 			require_once( MM_INCLUDE_DIR . 'class-mm-plugin.php' );
 
+			// loads plugins
 			foreach ( $this->get_plugin_files() as $file )
 			{
 				require_once( MM_PLUGIN_DIR . $file );
@@ -66,7 +68,7 @@ if ( ! class_exists('Motionmill') )
 				}
 
 				$parents = class_parents($plugin);
-
+			
 				if ( ! isset($parents['MM_Plugin']) )
 				{
 					trigger_error( sprintf('Plugin %s is not a child of MM_Plugin', $plugin) , E_USER_NOTICE );
@@ -78,6 +80,7 @@ if ( ! class_exists('Motionmill') )
 			}
 
 			add_action( 'admin_menu', array(&$this, 'on_admin_menu'), 0 );
+			add_action( 'wp_enqueue_scripts', array(&$this, 'on_enqueue_scripts'), 0 );
 
 			do_action( 'motionmill_init' );
 
@@ -118,6 +121,17 @@ if ( ! class_exists('Motionmill') )
 					include( $uninstall );
 				}
 			}
+		}
+
+		public function on_enqueue_scripts()
+		{
+			wp_enqueue_style( 'motionmill-style', plugins_url('css/style.css', MM_FILE), null, '1.0.0', 'all' );
+
+			wp_enqueue_script( 'motionmill-scripts', plugins_url('js/scripts.js', MM_FILE), array('jquery'), '1.0.0', false );
+			wp_localize_script( 'motionmill-scripts', 'Motionmill', array
+			(
+				'ajaxurl' => admin_url('admin-ajax.php')
+			));
 		}
 
 		private function get_plugin_files()
