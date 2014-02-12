@@ -22,3 +22,7 @@ Creates an editable widget on the dashboard.
 **Roles Module**
 
 Manages role capabilities.
+
+**Lorem Ipsum Module**
+
+Generates Lorem Ipsum via shortcode
