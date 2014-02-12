@@ -4,7 +4,7 @@ function motionmill_mail_templates_add_templates($templates)
 {
 	$templates['user_notification'] = array
 	(
-		'title'       => __( 'User notifiction', MM_TEXTDOMAIN ),
+		'title'       => __( 'User notification', MM_TEXTDOMAIN ),
 		'description' => __( 'Notify the blog admin of a new user.', MM_TEXTDOMAIN ),
 		'fields'      => array
 		(
