@@ -9,6 +9,11 @@ if ( ! class_exists('MM_Error') )
 			parent::__construct($code, $message, $data);
 		}
 
+		public function has_messages()
+		{
+			return count( $this->get_error_messages() ) > 0;
+		}
+
 		public function get_error_messages_string($options = array())
 		{
 			$options = array_merge(array
