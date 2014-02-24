@@ -4,7 +4,7 @@
 ------------------------------------------------------------------------------------------------------------------------
  Plugin Name: Motionmill General
  Plugin URI: http://motionmill.com
- Description: .
+ Description: 
  Version: 1.0.0
  Author: Motionmill
  Author URI: http://motionmill.com
@@ -100,7 +100,7 @@ if ( ! class_exists('MM_General') )
 		return $plugins;
 	}
 	
-	add_filter( 'motionmill_plugins', 'motionmill_plugins_add_general', 5 );
+	add_filter( 'motionmill_plugins', 'motionmill_plugins_add_general', 4 );
 }
 
 });
