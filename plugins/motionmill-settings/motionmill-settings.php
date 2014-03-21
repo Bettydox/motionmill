@@ -43,7 +43,7 @@ if ( ! class_exists('MM_Settings') )
 
 		public function get_option($page_id, $name = null, $default = '')
 		{
-			$page = MM_Helper::get_element_by( 'id='.$page_id, $this->pages );
+			$page = mm_get_element_by( 'id='.$page_id, $this->pages );
 
 			if ( $page )
 			{
@@ -67,12 +67,19 @@ if ( ! class_exists('MM_Settings') )
 		{
 			$options = array();
 
-			foreach ( MM_Helper::get_elements_by( 'page='.$page_id, $this->fields ) as $field )
+			foreach ( mm_get_elements_by( 'page='.$page_id, $this->fields ) as $field )
 			{
 				$options[ $field['id'] ] = $field['value'];
 			}
 
 			return $options;
+		}
+
+		public function on_helpers($helpers)
+		{
+			array_push( $helpers, 'array' );
+
+			return $helpers;
 		}
 
 		public function on_motionmill_page_slug($default)
@@ -93,7 +100,7 @@ if ( ! class_exists('MM_Settings') )
 					'id'          => $data['id'],
 					'title'       => $data['id'],
 					'description' => '',
-					'option_name' => stripos( $data['id'] , 'motionmill_' ) !== 0 ? 'motionmill__' . $data['id'] : $data['id'] // makes sure the option name has following format: {page_slug}_{page_id}
+					'option_name' => stripos( $data['id'] , 'motionmill_' ) !== 0 ? 'motionmill_' . $data['id'] : $data['id']
 				), $data);
 			}
 
@@ -108,7 +115,8 @@ if ( ! class_exists('MM_Settings') )
 					'id'          => $data['id'],
 					'title'       => '',
 					'description' => '',
-					'page'        => ''
+					'page'        => '',
+					'args'        => array() // additional client parameters
 				), $data);
 			}
 
@@ -126,7 +134,8 @@ if ( ! class_exists('MM_Settings') )
 					'type'        => 'textfield',
 					'value'       => '',
 					'page'        => '',
-					'section'     => ''
+					'section'     => '',
+					'save'        => true
 				), $data);
 			}
 		}
@@ -138,7 +147,7 @@ if ( ! class_exists('MM_Settings') )
 			{
 				if ( ! empty($_GET['sub']) )
 				{
-					$this->current_page = MM_Helper::get_element_by( 'id='.$_GET['sub'], $this->pages );
+					$this->current_page = mm_get_element_by( 'id='.$_GET['sub'], $this->pages );
 				}
 
 				else if ( count($this->pages) > 0 )
@@ -160,21 +169,25 @@ if ( ! class_exists('MM_Settings') )
 
 			foreach ( $this->fields as $field )
 			{
-				$page = MM_Helper::get_element_by( 'id='.$field['page'], $this->pages );
+				$page = mm_get_element_by( 'id='.$field['page'], $this->pages );
+
+				$value = $field['save'] ? $this->get_option( $field['page'], $field['id'] ) : $field['value'];
 
 				add_settings_field( $field['id'], $field['title'], array(&$this, 'on_print_field'), $field['page'], $field['section'], array_merge($field, array
 				(
 					'id'        => $field['id'],
 					'label_for' => $field['id'],
 					'name'      => $page['option_name'] . '[' . $field['id'] . ']',
-					'value'     => $this->get_option( $field['page'], $field['id'] )
+					'value'     => $value
 				)));
 			}
 		}
 
 		public function on_print_section($args)
 		{
-			$section = MM_Helper::get_element_by( 'id='.$args['id'], $this->sections );
+			// TODO : sections on different pages can have same id
+
+			$section = mm_get_element_by( 'id='.$args['id'], $this->sections );
 
 			echo $section['description'];
 
@@ -215,12 +228,28 @@ if ( ! class_exists('MM_Settings') )
 					
 					break;
 
+				case 'media':
+
+					$options = array_merge(array
+					(
+						'id'    => '',
+						'class' => 'regular-text mm-media',
+						'name'  => '',
+						'value' => '',
+						'extra' => ''
+					), $field);
+
+					printf( '<input type="text" id="%s" class="%s" name="%s" value="%s" %s />', esc_attr($options['id']), esc_attr($options['class']), esc_attr($options['name']), esc_attr($options['value']), $options['extra'] );
+					printf( '<a href="#%s" class="button mm-media-button">%s</a>', esc_attr($options['id']), __('Insert Media', MM_TEXTDOMAIN) );
+
+					break;
+
 				case 'colorpicker':
 
 					$options = array_merge(array
 					(
 						'id'    => '',
-						'class' => 'regular-text colorpicker',
+						'class' => 'regular-text mm-colorpicker',
 						'name'  => '',
 						'value' => '',
 						'extra' => ''
@@ -253,6 +282,23 @@ if ( ! class_exists('MM_Settings') )
 					(
 						'id'    => '',
 						'class' => 'large-text',
+						'name'  => '',
+						'value' => '',
+						'cols'  => 50,
+						'rows'  => get_option( 'default_post_edit_rows', 10 ),
+						'extra' => ''
+					), $field);
+
+					printf( '<textarea id="%s" class="%s" name="%s" cols="%s" rows="%s" %s>%s</textarea>', esc_attr($options['id']), esc_attr($options['class']), esc_attr($options['name']), esc_attr($options['cols']), esc_attr($options['rows']), esc_html($options['extra']), esc_textarea($options['value']) );
+					
+					break;
+
+				case 'code':
+
+					$options = array_merge(array
+					(
+						'id'    => '',
+						'class' => 'large-text code',
 						'name'  => '',
 						'value' => '',
 						'cols'  => 50,
@@ -322,7 +368,7 @@ if ( ! class_exists('MM_Settings') )
 					print( '</select>' );
 
 					break;
-				
+
 				default:
 
 					do_action( 'motionmill_settings_print_field_type_' . $field['type'], $field );
@@ -350,8 +396,13 @@ if ( ! class_exists('MM_Settings') )
 			if ( ! $this->current_page )
 				return;
 			
-			// colorpicker
+			// type colorpicker
 			wp_enqueue_script( 'iris' );
+
+			// type media
+			wp_enqueue_style('thickbox');
+			wp_enqueue_script('media-upload');
+			wp_enqueue_script('thickbox');
 
 			// general
 			wp_enqueue_style( 'motionmill_settings-style', plugins_url('css/style.css', __FILE__), null, '1.0.0', 'all' );
@@ -421,7 +472,18 @@ if ( ! class_exists('MM_Settings') )
 				add_settings_error( $page_id, 'settings_saved', __( 'Settings saved.', MM_TEXTDOMAIN ), 'updated' );
 			}
 
-			return apply_filters( 'motionmill_settings_sanitize_input', $input, $page_id );
+			$input = apply_filters( 'motionmill_settings_sanitize_input', $input, $page_id );
+
+			// removes data that does not need to be saved
+			foreach ( mm_get_elements_by('page='.$page_id, $this->fields ) as $field )
+			{
+				if ( empty($field['save']) && isset($input[ $field['id'] ]) )
+				{
+					unset( $input[ $field['id'] ] );
+				}
+			}
+
+			return $input;
 		}
 
 		public function on_deactivate()
