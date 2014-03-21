@@ -87,7 +87,7 @@ if ( ! class_exists('MM_Mail') )
 		{
 			$sections[] = array
 			(
-				'id' 		  => 'general',
+				'id' 		  => 'motionmill_mail_general',
 				'title' 	  => __('General', MM_TEXTDOMAIN),
 				'description' => __('', MM_TEXTDOMAIN),
 				'page'        => 'motionmill_mail'
@@ -97,7 +97,7 @@ if ( ! class_exists('MM_Mail') )
 			{
 				$sections[] = array
 				(
-					'id' 		  => $data['id'],
+					'id' 		  => 'motionmill_mail_' . $data['id'],
 					'title' 	  => $data['title'],
 					'description' => $data['description'],
 					'page'        => 'motionmill_mail'
@@ -118,7 +118,7 @@ if ( ! class_exists('MM_Mail') )
 				'class'       => 'regular-text',
 				'value'       => '',
 				'page'        => 'motionmill_mail',
-				'section'     => 'general'
+				'section'     => 'motionmill_mail_general'
 			);
 
 			$fields[] = array
@@ -130,7 +130,7 @@ if ( ! class_exists('MM_Mail') )
 				'class'       => 'regular-text',
 				'value'       => '',
 				'page'        => 'motionmill_mail',
-				'section'     => 'general'
+				'section'     => 'motionmill_mail_general'
 			);
 
 			foreach ( $this->templates as $template_id => $data )
@@ -146,7 +146,7 @@ if ( ! class_exists('MM_Mail') )
 						'class'       => 'regular-text',
 						'value'       => $data['fields']['from'],
 						'page'        => 'motionmill_mail',
-						'section'     => $data['id']
+						'section'     => 'motionmill_mail_' . $data['id']
 					);
 				}
 
@@ -161,7 +161,7 @@ if ( ! class_exists('MM_Mail') )
 						'class'       => 'regular-text',
 						'value'       => $data['fields']['to'],
 						'page'        => 'motionmill_mail',
-						'section'     => $data['id']
+						'section'     => 'motionmill_mail_' . $data['id']
 					);
 				}
 
@@ -176,7 +176,7 @@ if ( ! class_exists('MM_Mail') )
 						'class'       => 'regular-text',
 						'value'       => $data['fields']['subject'],
 						'page'        => 'motionmill_mail',
-						'section'     => $data['id']
+						'section'     => 'motionmill_mail_' . $data['id']
 					);
 				}
 
@@ -191,7 +191,7 @@ if ( ! class_exists('MM_Mail') )
 						'class'       => 'large-text',
 						'value'       => $data['fields']['message'],
 						'page'        => 'motionmill_mail',
-						'section'     => $data['id']
+						'section'     => 'motionmill_mail_' . $data['id']
 					);
 				}
 
@@ -207,7 +207,7 @@ if ( ! class_exists('MM_Mail') )
 						'rows'        => '3',
 						'value'       => $data['fields']['headers'],
 						'page'        => 'motionmill_mail',
-						'section'     => $data['id']
+						'section'     => 'motionmill_mail_' . $data['id']
 					);
 				}
 
@@ -223,7 +223,7 @@ if ( ! class_exists('MM_Mail') )
 						'rows'        => '3',
 						'value'       => $data['fields']['attachments'],
 						'page'        => 'motionmill_mail',
-						'section'     => $data['id']
+						'section'     => 'motionmill_mail_' . $data['id']
 					);
 				}
 
@@ -237,7 +237,7 @@ if ( ! class_exists('MM_Mail') )
 						'type'        => 'checkbox',
 						'value'       => ! empty( $data['fields']['html'] ),
 						'page'        => 'motionmill_mail',
-						'section'     => $data['id']
+						'section'     => 'motionmill_mail_' . $data['id']
 					);
 				}
 			}
@@ -271,7 +271,7 @@ if ( ! class_exists('MM_Mail') )
 
 					if ( isset($user_meta[$var]) )
 					{
-						return get_user_meta( $user_id, $var, true );
+						return get_user_meta( $user->ID, $var, true );
 					}
 				}
 			}

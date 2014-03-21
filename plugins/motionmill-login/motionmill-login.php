@@ -35,13 +35,20 @@ if ( ! class_exists('MM_Login') )
 			add_filter( 'login_message', array(&$this, 'on_login_message') );
 		}
 
+		public function on_helpers($helpers)
+		{
+			array_push( $helpers, 'image' );
+
+			return $helpers;
+		}
+
 		public function on_settings_pages($pages)
 		{
 			$pages[] = array
 			(
 				'id' 		  => 'motionmill_login',
 				'title' 	  => __('Login', MM_TEXTDOMAIN),
-				'description' => __('<p>Customizes the WordPress login page.</p>', MM_TEXTDOMAIN)
+				'description' => __('', MM_TEXTDOMAIN)
 			);
 
 			return $pages;
@@ -51,9 +58,9 @@ if ( ! class_exists('MM_Login') )
 		{
 			$sections[] = array
 			(
-				'id' 		  => 'general',
-				'title' 	  => __('General', MM_TEXTDOMAIN),
-				'description' => __('', MM_TEXTDOMAIN),
+				'id' 		  => 'motionmill_login_general',
+				'title' 	  => __('Login', MM_TEXTDOMAIN),
+				'description' => __('<p>Customizes the WordPress login page.</p>', MM_TEXTDOMAIN),
 				'page'        => 'motionmill_login'
 			);
 
@@ -67,11 +74,11 @@ if ( ! class_exists('MM_Login') )
 				'id'          => 'header_image',
 				'title'       => __( 'Header Image', MM_TEXTDOMAIN ),
 				'description' => __( '', MM_TEXTDOMAIN ),
-				'type'        => 'textfield',
+				'type'        => 'media',
 				'class'       => 'regular-text',
 				'value'       => __( 'http://motionmill.com/motionmill-plugin/images/motionmill-logo.png', MM_TEXTDOMAIN ),
 				'page'		  => 'motionmill_login',
-				'section'     => 'general'
+				'section'     => 'motionmill_login_general'
 			);
 
 			$fields[] = array
@@ -83,7 +90,7 @@ if ( ! class_exists('MM_Login') )
 				'class'       => 'regular-text',
 				'value'       => __( 'Powered by Motionmill', MM_TEXTDOMAIN ),
 				'page'		  => 'motionmill_login',
-				'section'     => 'general'
+				'section'     => 'motionmill_login_general'
 			);
 
 			$fields[] = array
@@ -95,7 +102,7 @@ if ( ! class_exists('MM_Login') )
 				'class'       => 'regular-text',
 				'value'       => __( 'http://motionmill.com', MM_TEXTDOMAIN ),
 				'page'		  => 'motionmill_login',
-				'section'     => 'general'
+				'section'     => 'motionmill_login_general'
 			);
 
 			$fields[] = array
@@ -103,12 +110,11 @@ if ( ! class_exists('MM_Login') )
 				'id'          => 'message',
 				'title'       => __( 'Message', MM_TEXTDOMAIN ),
 				'description' => __( '', MM_TEXTDOMAIN ),
-				'type'		  => 'textarea',
-				'rows'        => '3',
-				'class'       => 'regular-text',
+				'type'		  => 'editor',
+				'class'       => 'large-text',
 				'value'       => __( '', MM_TEXTDOMAIN ),
 				'page'		  => 'motionmill_login',
-				'section'     => 'general'
+				'section'     => 'motionmill_login_general'
 			);
 
 			$fields[] = array
@@ -119,7 +125,7 @@ if ( ! class_exists('MM_Login') )
 				'type'		  => 'checkbox',
 				'value'       => '1',
 				'page'		  => 'motionmill_login',
-				'section'     => 'general'
+				'section'     => 'motionmill_login_general'
 			);
 
 			return $fields;
@@ -146,7 +152,7 @@ if ( ! class_exists('MM_Login') )
 			if ( empty( $options['enabled'] ) || $options['header_image'] == '' )
 				return;
 
-			$header_image_sizes =  MM_Helper::get_image_size( $options['header_image'] );
+			$header_image_sizes = mm_get_image_size( $options['header_image'] );
 
 			if ( ! is_array($header_image_sizes)  )
 				return;

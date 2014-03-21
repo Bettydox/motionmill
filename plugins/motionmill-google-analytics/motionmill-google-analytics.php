@@ -30,7 +30,7 @@ if ( ! class_exists('MM_Google_Analytics') )
 			add_filter( 'motionmill_settings_sections', array(&$this, 'on_settings_sections') );
 			add_filter( 'motionmill_settings_fields', array(&$this, 'on_settings_fields') );
 
-			add_action( 'wp_head', array(&$this, 'on_head'), 10000 );
+			add_action( 'wp_head', array(&$this, 'on_head'), 1000 );
 		}
 
 		public function on_settings_pages($pages)
@@ -49,7 +49,7 @@ if ( ! class_exists('MM_Google_Analytics') )
 		{
 			$sections[] = array
 			(
-				'id' 		  => 'general',
+				'id' 		  => 'motionmill_google_analytics_general',
 				'title' 	  => __('General', MM_TEXTDOMAIN),
 				'description' => __('', MM_TEXTDOMAIN),
 				'page'		  => 'motionmill_google_analytics'
@@ -64,23 +64,23 @@ if ( ! class_exists('MM_Google_Analytics') )
 			(
 				'id' 		  => 'tracking_code',
 				'title' 	  => __('Tracking Code', MM_TEXTDOMAIN),
-				'description' => __('e.g. UA-XXXXX-2', MM_TEXTDOMAIN),
+				'description' => __('', MM_TEXTDOMAIN),
 				'type'		  => 'textfield',
 				'class'       => 'regular-text',
 				'value'       => __('', MM_TEXTDOMAIN),
 				'page'		  => 'motionmill_google_analytics',
-				'section'     => 'general'
+				'section'     => 'motionmill_google_analytics_general'
 			);
 
 			$fields[] = array
 			(
 				'id' 		  => 'enabled',
 				'title' 	  => __('Enable', MM_TEXTDOMAIN),
-				'description' => __('', MM_TEXTDOMAIN),
+				'description' => __('Check/uncheck to enable/disable.', MM_TEXTDOMAIN),
 				'type'		  => 'checkbox',
 				'value'       => 0,
 				'page'		  => 'motionmill_google_analytics',
-				'section'     => 'general'
+				'section'     => 'motionmill_google_analytics_general'
 			);
 
 			return $fields;
