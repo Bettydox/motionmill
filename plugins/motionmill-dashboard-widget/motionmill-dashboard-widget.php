@@ -49,7 +49,7 @@ if ( ! class_exists('MM_Dashboard_Widget') )
 		{
 			$sections[] = array
 			(
-				'id' 		  => 'content',
+				'id' 		  => 'motionmill_dashboard_widget_content',
 				'title' 	  => __('Content', MM_TEXTDOMAIN),
 				'description' => __('', MM_TEXTDOMAIN),
 				'page'        => 'motionmill_dashboard_widget'
@@ -57,7 +57,7 @@ if ( ! class_exists('MM_Dashboard_Widget') )
 
 			$sections[] = array
 			(
-				'id' 		  => 'styling',
+				'id' 		  => 'motionmill_dashboard_widget_styling',
 				'title' 	  => __('Styling', MM_TEXTDOMAIN),
 				'description' => __('', MM_TEXTDOMAIN),
 				'page'        => 'motionmill_dashboard_widget'
@@ -65,7 +65,7 @@ if ( ! class_exists('MM_Dashboard_Widget') )
 
 			$sections[] = array
 			(
-				'id' 		  => 'activation',
+				'id' 		  => 'motionmill_dashboard_widget_activation',
 				'title' 	  => __('Activation', MM_TEXTDOMAIN),
 				'description' => __('', MM_TEXTDOMAIN),
 				'page'        => 'motionmill_dashboard_widget'
@@ -84,7 +84,7 @@ if ( ! class_exists('MM_Dashboard_Widget') )
 				'type'		  => 'textfield',
 				'value'       => 'Motionmill',
 				'page'        => 'motionmill_dashboard_widget',
-				'section'     => 'content'
+				'section'     => 'motionmill_dashboard_widget_content'
 			);
 
 			$fields[] = array
@@ -96,7 +96,7 @@ if ( ! class_exists('MM_Dashboard_Widget') )
 				'wpautop'     => false,
 				'value'       => __('Enjoy your site!', MM_TEXTDOMAIN),
 				'page'        => 'motionmill_dashboard_widget',
-				'section'     => 'content'
+				'section'     => 'motionmill_dashboard_widget_content'
 			);
 
 			$fields[] = array
@@ -107,7 +107,7 @@ if ( ! class_exists('MM_Dashboard_Widget') )
 				'type'		  => 'colorpicker',
 				'value'       => '#FFFFFF',
 				'page'        => 'motionmill_dashboard_widget',
-				'section'     => 'styling'
+				'section'     => 'motionmill_dashboard_widget_styling'
 			);
 
 			$fields[] = array
@@ -118,7 +118,7 @@ if ( ! class_exists('MM_Dashboard_Widget') )
 				'type'		  => 'colorpicker',
 				'value'       => '#ed1e26',
 				'page'        => 'motionmill_dashboard_widget',
-				'section'     => 'styling'
+				'section'     => 'motionmill_dashboard_widget_styling'
 			);
 
 			$fields[] = array
@@ -129,7 +129,7 @@ if ( ! class_exists('MM_Dashboard_Widget') )
 				'type'		  => 'colorpicker',
 				'value'       => '#ed1e26',
 				'page'        => 'motionmill_dashboard_widget',
-				'section'     => 'styling'
+				'section'     => 'motionmill_dashboard_widget_styling'
 			);
 
 			$fields[] = array
@@ -138,9 +138,9 @@ if ( ! class_exists('MM_Dashboard_Widget') )
 				'title' 	  => __('Enable', MM_TEXTDOMAIN),
 				'description' => __('Check/uncheck to enable/disable.', MM_TEXTDOMAIN),
 				'type'		  => 'checkbox',
-				'value'       => '1',
+				'value'       => 0,
 				'page'        => 'motionmill_dashboard_widget',
-				'section'     => 'activation'
+				'section'     => 'motionmill_dashboard_widget_activation'
 			);
 
 			return $fields;
