@@ -11,11 +11,17 @@ if ( ! class_exists('MM_Plugin') )
 			$this->motionmill = Motionmill::get_instance();			
 
 			add_action( 'motionmill_init', array(&$this, 'initialize') );
+			add_filter( 'motionmill_helpers', array(&$this, 'on_helpers') );
 		}
 
 		public function initialize()
 		{
 			
+		}
+
+		public function on_helpers($helpers)
+		{
+			return $helpers;
 		}
 		
 		public function _($plugin)
