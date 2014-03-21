@@ -4,7 +4,7 @@
  Plugin Name: Motionmill
  Plugin URI: http://motionmill.com
  Description: Motionmill's HQ
- Version: 1.1.7
+ Version: 1.2.0
  Author: Motionmill
  Author URI: http://motionmill.com
  License: GPL2
@@ -23,6 +23,8 @@ if ( ! class_exists('Motionmill') )
 	class Motionmill
 	{
 		private static $instance = null;
+		private $plugins  = array();
+		private $helpers  = array();
 		public $page_slug = null;
 
 		public static function get_instance()
@@ -38,8 +40,6 @@ if ( ! class_exists('Motionmill') )
 		public function __construct()
 		{
 			// loads assets
-			require_once( MM_INCLUDE_DIR . 'class-mm-helper.php' );
-			require_once( MM_INCLUDE_DIR . 'class-mm-error.php' );
 			require_once( MM_INCLUDE_DIR . 'class-mm-plugin.php' );
 
 			// loads plugins
@@ -78,6 +78,26 @@ if ( ! class_exists('Motionmill') )
 				}
 
 				$this->plugins[ $plugin ] = new $plugin();
+			}
+
+			// registers helpers
+			foreach ( apply_filters( 'motionmill_helpers', array() ) as $helper )
+			{
+				if ( isset($this->helpers[$helper]) )
+					continue;
+
+				$file = MM_INCLUDE_DIR . sprintf( 'mm-%s-helper.php', $helper );
+
+				if ( ! file_exists( $file ) )
+				{
+					trigger_error( sprintf('Helper %s could not be found.', $helper) , E_USER_NOTICE );
+
+					continue;
+				}
+
+				require_once( $file );
+
+				$this->helpers[ $helper ] = true;
 			}
 
 			add_action( 'admin_menu', array(&$this, 'on_admin_menu'), 0 );
@@ -125,10 +145,9 @@ if ( ! class_exists('Motionmill') )
 		}
 
 		public function on_enqueue_scripts()
-		{
+		{	
 			wp_enqueue_style( 'motionmill-style', plugins_url('css/style.css', MM_FILE), null, '1.0.0', 'all' );
-
-			wp_enqueue_script( 'motionmill-plugins', plugins_url('js/plugins.js', MM_FILE), array('jquery'), '1.0.0', false );
+			
 			wp_enqueue_script( 'motionmill-scripts', plugins_url('js/scripts.js', MM_FILE), array('jquery'), '1.0.0', false );
 			
 			wp_localize_script( 'motionmill-scripts', 'Motionmill', array
