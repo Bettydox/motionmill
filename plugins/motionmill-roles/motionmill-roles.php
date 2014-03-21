@@ -19,7 +19,7 @@ if ( ! class_exists('MM_Roles') )
 	class MM_Roles extends MM_Plugin
 	{
 		protected $roles = array();
-		protected $caps = array();
+		protected $caps  = array();
 
 		public function __construct()
 		{
@@ -28,20 +28,19 @@ if ( ! class_exists('MM_Roles') )
 
 		public function initialize()
 		{	
+			global $wp_roles;
+
+			$this->roles = $wp_roles->roles;
+			$this->caps  = $this->get_capabilities();
+			
 			add_filter( 'motionmill_settings_pages', array(&$this, 'on_settings_pages') );
 			add_filter( 'motionmill_settings_sections', array(&$this, 'on_settings_sections') );
 			add_action( 'motionmill_settings_print_section', array(&$this, 'on_print_settings_sections') );
 			add_filter( 'motionmill_settings_sanitize_input', array(&$this, 'on_sanitize_input'), 10, 2 );
 			
 			register_deactivation_hook( MM_FILE, array(&$this, 'on_deactivate') );
-
-			global $wp_roles;
-
-			$this->roles = $wp_roles->roles;
-			unset( $this->roles['administrator'] );
-
-			$this->caps  = $this->get_capabilities();
-
+			
+			// creates role 
 			if ( ! get_role('motionmill-client') )
 			{
 				add_role( 'motionmill-client', __( 'Motionmill Client', MM_TEXTDOMAIN ), array
@@ -123,17 +122,14 @@ if ( ! class_exists('MM_Roles') )
 
 		public function on_settings_sections($sections)
 		{
-			foreach ( $this->roles as $role_id => $role )
-			{
-				$sections[] = array
-				(
-					'id' 		  => 'role_' . $role_id,
-					'title' 	  => $role['name'],
-					'description' => __( '', MM_TEXTDOMAIN ),
-					'page'        => 'motionmill_roles',
-					'_role'       => $role_id
-				);
-			}
+			$sections[] = array
+			(
+				'id' 		  => 'motionmill_roles_client',
+				'title' 	  => __('Motionmill Client'),
+				'description' => __( '', MM_TEXTDOMAIN ),
+				'page'        => 'motionmill_roles',
+				'args'        => array( 'role' => 'motionmill-client' )
+			);
 
 			return $sections;
 		}
@@ -142,8 +138,8 @@ if ( ! class_exists('MM_Roles') )
 		{
 			if ( $section['page'] != 'motionmill_roles' )
 				return;
-
-			$role_id = $section['_role'];
+			
+			$role_id = $section['args']['role'];
 			$role    = $this->roles[ $role_id ];
 
 			$cols = 4;
@@ -158,7 +154,7 @@ if ( ! class_exists('MM_Roles') )
 				for ( $col = 0; $col < $cols; $col++ )
 				{
 					$i 	 = $row * $cols + $col;
-					$cap = $i < count($this->caps) ? $this->caps[$i] : null;
+					$cap = $i < count( $this->caps ) ? $this->caps[$i] : null;
 
 					printf( '<td style="width: %s;">', floor( 100 / $cols) .'%' );
 
@@ -175,6 +171,7 @@ if ( ! class_exists('MM_Roles') )
 			}
 
 			print( '</table>' );
+			
 		}
 
 		public function on_sanitize_input($input, $page_id)
