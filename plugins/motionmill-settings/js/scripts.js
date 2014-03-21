@@ -2,14 +2,14 @@
 {
 	$.extend(MM_Settings,
 	{
-		elem : null,
+		_elem : null,
 
 		initialize : function()
 		{
-			this.elem = $( '.' + this.page_hook );
+			this._elem = $( '.' + this.page_hook );
 
 			// colorpicker
-			this.elem.find('.colorpicker').each(function()
+			this._elem.find('.mm-colorpicker').each(function()
 			{
 				var color = new Color( $(this).val() );
 
@@ -37,8 +37,47 @@
 
 			$('body').click(function(e)
 			{
-				MM_Settings.elem.find('.colorpicker').iris('hide');
+				MM_Settings._elem.find('.mm-colorpicker').iris('hide');
 			});
+
+			// media
+			var button = this._elem.find('.mm-media-button');
+
+			if ( button.length > 0 )
+			{
+				button.click(function(e)
+				{
+					tb_show('','media-upload.php?TB_iframe=true');
+
+					e.preventDefault();
+				});
+
+				window.original_tb_remove = window.tb_remove;
+		    	window.tb_remove = function()
+		    	{
+		        	window.original_tb_remove();
+		        	button = null;
+		    	};
+
+		    	window.original_send_to_editor = window.send_to_editor;
+			    window.send_to_editor = function(html)
+			    {
+			        if (button)
+			        {
+			        	var field = $( button.attr('href') );
+			            var url = $('img',html).attr('src');
+			            
+			            $(field).val(url);
+
+			            tb_remove();
+			        }
+			        else
+			        {
+			            window.original_send_to_editor(html);
+			        }
+			    };
+			};
+			
 		}
 	})
 
