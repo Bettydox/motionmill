@@ -2,24 +2,34 @@
 
 if ( ! function_exists('mm_get_user_role') )
 {
-	function mm_get_user_role($user_id, $key = null)
+	function mm_get_user_role($user_id = 0)
 	{
-		$user = new WP_User($user_id);
-		$role_name = $user->roles[0];
+		global $wp_roles;
 
-		if ( ! $key )
+		$user = null;
+
+		if ( $user_id )
 		{
-			return $role_name;
-		}
-
-		$roles = get_option( 'wp_user_roles', array() );
-
-		if ( isset($roles[$role_name][$key]) )
-		{
-			return $roles[$role_name][$key];
+			$user = new WP_User( $user_id );
 		}
 		
-		return '';
+		else if ( is_user_logged_in() )
+		{
+			$user = wp_get_current_user();
+		}
+
+		if ( $user )
+		{
+			$role = $user->roles[0];
+
+			// checks if role is registered
+			if ( isset($wp_roles->role_names[$role]) )
+			{
+				return $wp_roles->role_names[$role];
+			}
+		}
+		
+		return false;
 	}
 }
 
