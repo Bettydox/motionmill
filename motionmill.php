@@ -4,7 +4,7 @@
  Plugin Name: Motionmill
  Plugin URI: http://motionmill.com
  Description: Motionmill's HQ
- Version: 1.2.0
+ Version: 1.3.0
  Author: Motionmill
  Author URI: http://motionmill.com
  License: GPL2
@@ -81,7 +81,7 @@ if ( ! class_exists('Motionmill') )
 			}
 
 			// registers helpers
-			foreach ( apply_filters( 'motionmill_helpers', array() ) as $helper )
+			foreach ( apply_filters( 'motionmill_helpers', array('wordpress') ) as $helper )
 			{
 				if ( isset($this->helpers[$helper]) )
 					continue;
@@ -101,7 +101,6 @@ if ( ! class_exists('Motionmill') )
 			}
 
 			add_action( 'admin_menu', array(&$this, 'on_admin_menu'), 0 );
-			add_action( 'wp_enqueue_scripts', array(&$this, 'on_enqueue_scripts'), 0 );
 
 			do_action( 'motionmill_init' );
 
@@ -142,18 +141,6 @@ if ( ! class_exists('Motionmill') )
 					include( $uninstall );
 				}
 			}
-		}
-
-		public function on_enqueue_scripts()
-		{	
-			wp_enqueue_style( 'motionmill-style', plugins_url('css/style.css', MM_FILE), null, '1.0.0', 'all' );
-			
-			wp_enqueue_script( 'motionmill-scripts', plugins_url('js/scripts.js', MM_FILE), array('jquery'), '1.0.0', false );
-			
-			wp_localize_script( 'motionmill-scripts', 'Motionmill', array
-			(
-				'ajaxurl' => admin_url('admin-ajax.php')
-			));
 		}
 
 		private function get_plugin_files()
