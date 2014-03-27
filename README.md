@@ -8,6 +8,6 @@ Motionmill is a WordPress plugin that has following features:
 - customizes WordPress email settings
 - customizes WordPress login page
 - sets favicon
-- sets body classes
+- sets body classes (language)
 - sets google analytics code
 - provides an editable dashboard widget
