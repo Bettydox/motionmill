@@ -30,7 +30,11 @@ if ( ! class_exists('MM_General') )
 			add_filter( 'motionmill_settings_fields', array(&$this, 'on_settings_fields') );
 
 			add_action( 'wp_head', array(&$this, 'on_wp_head') );
-			add_filter( 'body_class', array(&$this, 'on_body_class') );
+
+			add_filter( 'manage_pages_columns', array(&$this, 'on_manage_posts_columns') );
+			add_filter( 'manage_posts_columns', array(&$this, 'on_manage_posts_columns'), 10, 2 );
+			add_action( 'manage_pages_custom_column',  array(&$this, 'on_manage_posts_custom_column'), 10, 2 );
+			add_action( 'manage_posts_custom_column',  array(&$this, 'on_manage_posts_custom_column'), 10, 2 );
 		}
 
 		public function on_settings_pages($pages)
@@ -50,15 +54,7 @@ if ( ! class_exists('MM_General') )
 			$sections[] = array
 			(
 				'id' 		  => 'motionmill_general_general',
-				'title' 	  => __( 'General', MM_TEXTDOMAIN ),
-				'description' => __( '', MM_TEXTDOMAIN ),
-				'page'        => 'motionmill_general'
-			);
-
-			$sections[] = array
-			(
-				'id' 		  => 'motionmill_general_body_class',
-				'title' 	  => __( 'Body Class', MM_TEXTDOMAIN ),
+				'title' 	  => __( '', MM_TEXTDOMAIN ),
 				'description' => __( '', MM_TEXTDOMAIN ),
 				'page'        => 'motionmill_general'
 			);
@@ -81,13 +77,13 @@ if ( ! class_exists('MM_General') )
 
 			$fields[] = array
 			(
-				'id' 		  => 'body_class_language',
-				'title' 	  => __( 'Language', MM_TEXTDOMAIN ),
-				'description' => __( 'Create class lang-LANGUAGE_CODE e.g. lang-en-US', MM_TEXTDOMAIN ),
+				'id' 		  => 'post_id_column',
+				'title' 	  => 'Post ID Column',
+				'description' => __( '', MM_TEXTDOMAIN ),
 				'type'		  => 'checkbox',
 				'value'       => 0,
 				'page'		  => 'motionmill_general',
-				'section'     => 'motionmill_general_body_class'
+				'section'     => 'motionmill_general_general'
 			);
 
 			return $fields;
@@ -112,18 +108,33 @@ if ( ! class_exists('MM_General') )
 			}
 		}
 
-		public function on_body_class($classes)
+		public function on_manage_posts_columns($columns)
 		{
 			$options = $this->_('MM_Settings')->get_option( 'motionmill_general' );
 
-			if ( ! empty( $options['body_class_language'] ) )
+			if ( empty($options['post_id_column']) )
 			{
-				$language = defined('ICL_LANGUAGE_CODE') ? ICL_LANGUAGE_CODE : get_bloginfo('language');
-
-				$classes[] = sprintf( 'lang-%s', $language );
+				return $columns;
 			}
 
-			return $classes;
+			return array_merge(array
+		    (
+		    	'cb' => $columns['cb'],
+		    	'id' => 'ID'
+		    ), $columns );
+		}
+
+		function on_manage_posts_custom_column($column, $post_id)
+		{
+			$options = $this->_('MM_Settings')->get_option( 'motionmill_general' );
+			
+			if ( empty($options['post_id_column']) )
+				return;
+
+		    switch ($column)
+		    {
+		        case 'id': echo $post_id; break;
+		    }
 		}
 	}
 
