@@ -7,6 +7,7 @@
  Version: 1.0.0
  Author: Motionmill
  Author URI: http://www.motionmill.com
+ Dependencies : Motionmill, Motionmill Admin Bar Menu
 ------------------------------------------------------------------------------------------------------------------------
 */
 
@@ -38,6 +39,8 @@ if ( ! class_exists('MM_Settings') )
 			add_action( 'admin_enqueue_scripts', array(&$this, 'on_admin_enqueue_scripts') );
 			add_filter( 'motionmill_page_slug', array(&$this, 'on_motionmill_page_slug') );
 			
+			add_filter( 'motionmill_admin_bar_menu_items', array(&$this, 'on_motionmill_admin_bar_menu_items') );
+
 			register_deactivation_hook( MM_FILE, array(&$this, 'on_deactivate') );
 		}
 
@@ -85,6 +88,34 @@ if ( ! class_exists('MM_Settings') )
 		public function on_motionmill_page_slug($default)
 		{
 			return $this->page_slug;
+		}
+
+		public function on_motionmill_admin_bar_menu_items($items)
+		{
+			if ( current_user_can('manage_options') == false )
+				return;
+
+			$items[] =  array
+			(
+				'id'     => 'motionmill_settings',
+				'meta'   => array(),
+				'title'  => __('Settings'),
+				'href'   => $this->get_page_url()
+			);
+
+			foreach ( $this->pages as $page )
+			{
+				$items[] =  array
+				(
+					'id'     => $page['id'],
+					'meta'   => array(),
+					'title'  => $page['title'],
+					'href'   => $this->get_page_url( $page['id'] ),
+					'parent' => 'motionmill_settings'
+				);
+			}
+
+			return $items;
 		}
 
 		public function on_init()
@@ -416,6 +447,18 @@ if ( ! class_exists('MM_Settings') )
 			do_action( 'motionmill_settings_enqueue_scripts', $this->current_page['id'] );
 		}
 
+		public function get_page_url( $page_id = 0 )
+		{
+			$url = admin_url( 'admin.php?page=' . $this->page_slug );
+
+			if ( $page_id )
+			{
+				$url .= '&sub=' . $page_id;
+			}
+
+			return $url;
+		}
+
 		public function on_print_page()
 		{
 			?>
@@ -434,7 +477,7 @@ if ( ! class_exists('MM_Settings') )
 
 				<h2 class="nav-tab-wrapper">
 					<?php foreach ( $this->pages as $page ) : ?>
-					<a href="?page=<?php echo esc_attr($this->page_slug); ?>&sub=<?php echo esc_attr($page['id']); ?>" class="nav-tab<?php echo $this->current_page && $page['id'] == $this->current_page['id'] ? ' nav-tab-active' : ''; ?>"><?php echo esc_html( $page['title'] ); ?></a>
+					<a href="<?php echo esc_attr( $this->get_page_url($page['id']) ); ?>" class="nav-tab<?php echo $this->current_page && $page['id'] == $this->current_page['id'] ? ' nav-tab-active' : ''; ?>"><?php echo esc_html( $page['title'] ); ?></a>
 					<?php endforeach; ?>
 				</h2>
 
@@ -502,7 +545,7 @@ if ( ! class_exists('MM_Settings') )
 		return $plugins;
 	}
 
-	add_filter( 'motionmill_plugins', 'motionmill_plugins_add_settings', 0 );
+	add_filter( 'motionmill_plugins', 'motionmill_plugins_add_settings', 1 );
 
 }
 
