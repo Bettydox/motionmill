@@ -36,6 +36,15 @@
 
 			e.preventDefault();
 		});
+
+		$('a.toggler').click(function(e)
+		{
+			var target = $( $(this).attr('href') );
+
+			target.slideToggle();
+
+			e.preventDefault();
+		});
 	});
 
 })(jQuery);
