@@ -166,7 +166,7 @@ if ( ! class_exists('MM_Settings') )
 					'value'       => '',
 					'page'        => '',
 					'section'     => '',
-					'save'        => true
+					'rules'	      => array()
 				), $data);
 			}
 		}
@@ -202,14 +202,12 @@ if ( ! class_exists('MM_Settings') )
 			{
 				$page = mm_get_element_by( 'id='.$field['page'], $this->pages );
 
-				$value = $field['save'] ? $this->get_option( $field['page'], $field['id'] ) : $field['value'];
-
 				add_settings_field( $field['id'], $field['title'], array(&$this, 'on_print_field'), $field['page'], $field['section'], array_merge($field, array
 				(
 					'id'        => $field['id'],
 					'label_for' => $field['id'],
 					'name'      => $page['option_name'] . '[' . $field['id'] . ']',
-					'value'     => $value
+					'value'     => $this->get_option( $field['page'], $field['id'] )
 				)));
 			}
 		}
@@ -515,18 +513,7 @@ if ( ! class_exists('MM_Settings') )
 				add_settings_error( $page_id, 'settings_saved', __( 'Settings saved.', MM_TEXTDOMAIN ), 'updated' );
 			}
 
-			$input = apply_filters( 'motionmill_settings_sanitize_input', $input, $page_id );
-
-			// removes data that does not need to be saved
-			foreach ( mm_get_elements_by('page='.$page_id, $this->fields ) as $field )
-			{
-				if ( empty($field['save']) && isset($input[ $field['id'] ]) )
-				{
-					unset( $input[ $field['id'] ] );
-				}
-			}
-
-			return $input;
+			return apply_filters( 'motionmill_settings_sanitize_input', $input, $page_id );
 		}
 
 		public function on_deactivate()
