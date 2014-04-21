@@ -70,6 +70,17 @@ if ( ! class_exists('MM_Body_Class') )
 				'section'     => 'motionmill_body_class_general'
 			);
 
+			$fields[] = array
+			(
+				'id' 		  => 'browser',
+				'title' 	  => __( 'Browser', MM_TEXTDOMAIN ),
+				'description' => __( '', MM_TEXTDOMAIN ),
+				'type'		  => 'checkbox',
+				'value'       => '1',
+				'page'		  => 'motionmill_body_class',
+				'section'     => 'motionmill_body_class_general'
+			);
+
 			return $fields;
 		}
 
@@ -77,11 +88,35 @@ if ( ! class_exists('MM_Body_Class') )
 		{
 			$options = $this->_('MM_Settings')->get_option( 'motionmill_body_class' );
 
+			// language
 			if ( ! empty( $options['language'] ) )
 			{
 				$language = defined('ICL_LANGUAGE_CODE') ? ICL_LANGUAGE_CODE : substr( get_bloginfo('language') , 0, 2 );
 
 				$classes[] = sprintf( 'lang-%s', strtolower($language) );
+			}
+
+			// browser
+			if ( ! empty( $options['browser'] ) )
+			{
+				global $is_lynx, $is_gecko, $is_IE, $is_opera, $is_NS4, $is_safari, $is_chrome, $is_iphone;
+
+				if ( $is_lynx )
+					$classes[] = 'browser-lynx';
+				elseif ( $is_gecko )
+					$classes[] = 'browser-gecko';
+				elseif( $is_opera )
+					$classes[] = 'browser-opera';
+				elseif( $is_NS4)
+					$classes[] = 'browser-ns4';
+				elseif( $is_safari)
+					$classes[] = 'browser-safari';
+				elseif( $is_chrome)
+					$classes[] = 'browser-chrome';
+				elseif( $is_IE)
+					$classes[] = 'browser-ie';
+				else
+					$classes[] = 'browser-unknown';
 			}
 
 			return $classes;
