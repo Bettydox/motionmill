@@ -77,6 +77,18 @@ if ( ! class_exists('MM_Settings') )
 
 			return $options;
 		}
+		
+		public function get_page_url( $page_id = 0 )
+		{
+			$url = admin_url( 'admin.php?page=' . $this->page_slug );
+
+			if ( $page_id )
+			{
+				$url .= '&sub=' . $page_id;
+			}
+
+			return $url;
+		}
 
 		public function on_helpers($helpers)
 		{
@@ -443,18 +455,6 @@ if ( ! class_exists('MM_Settings') )
 			));
 
 			do_action( 'motionmill_settings_enqueue_scripts', $this->current_page['id'] );
-		}
-
-		public function get_page_url( $page_id = 0 )
-		{
-			$url = admin_url( 'admin.php?page=' . $this->page_slug );
-
-			if ( $page_id )
-			{
-				$url .= '&sub=' . $page_id;
-			}
-
-			return $url;
 		}
 
 		public function on_print_page()
