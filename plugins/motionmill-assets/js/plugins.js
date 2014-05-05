@@ -11,13 +11,13 @@
 
 		this.each(function()
 		{
-			if ( this.height() > maxHeight  )
+			if ( $(this).height() > maxHeight  )
 			{
-				maxHeight = this.height();
+				maxHeight = $(this).height();
 			};
 		});
 
-		this.css( 'height', maxHeight );
+		$(this).css( 'height', maxHeight );
 
 		return this;
 	};
