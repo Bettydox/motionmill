@@ -5,7 +5,7 @@ if( !defined('ABSPATH') ) exit; // Exits when accessed directly
  Plugin Name: Motionmill
  Plugin URI:
  Description: Motionmill's HQ
- Version: 1.3.5
+ Version: 1.3.6
  Author: Motionmill
  Author URI: http://motionmill.com
  License: GPL2
