@@ -1,0 +1,25 @@
+.hide-if-no-js { display: none; }
+
+ul { margin: 0; padding: 0; list-style: none; }
+li { margin: 0; padding: 0; }
+
+.stretch 	{ width: 100%; }
+.shrink 	{ width: 1% }
+.p 			{ display: block; margin: 10px 0; }
+
+/*
+------------------------------------------------------------------------------------------------------------------------
+ Table Layout
+------------------------------------------------------------------------------------------------------------------------
+*/
+
+.table { display: table }
+.row   { display: table-row; }
+.col   { display: table-cell; text-align: left; vertical-align: top; }
+
+.table > p, .row > p, .table > br, .row > br { display: none; }
+
+@media all and ( max-width: 670px ) {
+  
+	.table, .row, .col { display: block; }
+}

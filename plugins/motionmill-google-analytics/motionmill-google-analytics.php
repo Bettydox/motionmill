@@ -4,32 +4,23 @@
 ------------------------------------------------------------------------------------------------------------------------
  Plugin Name: Motionmill Google Analytics
  Plugin URI: http://motionmill.com
- Description: Connects your blog with Google Analytics.
- Version: 1.0.0
+ Description: Connects your blog with <a href="http://www.google.com/analytics/" target="_blank">Google Analytics</a>.
+ Version: 1.0.1
  Author: Motionmill
  Author URI: http://motionmill.com
  License: GPL2
 ------------------------------------------------------------------------------------------------------------------------
 */
 
-// loads plugin when motionmill is loaded 
+// checks if motionmill plugin is loaded
 add_action( 'motionmill_loaded', function(){
 
 if ( ! class_exists('MM_Google_Analytics') )
 {
 	class MM_Google_Analytics extends MM_Plugin
 	{
-		public function __construct()
-		{
-			parent::__construct();
-		}
-
 		public function initialize()
 		{
-			add_filter( 'motionmill_settings_pages', array(&$this, 'on_settings_pages') );
-			add_filter( 'motionmill_settings_sections', array(&$this, 'on_settings_sections') );
-			add_filter( 'motionmill_settings_fields', array(&$this, 'on_settings_fields') );
-
 			add_action( 'wp_head', array(&$this, 'on_head'), 1000 );
 		}
 
@@ -37,9 +28,9 @@ if ( ! class_exists('MM_Google_Analytics') )
 		{
 			$pages[] = array
 			(
-				'id' 		  => 'motionmill_google_analytics',
-				'title' 	  => __('Google Analytics', MM_TEXTDOMAIN),
-				'description' => __('<p>Connects your blog with Google Analytics.</p>', MM_TEXTDOMAIN)
+				'id' 		   => 'motionmill_google_analytics',
+				'title' 	   => __('Google Analytics', Motionmill::TEXT_DOMAIN),
+				'description'  => __('Connects your blog with <a href="http://www.google.com/analytics/" target="_blank">Google Analytics</a>.', Motionmill::TEXT_DOMAIN)
 			);
 
 			return $pages;
@@ -50,8 +41,8 @@ if ( ! class_exists('MM_Google_Analytics') )
 			$sections[] = array
 			(
 				'id' 		  => 'motionmill_google_analytics_general',
-				'title' 	  => __('General', MM_TEXTDOMAIN),
-				'description' => __('', MM_TEXTDOMAIN),
+				'title' 	  => __('', Motionmill::TEXT_DOMAIN),
+				'description' => __('', Motionmill::TEXT_DOMAIN),
 				'page'		  => 'motionmill_google_analytics'
 			);
 
@@ -63,22 +54,11 @@ if ( ! class_exists('MM_Google_Analytics') )
 			$fields[] = array
 			(
 				'id' 		  => 'tracking_code',
-				'title' 	  => __('Tracking Code', MM_TEXTDOMAIN),
-				'description' => __('', MM_TEXTDOMAIN),
+				'title' 	  => __('Tracking Code', Motionmill::TEXT_DOMAIN),
+				'description' => __('Leave empty to disable.', Motionmill::TEXT_DOMAIN),
 				'type'		  => 'textfield',
 				'class'       => 'regular-text',
-				'value'       => __('', MM_TEXTDOMAIN),
-				'page'		  => 'motionmill_google_analytics',
-				'section'     => 'motionmill_google_analytics_general'
-			);
-
-			$fields[] = array
-			(
-				'id' 		  => 'enabled',
-				'title' 	  => __('Enable', MM_TEXTDOMAIN),
-				'description' => __('Check/uncheck to enable/disable.', MM_TEXTDOMAIN),
-				'type'		  => 'checkbox',
-				'value'       => 0,
+				'value'       => __('', Motionmill::TEXT_DOMAIN),
 				'page'		  => 'motionmill_google_analytics',
 				'section'     => 'motionmill_google_analytics_general'
 			);
@@ -88,9 +68,9 @@ if ( ! class_exists('MM_Google_Analytics') )
 
 		public function on_head()
 		{
-			$options = $this->_('MM_Settings')->get_option('motionmill_google_analytics');
+			$options = $this->motionmill->get_plugin('MM_Settings')->get_option('motionmill_google_analytics');
 
-			if ( empty($options['enabled']) )
+			if ( trim($options['tracking_code']) == '' )
 				return;
 			?>
 

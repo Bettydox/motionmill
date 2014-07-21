@@ -4,14 +4,15 @@
 ------------------------------------------------------------------------------------------------------------------------
  Plugin Name: Motionmill Roles
  Plugin URI: http://motionmill.com
- Description: Manages role capabilities.
- Version: 1.0.0
+ Description: Manages client capabilities.
+ Version: 1.0.1
  Author: Motionmill
  Author URI: http://motionmill.com
  License: GPL2
 ------------------------------------------------------------------------------------------------------------------------
 */
 
+// checks if motionmill plugin is loaded
 add_action( 'motionmill_loaded', function(){
 
 if ( ! class_exists('MM_Roles') )
@@ -21,11 +22,6 @@ if ( ! class_exists('MM_Roles') )
 		protected $roles = array();
 		protected $caps  = array();
 
-		public function __construct()
-		{
-			parent::__construct();
-		}
-
 		public function initialize()
 		{	
 			global $wp_roles;
@@ -33,17 +29,20 @@ if ( ! class_exists('MM_Roles') )
 			$this->roles = $wp_roles->roles;
 			$this->caps  = $this->get_capabilities();
 			
-			add_filter( 'motionmill_settings_pages', array(&$this, 'on_settings_pages') );
-			add_filter( 'motionmill_settings_sections', array(&$this, 'on_settings_sections') );
 			add_action( 'motionmill_settings_print_section', array(&$this, 'on_print_settings_sections') );
 			add_filter( 'motionmill_settings_sanitize_input', array(&$this, 'on_sanitize_input'), 10, 2 );
-			
-			register_deactivation_hook( MM_FILE, array(&$this, 'on_deactivate') );
+			add_action( 'admin_init', array(&$this, 'on_admin_init') );
+
+			register_deactivation_hook( Motionmill::FILE, array(&$this, 'on_deactivate') );
+
+			global $wpdb;
+
+			//printf( '<pre>%s</pre>', $wpdb->get_var("SELECT * FROM $wpdb->options WHERE option_name='wp_user_roles''") );
 			
 			// creates role 
 			if ( ! get_role('motionmill-client') )
 			{
-				add_role( 'motionmill-client', __( 'Motionmill Client', MM_TEXTDOMAIN ), array
+				add_role( 'motionmill-client', __( 'Motionmill Client', Motionmill::TEXT_DOMAIN ), array
 				(
 					'edit_files'             => true,
 					'moderate_comments'      => true,
@@ -103,6 +102,25 @@ if ( ! class_exists('MM_Roles') )
 			return $caps;
 		}
 
+		public function on_admin_init()
+		{
+			global $wp_roles;
+
+			$caps = array();
+
+			foreach ( $wp_roles->roles as $role_id => $role )
+			{
+				foreach ( $role['capabilities'] as $cap => $enabled )
+				{
+					if ( in_array($cap, $caps) )
+						continue;
+
+					$caps[] = $cap;
+				}
+			}
+
+		}
+
 		public function on_deactivate()
 		{
 			remove_role( 'motionmill-client' );
@@ -112,9 +130,9 @@ if ( ! class_exists('MM_Roles') )
 		{
 			$pages[] = array
 			(
-				'id' 		  => 'motionmill_roles',
-				'title' 	  => __( 'Roles', MM_TEXTDOMAIN ),
-				'description' => __( '', MM_TEXTDOMAIN )
+				'id'          => 'motionmill_roles',
+				'title'       => __('Roles', Motionmill::TEXT_DOMAIN),
+				'description' => __(' Manages client capabilities.', Motionmill::TEXT_DOMAIN)
 			);
 
 			return $pages;
@@ -126,7 +144,7 @@ if ( ! class_exists('MM_Roles') )
 			(
 				'id' 		  => 'motionmill_roles_client',
 				'title' 	  => __('Motionmill Client'),
-				'description' => __( '', MM_TEXTDOMAIN ),
+				'description' => __( '', Motionmill::TEXT_DOMAIN ),
 				'page'        => 'motionmill_roles',
 				'args'        => array( 'role' => 'motionmill-client' )
 			);

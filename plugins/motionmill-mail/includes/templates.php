@@ -2,10 +2,12 @@
 
 function motionmill_mail_templates_add_templates($templates)
 {
+	$motionmill = Motionmill::get_instance();
+	
 	$templates['user_notification'] = array
 	(
-		'title'       => __( 'User notification', MM_TEXTDOMAIN ),
-		'description' => __( 'Notify the blog admin of a new user.', MM_TEXTDOMAIN ),
+		'title'       => __( 'User notification', $motionmill::TEXT_DOMAIN ),
+		'description' => __( 'Notify the blog admin of a new user.', $motionmill::TEXT_DOMAIN ),
 		'fields'      => array
 		(
 			'from' 	      => null,
@@ -20,8 +22,8 @@ function motionmill_mail_templates_add_templates($templates)
 
 	$templates['user_confirmation'] = array
 	(
-		'title'       => __( 'User Confirmation', MM_TEXTDOMAIN ),
-		'description' => __( 'Send an email with login/password to the new user.', MM_TEXTDOMAIN ),
+		'title'       => __( 'User Confirmation', $motionmill::TEXT_DOMAIN ),
+		'description' => __( 'Send an email with login/password to the new user.', $motionmill::TEXT_DOMAIN ),
 		'fields'      => array
 		(
 			'from' 	      => null,
@@ -36,8 +38,8 @@ function motionmill_mail_templates_add_templates($templates)
 
 	$templates['change_password_notification'] = array
 	(
-		'title'       => __( 'Change Password Notification', MM_TEXTDOMAIN ),
-		'description' => __( 'Send a copy of password change notification to the admin.', MM_TEXTDOMAIN ),
+		'title'       => __( 'Change Password Notification', $motionmill::TEXT_DOMAIN ),
+		'description' => __( 'Send a copy of password change notification to the admin.', $motionmill::TEXT_DOMAIN ),
 		'fields'      => array
 		(
 			'from' 	      => null,
@@ -52,8 +54,8 @@ function motionmill_mail_templates_add_templates($templates)
 
 	$templates['retrieve_password'] = array
 	(
-		'title'       => __( 'Retrieve Password', MM_TEXTDOMAIN ),
-		'description' => __( 'This mail will be send to the user who wants to reset his/her password.', MM_TEXTDOMAIN ),
+		'title'       => __( 'Retrieve Password', $motionmill::TEXT_DOMAIN ),
+		'description' => __( 'This mail will be send to the user who wants to reset his/her password.', $motionmill::TEXT_DOMAIN ),
 		'fields'      => array
 		(
 			'from' 	      => null,

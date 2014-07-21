@@ -2,16 +2,17 @@
 
 /*
 ------------------------------------------------------------------------------------------------------------------------
- Plugin Name: Motionmill Login
+ Plugin Name: Motionmill Mail
  Plugin URI: http://motionmill.com
  Description: Customizes the WordPress email settings.
- Version: 1.0.0
+ Version: 1.0.1
  Author: Motionmill
  Author URI: http://motionmill.com
  License: GPL2
 ------------------------------------------------------------------------------------------------------------------------
 */
 
+// checks if motionmill plugin is loaded
 add_action( 'motionmill_loaded', function(){
 
 if ( ! class_exists('MM_Mail') )
@@ -25,22 +26,19 @@ if ( ! class_exists('MM_Mail') )
 		public function __construct()
 		{
 			parent::__construct();
+
+			add_action( 'motionmill_plugins_loaded', array( &$this, 'on_motionmill_plugins_loaded' ) );
 		}
 
 		public function initialize()
 		{	
-			add_filter( 'motionmill_settings_pages', array(&$this, 'on_settings_pages') );
-			add_filter( 'motionmill_settings_sections', array(&$this, 'on_settings_sections') );
-			add_filter( 'motionmill_settings_fields', array(&$this, 'on_settings_fields') );
 			add_filter( 'motionmill_mail_parse_tag', array(&$this, 'on_parse_tag' ), 0, 3 );
 
 			add_action( 'wp_mail_from', array(&$this, 'on_mail_from') );
 			add_filter( 'wp_mail_from_name', array(&$this, 'on_mail_from_name') );
-
-			add_action( 'init', array(&$this, 'on_init'), 10 );
 		}
 
-		public function on_init()
+		public function on_motionmill_plugins_loaded()
 		{
 			foreach ( apply_filters( 'motionmill_mail_templates', array() ) as $template_id => $data )
 			{
@@ -75,9 +73,10 @@ if ( ! class_exists('MM_Mail') )
 		{
 			$pages[] = array
 			(
-				'id' 		  => 'motionmill_mail',
-				'title' 	  => __('Mail', MM_TEXTDOMAIN),
-				'description' => __('<p>Customizes the WordPress mail settings.</p>', MM_TEXTDOMAIN)
+				'id'          => 'motionmill_mail',
+				'title'       => __('Mail', Motionmill::TEXT_DOMAIN),
+				'description' => __('Customizes the WordPress email settings.', Motionmill::TEXT_DOMAIN),
+				'option_name' => 'motionmill_mail'
 			);
 
 			return $pages;
@@ -88,8 +87,8 @@ if ( ! class_exists('MM_Mail') )
 			$sections[] = array
 			(
 				'id' 		  => 'motionmill_mail_general',
-				'title' 	  => __('General', MM_TEXTDOMAIN),
-				'description' => __('', MM_TEXTDOMAIN),
+				'title' 	  => __('General', Motionmill::TEXT_DOMAIN),
+				'description' => __('', Motionmill::TEXT_DOMAIN),
 				'page'        => 'motionmill_mail'
 			);
 
@@ -112,8 +111,8 @@ if ( ! class_exists('MM_Mail') )
 			$fields[] = array
 			(
 				'id'          => 'from_name',
-				'title'       => __( "Sender's name", MM_TEXTDOMAIN ),
-				'description' => __( 'Leave empty to disable.', MM_TEXTDOMAIN ),
+				'title'       => __( "Sender's name", Motionmill::TEXT_DOMAIN ),
+				'description' => __( 'Leave empty to disable.', Motionmill::TEXT_DOMAIN ),
 				'type'        => 'textfield',
 				'class'       => 'regular-text',
 				'value'       => '',
@@ -124,8 +123,8 @@ if ( ! class_exists('MM_Mail') )
 			$fields[] = array
 			(
 				'id'          => 'from',
-				'title'       => __( "Sender's email", MM_TEXTDOMAIN ),
-				'description' => __( 'Leave empty to disable.', MM_TEXTDOMAIN ),
+				'title'       => __( "Sender's email", Motionmill::TEXT_DOMAIN ),
+				'description' => __( 'Leave empty to disable.', Motionmill::TEXT_DOMAIN ),
 				'type'        => 'textfield',
 				'class'       => 'regular-text',
 				'value'       => '',
@@ -140,8 +139,8 @@ if ( ! class_exists('MM_Mail') )
 					$fields[] = array
 					(
 						'id'          => $data['id'] . '_from',
-						'title'       => __( 'From', MM_TEXTDOMAIN ),
-						'description' => __( '', MM_TEXTDOMAIN ),
+						'title'       => __( 'From', Motionmill::TEXT_DOMAIN ),
+						'description' => __( '', Motionmill::TEXT_DOMAIN ),
 						'type'        => 'textfield',
 						'class'       => 'regular-text',
 						'value'       => $data['fields']['from'],
@@ -155,8 +154,8 @@ if ( ! class_exists('MM_Mail') )
 					$fields[] = array
 					(
 						'id'          => $data['id'] . '_to',
-						'title'       => __( 'To', MM_TEXTDOMAIN ),
-						'description' => __( '', MM_TEXTDOMAIN ),
+						'title'       => __( 'To', Motionmill::TEXT_DOMAIN ),
+						'description' => __( '', Motionmill::TEXT_DOMAIN ),
 						'type'        => 'textfield',
 						'class'       => 'regular-text',
 						'value'       => $data['fields']['to'],
@@ -170,8 +169,8 @@ if ( ! class_exists('MM_Mail') )
 					$fields[] = array
 					(
 						'id'          => $data['id'] . '_subject',
-						'title'       => __( 'Subject', MM_TEXTDOMAIN ),
-						'description' => __( '', MM_TEXTDOMAIN ),
+						'title'       => __( 'Subject', Motionmill::TEXT_DOMAIN ),
+						'description' => __( '', Motionmill::TEXT_DOMAIN ),
 						'type'        => 'textfield',
 						'class'       => 'regular-text',
 						'value'       => $data['fields']['subject'],
@@ -185,8 +184,8 @@ if ( ! class_exists('MM_Mail') )
 					$fields[] = array
 					(
 						'id'          => $data['id'] . '_message',
-						'title'       => __( 'Message', MM_TEXTDOMAIN ),
-						'description' => __( '', MM_TEXTDOMAIN ),
+						'title'       => __( 'Message', Motionmill::TEXT_DOMAIN ),
+						'description' => __( '', Motionmill::TEXT_DOMAIN ),
 						'type'        => 'textarea',
 						'class'       => 'large-text',
 						'value'       => $data['fields']['message'],
@@ -200,8 +199,8 @@ if ( ! class_exists('MM_Mail') )
 					$fields[] = array
 					(
 						'id'          => $data['id'] . '_headers',
-						'title'       => __( 'Additional Headers', MM_TEXTDOMAIN ),
-						'description' => __( '', MM_TEXTDOMAIN ),
+						'title'       => __( 'Additional Headers', Motionmill::TEXT_DOMAIN ),
+						'description' => __( '', Motionmill::TEXT_DOMAIN ),
 						'type'        => 'textarea',
 						'class'       => 'large-text',
 						'rows'        => '3',
@@ -216,8 +215,8 @@ if ( ! class_exists('MM_Mail') )
 					$fields[] = array
 					(
 						'id'          => $data['id'] . '_attachments',
-						'title'       => __( 'Attachments', MM_TEXTDOMAIN ),
-						'description' => __( '', MM_TEXTDOMAIN ),
+						'title'       => __( 'Attachments', Motionmill::TEXT_DOMAIN ),
+						'description' => __( '', Motionmill::TEXT_DOMAIN ),
 						'type'        => 'textarea',
 						'class'       => 'large-text',
 						'rows'        => '3',
@@ -232,8 +231,8 @@ if ( ! class_exists('MM_Mail') )
 					$fields[] = array
 					(
 						'id'          => $data['id'] . '_html',
-						'title'       => __( 'HTML Content-type', MM_TEXTDOMAIN ),
-						'description' => __( '', MM_TEXTDOMAIN ),
+						'title'       => __( 'HTML Content-type', Motionmill::TEXT_DOMAIN ),
+						'description' => __( '', Motionmill::TEXT_DOMAIN ),
 						'type'        => 'checkbox',
 						'value'       => ! empty( $data['fields']['html'] ),
 						'page'        => 'motionmill_mail',
@@ -330,7 +329,7 @@ if ( ! class_exists('MM_Mail') )
 			if ( ! isset($this->templates[$template_id]) )
 				return false;
 
-			$options = $this->_('MM_Settings')->get_option( 'motionmill_mail' );
+			$options = $this->motionmill->get_plugin('MM_Settings')->get_option( 'motionmill_mail' );
 
 			$html = ! empty( $options[ $template_id . '_html' ] );
 
@@ -344,7 +343,7 @@ if ( ! class_exists('MM_Mail') )
 			{
 				$headers  = trim( $options[ $template_id . '_headers' ] ) . "\n";
 				$headers .= 'From: ' .  $options[ $template_id . '_from' ] . "\n";
-				$headers .= 'Content-type: ' . $html ? 'text/html' : 'text/plain';
+				//$headers .= 'Content-type: ' . $html ? 'text/html' : 'text/plain';
 				$headers = $this->parse_template( $headers, $vars );
 			}
 
@@ -364,19 +363,32 @@ if ( ! class_exists('MM_Mail') )
 				$attachments = '';
 			}
 
-			return wp_mail( $to, $subject, $message, $headers, $attachments );
+			if ( $html )
+				add_filter( 'wp_mail_content_type', array( &$this, 'on_html_content_type') );
+
+			$success = wp_mail( $to, $subject, $message, $headers, $attachments );
+
+			if ( $html )
+				remove_filter( 'wp_mail_content_type', array( &$this, 'on_html_content_type') );
+
+			return $success;
+		}
+
+		public function on_html_content_type()
+		{
+			return 'text/html';
 		}
 
 		public function on_mail_from($default)
 		{
-			$options = $this->_('MM_Settings')->get_option('motionmill_mail');
+			$options = $this->motionmill->get_plugin('MM_Settings')->get_option('motionmill_mail');
 
 			return $options['from'] != '' ? $options['from'] : $default;
 		}
 
 		public function on_mail_from_name($default)
 		{
-			$options = $this->_('MM_Settings')->get_option('motionmill_mail');
+			$options = $this->motionmill->get_plugin('MM_Settings')->get_option('motionmill_mail');
 
 			return $options['from_name'] != '' ? $options['from_name'] : $default;
 		}

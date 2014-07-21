@@ -1,7 +1,0 @@
-.motionmill .ajax-loader
-{
-	width : 16px;
-	height: 16px;
-	display: inline-block;
-	background: transparent url('../images/ajax-loader.gif') no-repeat left top;
-}

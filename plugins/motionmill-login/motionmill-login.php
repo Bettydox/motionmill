@@ -5,30 +5,22 @@
  Plugin Name: Motionmill Login
  Plugin URI: http://motionmill.com
  Description: Customizes the WordPress login page.
- Version: 1.0.0
+ Version: 1.0.1
  Author: Motionmill
  Author URI: http://motionmill.com
  License: GPL2
 ------------------------------------------------------------------------------------------------------------------------
 */
 
+// checks if motionmill plugin is loaded
 add_action( 'motionmill_loaded', function(){
 
 if ( ! class_exists('MM_Login') )
 {
 	class MM_Login extends MM_Plugin
 	{
-		public function __construct()
-		{
-			parent::__construct();
-		}
-
 		public function initialize()
 		{	
-			add_filter( 'motionmill_settings_pages', array(&$this, 'on_settings_pages') );
-			add_filter( 'motionmill_settings_sections', array(&$this, 'on_settings_sections') );
-			add_filter( 'motionmill_settings_fields', array(&$this, 'on_settings_fields') );
-
 			add_action( 'login_head', array(&$this, 'on_login_head') );
 			add_filter( 'login_headerurl', array(&$this, 'on_login_headerurl') );
 			add_filter( 'login_headertitle', array(&$this, 'on_login_headertitle') );
@@ -37,7 +29,7 @@ if ( ! class_exists('MM_Login') )
 
 		public function on_helpers($helpers)
 		{
-			array_push( $helpers, 'image' );
+			$helpers[] = 'MM_Image';
 
 			return $helpers;
 		}
@@ -47,8 +39,8 @@ if ( ! class_exists('MM_Login') )
 			$pages[] = array
 			(
 				'id' 		  => 'motionmill_login',
-				'title' 	  => __('Login', MM_TEXTDOMAIN),
-				'description' => __('', MM_TEXTDOMAIN)
+				'title' 	  => __('Login', Motionmill::TEXT_DOMAIN),
+				'description' => __('Customizes the WordPress login page.', Motionmill::TEXT_DOMAIN)
 			);
 
 			return $pages;
@@ -59,8 +51,8 @@ if ( ! class_exists('MM_Login') )
 			$sections[] = array
 			(
 				'id' 		  => 'motionmill_login_general',
-				'title' 	  => __('Login', MM_TEXTDOMAIN),
-				'description' => __('<p>Customizes the WordPress login page.</p>', MM_TEXTDOMAIN),
+				'title' 	  => __('', Motionmill::TEXT_DOMAIN),
+				'description' => __('', Motionmill::TEXT_DOMAIN),
 				'page'        => 'motionmill_login'
 			);
 
@@ -72,11 +64,11 @@ if ( ! class_exists('MM_Login') )
 			$fields[] = array
 			(
 				'id'          => 'header_image',
-				'title'       => __( 'Header Image', MM_TEXTDOMAIN ),
-				'description' => __( '', MM_TEXTDOMAIN ),
+				'title'       => __( 'Header image', Motionmill::TEXT_DOMAIN ),
+				'description' => __( '', Motionmill::TEXT_DOMAIN ),
 				'type'        => 'media',
 				'class'       => 'regular-text',
-				'value'       => __( 'http://motionmill.com/motionmill-plugin/images/motionmill-logo.png', MM_TEXTDOMAIN ),
+				'value'       => __( plugins_url('images/logo-motionmill.png', Motionmill::FILE), Motionmill::TEXT_DOMAIN ),
 				'page'		  => 'motionmill_login',
 				'section'     => 'motionmill_login_general'
 			);
@@ -84,11 +76,11 @@ if ( ! class_exists('MM_Login') )
 			$fields[] = array
 			(
 				'id'          => 'header_title',
-				'title'       => __( 'Header Title', MM_TEXTDOMAIN ),
-				'description' => __( 'The text that appears when hovering the header.', MM_TEXTDOMAIN ),
+				'title'       => __( 'Header title', Motionmill::TEXT_DOMAIN ),
+				'description' => __( 'The text that appears when hovering the header.', Motionmill::TEXT_DOMAIN ),
 				'type'        => 'textfield',
 				'class'       => 'regular-text',
-				'value'       => __( 'Powered by Motionmill', MM_TEXTDOMAIN ),
+				'value'       => __( 'Powered by Motionmill', Motionmill::TEXT_DOMAIN ),
 				'page'		  => 'motionmill_login',
 				'section'     => 'motionmill_login_general'
 			);
@@ -96,11 +88,11 @@ if ( ! class_exists('MM_Login') )
 			$fields[] = array
 			(
 				'id'        => 'header_url',
-				'title'       => __( 'Header URL', MM_TEXTDOMAIN ),
-				'description' => __( 'The url to visit when clicking the header.', MM_TEXTDOMAIN ),
+				'title'       => __( 'Header URL', Motionmill::TEXT_DOMAIN ),
+				'description' => __( 'The url to visit when clicking the header.', Motionmill::TEXT_DOMAIN ),
 				'type'		  => 'textfield',
 				'class'       => 'regular-text',
-				'value'       => __( 'http://motionmill.com', MM_TEXTDOMAIN ),
+				'value'       => __( 'http://motionmill.com', Motionmill::TEXT_DOMAIN ),
 				'page'		  => 'motionmill_login',
 				'section'     => 'motionmill_login_general'
 			);
@@ -108,22 +100,11 @@ if ( ! class_exists('MM_Login') )
 			$fields[] = array
 			(
 				'id'          => 'message',
-				'title'       => __( 'Message', MM_TEXTDOMAIN ),
-				'description' => __( '', MM_TEXTDOMAIN ),
+				'title'       => __( 'Message', Motionmill::TEXT_DOMAIN ),
+				'description' => __( '', Motionmill::TEXT_DOMAIN ),
 				'type'		  => 'editor',
 				'class'       => 'large-text',
-				'value'       => __( '', MM_TEXTDOMAIN ),
-				'page'		  => 'motionmill_login',
-				'section'     => 'motionmill_login_general'
-			);
-
-			$fields[] = array
-			(
-				'id' 		  => 'enabled',
-				'title' 	  => __( 'Enable', MM_TEXTDOMAIN ),
-				'description' => __( '', MM_TEXTDOMAIN ),
-				'type'		  => 'checkbox',
-				'value'       => '1',
+				'value'       => __( '', Motionmill::TEXT_DOMAIN ),
 				'page'		  => 'motionmill_login',
 				'section'     => 'motionmill_login_general'
 			);
@@ -133,26 +114,26 @@ if ( ! class_exists('MM_Login') )
 
 		public function on_login_headerurl($default)
 		{
-			$options = $this->_('MM_Settings')->get_option('motionmill_login');
+			$options = $this->motionmill->get_plugin('MM_Settings')->get_option('motionmill_login');
 
-			return ! empty( $options['enabled'] ) ? $options['header_url'] : $default;
+			return $options['header_url'];
 		}
 
 		public function on_login_headertitle($default)
 		{
-			$options = $this->_('MM_Settings')->get_option('motionmill_login');
+			$options = $this->motionmill->get_plugin('MM_Settings')->get_option('motionmill_login');
 
-			return ! empty( $options['enabled'] ) ? $options['header_title'] : $default;
+			return $options['header_title'];
 		}
 
 		public function on_login_head()
 		{
-			$options = $this->_('MM_Settings')->get_option('motionmill_login');
+			$options = $this->motionmill->get_plugin('MM_Settings')->get_option('motionmill_login');
 
-			if ( empty( $options['enabled'] ) || $options['header_image'] == '' )
+			if ( $options['header_image'] == '' )
 				return;
 
-			$header_image_sizes = mm_get_image_size( $options['header_image'] );
+			$header_image_sizes = MM_Image::get_size( $options['header_image'] );
 
 			if ( ! is_array($header_image_sizes)  )
 				return;
@@ -175,9 +156,9 @@ if ( ! class_exists('MM_Login') )
 
 		public function on_login_message($default)
 		{
-			$options = $this->_('MM_Settings')->get_option('motionmill_login');
+			$options = $this->motionmill->get_plugin('MM_Settings')->get_option('motionmill_login');
 
-			return ! empty( $options['enabled'] ) ? $options['message'] : $default;
+			return $options['message'];
 		}
 	}
 

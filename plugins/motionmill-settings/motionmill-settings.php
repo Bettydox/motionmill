@@ -3,14 +3,15 @@
 ------------------------------------------------------------------------------------------------------------------------
  Plugin Name: Motionmill Settings
  Plugin URI:
- Description: Settings page
- Version: 1.0.0
+ Description: Provides a hookable settings page
+ Version: 1.0.1
  Author: Motionmill
  Author URI: http://www.motionmill.com
  Dependencies : Motionmill, Motionmill Admin Bar Menu
 ------------------------------------------------------------------------------------------------------------------------
 */
 
+// checks if motionmill plugin is loaded
 add_action( 'motionmill_loaded', function(){
 
 if ( ! class_exists('MM_Settings') )
@@ -27,13 +28,14 @@ if ( ! class_exists('MM_Settings') )
 		public function __construct()
 		{
 			parent::__construct();
+
+			add_action( 'motionmill_plugins_loaded', array( &$this, 'on_motionmill_plugins_loaded' ), 999 );
 		}
 
 		public function initialize()
 		{
 			$this->page_slug = 'motionmill_settings';
 
-			add_action( 'init', array(&$this, 'on_init'), 100 );
 			add_action( 'admin_init', array(&$this, 'on_admin_init') );
 			add_action( 'admin_menu', array(&$this, 'on_admin_menu') );
 			add_action( 'admin_enqueue_scripts', array(&$this, 'on_admin_enqueue_scripts') );
@@ -41,16 +43,16 @@ if ( ! class_exists('MM_Settings') )
 			
 			add_filter( 'motionmill_admin_bar_menu_items', array(&$this, 'on_motionmill_admin_bar_menu_items') );
 
-			register_deactivation_hook( MM_FILE, array(&$this, 'on_deactivate') );
+			register_deactivation_hook( Motionmill::FILE, array(&$this, 'on_deactivate') );
 		}
 
 		public function get_option($page_id, $name = null, $default = '')
 		{
-			$page = mm_get_element_by( 'id='.$page_id, $this->pages );
+			$page = MM_Array::get_element_by( 'id='.$page_id, $this->pages );
 
 			if ( $page )
 			{
-				$options = get_option( $page['option_name'], $this->get_default_options($page['id']) );
+				$options = get_option( $page['option_name'], $this->get_default_options( $page['id'] ) );
 
 				if ( $name == null )
 				{
@@ -70,7 +72,7 @@ if ( ! class_exists('MM_Settings') )
 		{
 			$options = array();
 
-			foreach ( mm_get_elements_by( 'page='.$page_id, $this->fields ) as $field )
+			foreach ( MM_Array::get_elements_by( 'page='.$page_id, $this->fields ) as $field )
 			{
 				$options[ $field['id'] ] = $field['value'];
 			}
@@ -80,7 +82,7 @@ if ( ! class_exists('MM_Settings') )
 
 		public function on_helpers($helpers)
 		{
-			array_push( $helpers, 'array' );
+			$helpers[] = 'MM_Array';
 
 			return $helpers;
 		}
@@ -92,9 +94,6 @@ if ( ! class_exists('MM_Settings') )
 
 		public function on_motionmill_admin_bar_menu_items($items)
 		{
-			if ( current_user_can('manage_options') == false )
-				return;
-
 			$items[] =  array
 			(
 				'id'     => 'motionmill_settings',
@@ -118,7 +117,7 @@ if ( ! class_exists('MM_Settings') )
 			return $items;
 		}
 
-		public function on_init()
+		public function on_motionmill_plugins_loaded()
 		{
 			// registers pages
 			foreach ( apply_filters( 'motionmill_settings_pages', array() ) as $data )
@@ -165,8 +164,7 @@ if ( ! class_exists('MM_Settings') )
 					'type'        => 'textfield',
 					'value'       => '',
 					'page'        => '',
-					'section'     => '',
-					'rules'	      => array()
+					'section'     => ''
 				), $data);
 			}
 		}
@@ -178,7 +176,7 @@ if ( ! class_exists('MM_Settings') )
 			{
 				if ( ! empty($_GET['sub']) )
 				{
-					$this->current_page = mm_get_element_by( 'id='.$_GET['sub'], $this->pages );
+					$this->current_page = MM_Array::get_element_by( 'id='.$_GET['sub'], $this->pages );
 				}
 
 				else if ( count($this->pages) > 0 )
@@ -200,7 +198,7 @@ if ( ! class_exists('MM_Settings') )
 
 			foreach ( $this->fields as $field )
 			{
-				$page = mm_get_element_by( 'id='.$field['page'], $this->pages );
+				$page = MM_Array::get_element_by( 'id='.$field['page'], $this->pages );
 
 				add_settings_field( $field['id'], $field['title'], array(&$this, 'on_print_field'), $field['page'], $field['section'], array_merge($field, array
 				(
@@ -216,7 +214,7 @@ if ( ! class_exists('MM_Settings') )
 		{
 			// TODO : sections on different pages can have same id
 
-			$section = mm_get_element_by( 'id='.$args['id'], $this->sections );
+			$section = MM_Array::get_element_by( 'id='.$args['id'], $this->sections );
 
 			echo $section['description'];
 
@@ -225,6 +223,8 @@ if ( ! class_exists('MM_Settings') )
 
 		public function on_print_field($field)
 		{
+			printf( '<div class="field-type-%s">', $field['type'] );
+
 			switch ( $field['type'] )
 			{
 				case 'textfield':
@@ -269,7 +269,7 @@ if ( ! class_exists('MM_Settings') )
 					), $field);
 
 					printf( '<input type="text" id="%s" class="%s" name="%s" value="%s" %s />', esc_attr($options['id']), esc_attr($options['class']), esc_attr($options['name']), esc_attr($options['value']), $options['extra'] );
-					printf( '<a href="#%s" class="button mm-media-button">%s</a>', esc_attr($options['id']), __('Insert Media', MM_TEXTDOMAIN) );
+					printf( '<a href="#%s" class="button mm-media-button">%s</a>', esc_attr($options['id']), __('Insert Media', Motionmill::TEXT_DOMAIN) );
 
 					break;
 
@@ -385,7 +385,7 @@ if ( ! class_exists('MM_Settings') )
 						'value'       => '',
 						'extra'       => '',
 						'description' => ''
-					), (array) $args);
+					), $field);
 
 					printf( '<select id="%s" class="%s" name="%s" %s>', esc_attr($options['id']), esc_attr($options['class']), esc_attr($options['name']), $options['extra'] );
 
@@ -408,11 +408,13 @@ if ( ! class_exists('MM_Settings') )
 			{
 				printf( '<p class="description">%s</p>', $field['description'] );
 			}
+
+			printf( '</div><!-- .motionmill-settings-field -->' );
 		}
 		
 		public function on_admin_menu()
 		{
-			$this->page_hook = add_submenu_page( $this->motionmill->page_slug, __( 'Motionmill Settings', MM_TEXTDOMAIN ), __( 'Motionmill', MM_TEXTDOMAIN ), 'manage_options', $this->page_slug, array(&$this, 'on_print_page') );
+			$this->page_hook = add_submenu_page( $this->motionmill->page_slug, __( 'Motionmill Settings', Motionmill::TEXT_DOMAIN ), __( 'Motionmill', Motionmill::TEXT_DOMAIN ), 'manage_options', $this->page_slug, array(&$this, 'on_print_page') );
 		}
 
 		public function on_admin_enqueue_scripts()
@@ -425,14 +427,20 @@ if ( ! class_exists('MM_Settings') )
 			if ( ! $this->current_page )
 				return;
 			
-			// type colorpicker
-			wp_enqueue_script( 'iris' );
+			// colorpicker
+			if ( MM_Array::get_element_by( array( 'page' => $this->current_page['id'], 'type' => 'colorpicker' ), $this->fields ) )
+			{
+				wp_enqueue_script( 'iris' );
+			}
 
-			// type media
-			wp_enqueue_style('thickbox');
-			wp_enqueue_script('media-upload');
-			wp_enqueue_script('thickbox');
-
+			// media
+			if ( MM_Array::get_element_by( array( 'page' => $this->current_page['id'], 'type' => 'media' ), $this->fields ) )
+			{
+				wp_enqueue_style('thickbox');
+				wp_enqueue_script('media-upload');
+				wp_enqueue_script('thickbox');
+			}
+			
 			// general
 			wp_enqueue_style( 'motionmill_settings-style', plugins_url('css/style.css', __FILE__), null, '1.0.0', 'all' );
 			wp_enqueue_script( 'motionmill_settings-scripts',  plugins_url('js/scripts.js', __FILE__), array('jquery'), '1.0.0', true );
@@ -463,14 +471,14 @@ if ( ! class_exists('MM_Settings') )
 
 			<div class="wrap">
 
-				<h2><?php _e( 'Motionmill Settings', MM_TEXTDOMAIN ); ?></h2>
+				<h2><?php _e( 'Motionmill Settings', Motionmill::TEXT_DOMAIN ); ?></h2>
 
 				<?php if ( $this->current_page ) : ?>
 				<?php settings_errors( $this->current_page['id'] ); ?>
 				<?php endif; ?>
 
 				<?php if ( empty($this->pages) ) : ?>
-				<p><?php _e( 'No settings available.', MM_TEXTDOMAIN ); ?></p>
+				<p><?php _e( 'No settings available.', Motionmill::TEXT_DOMAIN ); ?></p>
 				<?php else : ?>
 
 				<h2 class="nav-tab-wrapper">
@@ -480,12 +488,14 @@ if ( ! class_exists('MM_Settings') )
 				</h2>
 
 				<?php if ( ! $this->current_page ) : ?>
-				<p><?php _e( 'The requested page could not be found.', MM_TEXTDOMAIN ); ?></p>
+				<p><?php _e( 'The requested page could not be found.', Motionmill::TEXT_DOMAIN ); ?></p>
 				<?php else : ?>
 
 				<form action="options.php" method="post">
 
 					<?php settings_fields( $this->current_page['id'] ); ?>
+
+					<h2><?php echo $this->current_page['title']; ?></h2>
 
 					<?php echo $this->current_page['description']; ?>
 					
@@ -510,7 +520,7 @@ if ( ! class_exists('MM_Settings') )
 			// makes sure the 'settings saved' message is set
 			if ( count( get_settings_errors( $page_id ) ) == 0 )
 			{
-				add_settings_error( $page_id, 'settings_saved', __( 'Settings saved.', MM_TEXTDOMAIN ), 'updated' );
+				add_settings_error( $page_id, 'settings_saved', __( 'Settings saved.', Motionmill::TEXT_DOMAIN ), 'updated' );
 			}
 
 			return apply_filters( 'motionmill_settings_sanitize_input', $input, $page_id );
@@ -525,6 +535,7 @@ if ( ! class_exists('MM_Settings') )
 		}
 	}
 
+	// registers plugin
 	function motionmill_plugins_add_settings($plugins)
 	{
 		array_push( $plugins , 'MM_Settings' );
