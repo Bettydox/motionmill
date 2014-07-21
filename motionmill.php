@@ -1,6 +1,7 @@
-<?php if ( ! defined('ABSPATH') ) exit; // Exits when accessed directly
+<?php
+if( !defined('ABSPATH') ) exit; // Exits when accessed directly
 /*
-------------------------------------------------------------------------------------------------------------------------
+ ------------------------------------------------------------------------------------------------------------------------
  Plugin Name: Motionmill
  Plugin URI:
  Description: Motionmill's HQ
@@ -8,11 +9,12 @@
  Author: Motionmill
  Author URI: http://motionmill.com
  License: GPL2
-------------------------------------------------------------------------------------------------------------------------
-*/
+ ------------------------------------------------------------------------------------------------------------------------
+ */
 
-if ( ! class_exists('Motionmill') )
+if( !class_exists('Motionmill') )
 {
+<<<<<<< HEAD
 	class Motionmill
 	{
 		const FILE 		   = __FILE__;
@@ -27,11 +29,25 @@ if ( ! class_exists('Motionmill') )
 		private $plugins  = array();
 		private $helpers  = array();
 
+=======
+	define('MM_FILE', __FILE__);
+	define('MM_ABSPATH', plugin_dir_path(MM_FILE));
+	define('MM_INCLUDE_DIR', MM_ABSPATH . 'includes/');
+	define('MM_PLUGIN_DIR', MM_ABSPATH . 'plugins/');
+	define('MM_TEXTDOMAIN', 'motionmill');
+	define('MM_NONCE', 'motionmill');
+
+	class Motionmill
+	{
+		private static $instance = null;
+		private $plugins = array();
+		private $helpers = array();
+>>>>>>> FETCH_HEAD
 		public $page_slug = null;
 
 		static public function get_instance()
 		{
-			if ( ! self::$instance )
+			if( !self::$instance )
 			{
 				self::$instance = new self();
 			}
@@ -42,27 +58,40 @@ if ( ! class_exists('Motionmill') )
 		public function __construct()
 		{
 			// loads assets
+<<<<<<< HEAD
 			require_once( plugin_dir_path( self::FILE ) . self::INCLUDES_DIR . '/class-mm-log.php' );
 			require_once( plugin_dir_path( self::FILE ) . self::INCLUDES_DIR . '/class-mm-plugin.php' );
 
 			$this->log = new MM_Log();
+=======
+			require_once (MM_INCLUDE_DIR . 'class-mm-plugin.php');
+>>>>>>> FETCH_HEAD
 
 			// loads plugins
-			foreach ( $this->get_plugin_files() as $file )
+			foreach( $this->get_plugin_files() as $file )
 			{
+<<<<<<< HEAD
 				require_once( trailingslashit( plugin_dir_path(self::FILE) . self::PLUGINS_DIR ) . $file );
+=======
+				require_once (MM_PLUGIN_DIR . $file);
+>>>>>>> FETCH_HEAD
 			}
 
-			add_action( 'init', array(&$this, 'initialize'), 0 );
+			add_action('init', array(&$this, 'initialize'), 0);
 
+<<<<<<< HEAD
 			$this->log->add( 'loaded' );
 
 			do_action( 'motionmill_loaded' );
+=======
+			do_action('motionmill_loaded');
+>>>>>>> FETCH_HEAD
 		}
 
 		public function initialize()
 		{
 			// registers plugins
+<<<<<<< HEAD
 			foreach ( apply_filters( 'motionmill_plugins', array() ) as $class )
 			{
 				if ( isset($this->plugins[$class]) )
@@ -71,25 +100,48 @@ if ( ! class_exists('Motionmill') )
 				if ( ! class_exists($class) )
 				{
 					trigger_error( sprintf('Plugin class %s could not be found', $class) , E_USER_NOTICE );
+=======
+			foreach( apply_filters( 'motionmill_plugins', array() ) as $plugin )
+			{
+				if( isset($this -> plugins[$plugin]) )
+					continue;
+
+				if( !class_exists($plugin) )
+				{
+					trigger_error(sprintf('Plugin class %s could not be found', $plugin), E_USER_NOTICE);
+>>>>>>> FETCH_HEAD
 
 					continue;
 				}
 
+<<<<<<< HEAD
 				$parents = class_parents($class);
 			
 				if ( ! isset($parents['MM_Plugin']) )
 				{
 					trigger_error( sprintf('Plugin %s is not a child of MM_Plugin', $class) , E_USER_NOTICE );
+=======
+				$parents = class_parents($plugin);
+
+				if( !isset($parents['MM_Plugin']) )
+				{
+					trigger_error(sprintf('Plugin %s is not a child of MM_Plugin', $plugin), E_USER_NOTICE);
+>>>>>>> FETCH_HEAD
 
 					continue;
 				}
 
+<<<<<<< HEAD
 				$this->plugins[ $class ] = new $class();
+=======
+				$this -> plugins[$plugin] = new $plugin();
+>>>>>>> FETCH_HEAD
 			}
 
 			$this->log->add( 'plugins: %s.', implode( ', ', array_keys($this->plugins) ) );
 
 			// registers helpers
+<<<<<<< HEAD
 			foreach ( apply_filters( 'motionmill_helpers', array() ) as $class )
 			{
 				if ( isset($this->helpers[$class]) )
@@ -103,10 +155,23 @@ if ( ! class_exists('Motionmill') )
 				if ( ! class_exists($class) )
 				{
 					trigger_error( sprintf('Plugin class %s could not be found', $class) , E_USER_NOTICE );
+=======
+			foreach( apply_filters( 'motionmill_helpers', array('wordpress') ) as $helper )
+			{
+				if( isset($this -> helpers[$helper]) )
+					continue;
+
+				$file = MM_INCLUDE_DIR . sprintf('mm-%s-helper.php', $helper);
+
+				if( !file_exists($file) )
+				{
+					trigger_error(sprintf('Helper %s could not be found.', $helper), E_USER_NOTICE);
+>>>>>>> FETCH_HEAD
 
 					continue;
 				}
 
+<<<<<<< HEAD
 				$this->helpers[ $class ] = $class;
 			}
 
@@ -124,11 +189,24 @@ if ( ! class_exists('Motionmill') )
 			do_action( 'motionmill_init' );
 			
 			$this->page_slug = apply_filters( 'motionmill_page_slug', null );
+=======
+				require_once ($file);
+
+				$this -> helpers[$helper] = true;
+			}
+
+			add_action('admin_menu', array(&$this, 'on_admin_menu'), 0);
+
+			do_action('motionmill_init');
+
+			// let others set the default submenu page
+			$this -> page_slug = apply_filters('motionmill_page_slug', null);
+>>>>>>> FETCH_HEAD
 		}
 
 		public function get_plugin($class)
 		{
-			return isset( $this->plugins[$class] ) ? $this->plugins[$class] : null;
+			return isset($this -> plugins[$class]) ? $this -> plugins[$class] : null;
 		}
 
 		public function get_log()
@@ -138,12 +216,18 @@ if ( ! class_exists('Motionmill') )
 
 		public function on_admin_menu()
 		{
-			if ( ! $this->page_slug )
+			if( !$this -> page_slug )
 				return;
 
+<<<<<<< HEAD
 			add_menu_page( __( 'Motionmill', Motionmill::TEXT_DOMAIN ), __( 'Motionmill', Motionmill::TEXT_DOMAIN ), 'manage_options', $this->page_slug, create_function('$a', '') );
 		
 			do_action( 'motionmill_admin_menu' );
+=======
+			add_menu_page(__('Motionmill', MM_TEXTDOMAIN), __('Motionmill', MM_TEXTDOMAIN), 'manage_options', $this -> page_slug, create_function('$a', ''));
+
+			do_action('motionmill_admin_menu');
+>>>>>>> FETCH_HEAD
 		}
 
 		public function on_admin_bar_menu()
@@ -202,20 +286,28 @@ if ( ! class_exists('Motionmill') )
 
 		public function on_uninstall()
 		{
-			if ( ! defined('WP_UNINSTALL_PLUGIN') )
+			if( !defined('WP_UNINSTALL_PLUGIN') )
 				return;
 
+<<<<<<< HEAD
 			if ( WP_UNINSTALL_PLUGIN != plugin_basename( self::FILE ) ) 
+=======
+			if( WP_UNINSTALL_PLUGIN != plugin_basename(MM_FILE) )
+>>>>>>> FETCH_HEAD
 				return;
 
 			// loads plugins uninstall.php file
-			foreach ( $this->get_plugin_files() as $file )
+			foreach( $this->get_plugin_files() as $file )
 			{
+<<<<<<< HEAD
 				$uninstall = plugin_dir_path(self::FILE) . trailingslashit( dirname($file) ) . 'uninstall.php';
+=======
+				$uninstall = MM_PLUGIN_DIR . trim(dirname($file), '/') . '/uninstall.php';
+>>>>>>> FETCH_HEAD
 
-				if ( file_exists($uninstall) )
+				if( file_exists($uninstall) )
 				{
-					include( $uninstall );
+					include ($uninstall);
 				}
 			}
 		}
@@ -226,6 +318,7 @@ if ( ! class_exists('Motionmill') )
 
 			$plugins = array();
 
+<<<<<<< HEAD
 			if ( $fh = opendir( $dir ) )
 			{
 				while ( ( $entry = readdir($fh) ) !== false )
@@ -234,22 +327,36 @@ if ( ! class_exists('Motionmill') )
 						continue;
 	        		
 					if ( in_array( $entry, array('.', '..') ) )
+=======
+			if( $fh = opendir(MM_PLUGIN_DIR) )
+			{
+				while( ($dir = readdir($fh)) !== false )
+				{
+					if( !is_dir(MM_PLUGIN_DIR . $dir) )
+						continue;
+
+					if( in_array($dir, array('.', '..')) )
+>>>>>>> FETCH_HEAD
 						continue;
 
 					$file = $entry . '/' . $entry . '.php';
 
+<<<<<<< HEAD
 					if ( ! file_exists( $dir . $file ) )
+=======
+					if( !file_exists(MM_PLUGIN_DIR . $file) )
+>>>>>>> FETCH_HEAD
 						continue;
 
-	        		$plugins[] = $file;
-	   			}
+					$plugins[] = $file;
+				}
 			}
 
-   			return $plugins;
+			return $plugins;
 		}
+
 	}
 
 	$motionmill = Motionmill::get_instance();
 }
-
 ?>
