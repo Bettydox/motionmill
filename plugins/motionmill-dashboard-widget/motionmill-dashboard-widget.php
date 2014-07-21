@@ -25,11 +25,16 @@ if ( ! class_exists('MM_Dashboard_Widget') )
 			add_action( 'admin_head', array(&$this, 'on_admin_head') );
 		}
 
+		public function get_option( $key = null, $default = '' )
+		{
+			return $this->motionmill->get_plugin( 'MM_Settings' )->get_option( 'motionmill_dashboard_widget', $key, $default );
+		}
+
 		public function on_settings_pages($pages)
 		{
 			$pages[] = array
 			(
-				'id' 		  => __CLASS__,
+				'id' 		  => 'motionmill_dashboard_widget',
 				'title' 	  => __('Dashboard Widget', Motionmill::TEXT_DOMAIN),
 				'description' => __('<p>Creates an editable widget on the dashboard.</p>', Motionmill::TEXT_DOMAIN),
 				'option_name' => 'motionmill_dashboard_widget'
@@ -45,7 +50,7 @@ if ( ! class_exists('MM_Dashboard_Widget') )
 				'id' 		  => 'motionmill_dashboard_widget_content',
 				'title' 	  => __('Content', Motionmill::TEXT_DOMAIN),
 				'description' => __('', Motionmill::TEXT_DOMAIN),
-				'page'        => __CLASS__
+				'page'        => 'motionmill_dashboard_widget'
 			);
 
 			$sections[] = array
@@ -53,7 +58,7 @@ if ( ! class_exists('MM_Dashboard_Widget') )
 				'id' 		  => 'motionmill_dashboard_widget_styling',
 				'title' 	  => __('Styling', Motionmill::TEXT_DOMAIN),
 				'description' => __('', Motionmill::TEXT_DOMAIN),
-				'page'        => __CLASS__
+				'page'        => 'motionmill_dashboard_widget'
 			);
 
 			return $sections;
@@ -68,7 +73,7 @@ if ( ! class_exists('MM_Dashboard_Widget') )
 				'description' => __('', Motionmill::TEXT_DOMAIN),
 				'type'		  => 'textfield',
 				'value'       => 'Motionmill',
-				'page'        => __CLASS__,
+				'page'        => 'motionmill_dashboard_widget',
 				'section'     => 'motionmill_dashboard_widget_content'
 			);
 
@@ -80,7 +85,7 @@ if ( ! class_exists('MM_Dashboard_Widget') )
 				'type'		  => 'editor',
 				'wpautop'     => false,
 				'value'       => __('Enjoy your site!', Motionmill::TEXT_DOMAIN),
-				'page'        => __CLASS__,
+				'page'        => 'motionmill_dashboard_widget',
 				'section'     => 'motionmill_dashboard_widget_content'
 			);
 
@@ -91,7 +96,7 @@ if ( ! class_exists('MM_Dashboard_Widget') )
 				'description' => __('Leave empty to use defaults.', Motionmill::TEXT_DOMAIN),
 				'type'		  => 'colorpicker',
 				'value'       => '#FFFFFF',
-				'page'        => __CLASS__,
+				'page'        => 'motionmill_dashboard_widget',
 				'section'     => 'motionmill_dashboard_widget_styling'
 			);
 
@@ -102,7 +107,7 @@ if ( ! class_exists('MM_Dashboard_Widget') )
 				'description' => __('Leave empty to use defaults.', Motionmill::TEXT_DOMAIN),
 				'type'		  => 'colorpicker',
 				'value'       => '#ed1e26',
-				'page'        => __CLASS__,
+				'page'        => 'motionmill_dashboard_widget',
 				'section'     => 'motionmill_dashboard_widget_styling'
 			);
 
@@ -113,7 +118,7 @@ if ( ! class_exists('MM_Dashboard_Widget') )
 				'description' => __('Leave empty to use defaults.', Motionmill::TEXT_DOMAIN),
 				'type'		  => 'colorpicker',
 				'value'       => '#ed1e26',
-				'page'        => __CLASS__,
+				'page'        => 'motionmill_dashboard_widget',
 				'section'     => 'motionmill_dashboard_widget_styling'
 			);
 
@@ -122,16 +127,12 @@ if ( ! class_exists('MM_Dashboard_Widget') )
 
 		public function on_dashboard_setup()
 		{
-			$options = $this->_('MM_Settings')->get_option(__CLASS__);
-
-			wp_add_dashboard_widget( 'mm_dashboard_widget', $options['title'], array(&$this, 'on_print_dashboard_widget') );
+			wp_add_dashboard_widget( 'mm_dashboard_widget', $this->get_option( 'title' ), array(&$this, 'on_print_dashboard_widget') );
 		}
 
 		public function on_print_dashboard_widget()
 		{
-			$options = $this->_('MM_Settings')->get_option(__CLASS__);
-			
-			echo $options['content'];
+			echo $this->get_option( 'content' );
 		}
 
 		public function on_admin_head()
@@ -141,33 +142,26 @@ if ( ! class_exists('MM_Dashboard_Widget') )
 			if ( $screen->id != 'dashboard' )
 				return;
 
-			$options = $this->_('MM_Settings')->get_option(__CLASS__);
-
 			?>
 
 			<style type="text/css">
 		
 				#mm_dashboard_widget
 				{
-					<?php if ( $options['border_color'] != '' ) : ?>
-					border-color: <?php echo $options['border_color']; ?>;
+					<?php if ( $this->get_option( 'border_color' ) != '' ) : ?>
+					border-color: <?php echo $this->get_option( 'border_color' ); ?>;
 					<?php endif; ?>
 				}
 
 				#mm_dashboard_widget .hndle
 				{
-					<?php if ( $options['header_color'] != '' ) : ?>
-					color: <?php echo $options['header_color']; ?>;
+					<?php if ( $this->get_option( 'header_color' ) != '' ) : ?>
+					color: <?php echo $this->get_option( 'header_color' ); ?>;
 					<?php endif; ?>
 
-					<?php if ( $options['header_background_color'] != '' ) : ?>
-					background-color: <?php echo $options['header_background_color']; ?>;
+					<?php if ( $this->get_option( 'header_background_color' ) != '' ) : ?>
+					background-color: <?php echo $this->get_option( 'header_background_color' ); ?>;
 					<?php endif; ?>
-				}
-
-				#mm_dashboard_widget .inside
-				{
-					
 				}
 
 			</style>
