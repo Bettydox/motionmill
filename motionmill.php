@@ -698,5 +698,5 @@ if( ! class_exists('Motionmill') )
 
 	$motionmill = Motionmill::get_instance();
 }
->>>>>>> FETCH_HEAD
+
 ?>
