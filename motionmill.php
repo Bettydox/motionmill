@@ -1,36 +1,39 @@
-<?php
-if( !defined('ABSPATH') ) exit; // Exits when accessed directly
+<?php if ( ! defined( 'ABSPATH' ) ) exit; // exits when accessed directly
+
 /*
- ------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
  Plugin Name: Motionmill
- Plugin URI: http://motionmill.com
- Description: Motionmill's HQ
- Version: 1.3.2
- Author: Motionmill
+ Plugin URI:
+ Description: Motionmill provides tools that facilitates the creation process of WordPress plugins.
+ Version: 1.4.0
+ Author: Maarten Menten
  Author URI: http://motionmill.com
  License: GPL2
- ------------------------------------------------------------------------------------------------------------------------
- */
+------------------------------------------------------------------------------------------------------------------------
+*/
 
-if( !class_exists('Motionmill') )
+if ( ! class_exists( 'Motionmill' ) )
 {
-	define('MM_FILE', __FILE__);
-	define('MM_ABSPATH', plugin_dir_path(MM_FILE));
-	define('MM_INCLUDE_DIR', MM_ABSPATH . 'includes/');
-	define('MM_PLUGIN_DIR', MM_ABSPATH . 'plugins/');
-	define('MM_TEXTDOMAIN', 'motionmill');
-	define('MM_NONCE', 'motionmill');
-
 	class Motionmill
 	{
-		private static $instance = null;
-		private $plugins = array();
-		private $helpers = array();
-		public $page_slug = null;
+		const FILE        = __FILE__;
+		const OPTION_NAME = 'motionmill';
+		const PLUGIN_DIR  = 'plugins';
+		const INCLUDE_DIR = 'includes';
+		const TEXTDOMAIN  = 'motionmill';
+		const NONCE_NAME  = 'motionmill';
+		const NEWLINE     = "\n";
+		const VERSION     = '1.4.0';
 
-		public static function get_instance()
+		static private $instance = null;
+
+		protected $initialized = false;
+		protected $plugins = array();
+		protected $helpers = array();
+
+		static public function get_instance()
 		{
-			if( !self::$instance )
+			if ( self::$instance == null )
 			{
 				self::$instance = new self();
 			}
@@ -39,141 +42,406 @@ if( !class_exists('Motionmill') )
 		}
 
 		public function __construct()
-		{
-			// loads assets
-			require_once (MM_INCLUDE_DIR . 'class-mm-plugin.php');
+		{	
 
-			// loads plugins
-			foreach( $this->get_plugin_files() as $file )
-			{
-				require_once (MM_PLUGIN_DIR . $file);
-			}
-
-			add_action('init', array(&$this, 'initialize'), 0);
-
-			do_action('motionmill_loaded');
 		}
 
 		public function initialize()
 		{
-			// registers plugins
-			foreach( apply_filters( 'motionmill_plugins', array() ) as $plugin )
+			if ( $this->initialized ) return;
+
+			/*
+			------------------------------------------------------------------------------------------------------------
+			Loads assets
+			------------------------------------------------------------------------------------------------------------
+			*/
+
+			if ( is_admin() )
 			{
-				if( isset($this -> plugins[$plugin]) )
-					continue;
-
-				if( !class_exists($plugin) )
-				{
-					trigger_error(sprintf('Plugin class %s could not be found', $plugin), E_USER_NOTICE);
-
-					continue;
-				}
-
-				$parents = class_parents($plugin);
-
-				if( !isset($parents['MM_Plugin']) )
-				{
-					trigger_error(sprintf('Plugin %s is not a child of MM_Plugin', $plugin), E_USER_NOTICE);
-
-					continue;
-				}
-
-				$this -> plugins[$plugin] = new $plugin();
+				require_once( $this->get_absolute_path( self::INCLUDE_DIR ) . 'motionmill-menu-page-dashboard.php' );
 			}
 
-			// registers helpers
-			foreach( apply_filters( 'motionmill_helpers', array('wordpress') ) as $helper )
+			else
 			{
-				if( isset($this -> helpers[$helper]) )
-					continue;
+				require_once( ABSPATH . 'wp-admin/includes/plugin.php' ); // needed for get_plugins() in front
+			}
 
-				$file = MM_INCLUDE_DIR . sprintf('mm-%s-helper.php', $helper);
+			/*
+			------------------------------------------------------------------------------------------------------------
+			Loads plugins
+			------------------------------------------------------------------------------------------------------------
+			*/
 
-				if( !file_exists($file) )
+			foreach ( $this->get_plugins() as $file => $plugin )
+			{
+				$path = trailingslashit( WP_PLUGIN_DIR ) . $file;
+
+				if ( ! file_exists($path) )
 				{
-					trigger_error(sprintf('Helper %s could not be found.', $helper), E_USER_NOTICE);
-
 					continue;
 				}
 
-				require_once ($file);
-
-				$this -> helpers[$helper] = true;
+				require_once( $path );
 			}
 
-			add_action('admin_menu', array(&$this, 'on_admin_menu'), 0);
+			/*
+			------------------------------------------------------------------------------------------------------------
+			Registers plugins
+			------------------------------------------------------------------------------------------------------------
+			*/
 
-			do_action('motionmill_init');
-
-			// let others set the default submenu page
-			$this -> page_slug = apply_filters('motionmill_page_slug', null);
-		}
-
-		public function get_plugin($class)
-		{
-			return isset($this -> plugins[$class]) ? $this -> plugins[$class] : null;
-		}
-
-		public function on_admin_menu()
-		{
-			if( !$this -> page_slug )
-				return;
-
-			add_menu_page(__('Motionmill', MM_TEXTDOMAIN), __('Motionmill', MM_TEXTDOMAIN), 'manage_options', $this -> page_slug, create_function('$a', ''));
-
-			do_action('motionmill_admin_menu');
-		}
-
-		public function on_uninstall()
-		{
-			if( !defined('WP_UNINSTALL_PLUGIN') )
-				return;
-
-			if( WP_UNINSTALL_PLUGIN != plugin_basename(MM_FILE) )
-				return;
-
-			// loads plugins uninstall.php file
-			foreach( $this->get_plugin_files() as $file )
+			foreach ( apply_filters( 'motionmill_plugins', array() ) as $class )
 			{
-				$uninstall = MM_PLUGIN_DIR . trim(dirname($file), '/') . '/uninstall.php';
-
-				if( file_exists($uninstall) )
-				{
-					include ($uninstall);
+				if ( isset( $this->plugins[$class] ) )
+				{	
+					continue;
 				}
+
+				$this->plugins[ $class ] = new $class();
 			}
+
+			/*
+			------------------------------------------------------------------------------------------------------------
+			Loads helpers
+			------------------------------------------------------------------------------------------------------------
+			*/
+
+			foreach ( apply_filters( 'motionmill_helpers', array() ) as $class )
+			{
+				if ( isset( $this->helpers[$class] ) )
+				{
+					continue;
+				}
+
+				$file = 'class-' . str_replace( '_' , '-', strtolower( $class ) ) . '.php'; // MM_Array => class-mm-array.php
+
+				require_once( $this->get_absolute_path( self::INCLUDE_DIR ) . $file );
+
+				$this->helpers[ $class ] = true;
+			}
+
+			/* ------------------------------------------------------------------------------------------------------ */
+						
+			register_activation_hook( self::FILE, array( &$this, 'on_activate' ), 5 );
+			register_deactivation_hook( self::FILE, array( &$this, 'on_deactivate' ), 5 );
+
+			add_action( 'wp_enqueue_scripts', array( &$this, 'on_enqueue_scripts' ), 5 );
+			add_action( 'admin_enqueue_scripts', array( &$this, 'on_enqueue_scripts' ), 5 );
+
+			add_filter( 'motionmill_javascript_vars', array( &$this, 'on_javascript_vars'), 5 );
+			add_filter( 'motionmill_settings_options', array( &$this, 'on_settings_options'), 5 );
+			add_filter( 'motionmill_settings_pages', array( &$this, 'on_settings_pages'), 5 );
+
+			do_action( 'motionmill_init' ); // prefered hook for plugin initialization
+
+			$this->initialized = true;
 		}
 
-		private function get_plugin_files()
-		{
-			// path structure: motionmill-{slug}/motionmill-{slug}.php
+		/* ---------------------------------------------------------------------------------------------------------- */
 
+		/**
+		 * Get Option
+		 *
+		 * Returns an option from the database.
+		 *
+		 * @return mixed
+		 */
+
+		public function get_option( $key = null, $default = '' )
+		{
+			$options = get_option( self::OPTION_NAME, array() );
+
+			if ( $key == null )
+			{
+				return $options;
+			}
+
+			if ( isset( $options[$key] ) )
+			{
+				return $options[$key];
+			}
+
+			return $default;
+		}
+
+		/* ---------------------------------------------------------------------------------------------------------- */
+
+		/**
+		 * Set Option
+		 *
+		 * saves an option to the database.
+		 *
+		 * @return void
+		 */
+
+		public function set_option( $key, $value )
+		{
+			$options = $this->get_option();
+
+			$options[ $key ] = $value;
+
+			return update_option( self::OPTION_NAME, $options );
+		}
+
+		/* ---------------------------------------------------------------------------------------------------------- */
+
+		/**
+		 * Get Plugin
+		 *
+		 * Returns a registered plugin
+		 *
+		 * @return mixed An object or null if not found
+		 */
+
+		public function get_plugin( $class )
+		{
+			if ( isset( $this->plugins[$class] ) )
+			{
+				return $this->plugins[$class];
+			}
+
+			return null;
+		}
+
+		/* ---------------------------------------------------------------------------------------------------------- */
+
+		/**
+		 * Get Plugins
+		 *
+		 * Returns plugin meta data
+		 *
+		 * @return Array
+		 */
+
+		public function get_plugins()
+		{
+			$dir = $this->get_relative_path( self::PLUGIN_DIR );
+
+			$plugins = get_plugins( '/' . $dir );
+
+			$a = array();
+
+			// makes file relative to WP_PLUGIN_DIR
+			foreach ( $plugins as $file => $plugin )
+			{
+				$key = trailingslashit( $dir ) . $file;
+			
+				$a[ $key ] = $plugin;
+			}
+
+			return $a;
+		}
+
+		/* ---------------------------------------------------------------------------------------------------------- */
+
+		/**
+		 * Get External Plugins
+		 *
+		 * Returns all motionmill plugins in the WordPress plugin directory.
+		 *
+		 * @return Array
+		 */
+
+		public function get_external_plugins()
+		{
 			$plugins = array();
 
-			if( $fh = opendir(MM_PLUGIN_DIR) )
+			foreach ( (array) get_plugins() as $file => $plugin )
 			{
-				while( ($dir = readdir($fh)) !== false )
+				if ( stripos( $file, 'motionmill-' ) === false )
 				{
-					if( !is_dir(MM_PLUGIN_DIR . $dir) )
-						continue;
-
-					if( in_array($dir, array('.', '..')) )
-						continue;
-
-					$file = $dir . '/' . $dir . '.php';
-
-					if( !file_exists(MM_PLUGIN_DIR . $file) )
-						continue;
-
-					$plugins[] = $file;
+					continue;
 				}
+
+				$plugins[ $file ] = $plugin;
 			}
 
 			return $plugins;
 		}
 
+		/* ---------------------------------------------------------------------------------------------------------- */
+
+		/**
+		 * Get All Plugins
+		 *
+		 * Returns all motionmill plugins.
+		 *
+		 * @return Array
+		 */
+
+		public function get_all_plugins()
+		{
+			$plugins = array_merge( $this->get_plugins(), $this->get_external_plugins() );
+
+			ksort( $plugins, SORT_STRING );
+
+			return $plugins;
+		}
+
+		/* ---------------------------------------------------------------------------------------------------------- */
+
+		/**
+		 * Get Absolute Path
+		 *
+		 * Returns the server directory path to this file
+		 *
+		 * @return String
+		 */
+
+		public function get_absolute_path( $suffix = '' )
+		{
+			$path = plugin_dir_path( self::FILE );
+
+			if ( $suffix != '' )
+			{
+				$path .= trailingslashit( ltrim( $suffix, '/' ) );
+			}
+
+			return $path;
+		}
+
+		/* ---------------------------------------------------------------------------------------------------------- */
+
+		/**
+		 * Get Relative Path
+		 *
+		 * Returns the server path starting from this directory
+		 *
+		 * @return String
+		 */
+
+		public function get_relative_path( $suffix = '' )
+		{
+			return plugin_basename( $this->get_absolute_path( $suffix ) );
+		}
+
+		/* ---------------------------------------------------------------------------------------------------------- */
+
+		/**
+		 * On Activate
+		 *
+		 * Called when this plugin is activated
+		 *
+		 * Triggers plugins activation hook.
+		 *
+		 * @return void
+		 */
+
+		public function on_activate()
+		{
+			$this->set_option( 'version', self::VERSION );
+
+			foreach ( $this->get_plugins() as $file => $plugin )
+			{
+				do_action( 'activate_' . $file );
+			}
+		}
+
+		/* ---------------------------------------------------------------------------------------------------------- */
+
+		/**
+		 * On Dectivate
+		 *
+		 * Called when this plugin is deactivated
+		 *
+		 * Triggers plugins deactivation hook.
+		 *
+		 * @return void
+		 */
+
+		public function on_deactivate()
+		{
+			foreach ( $this->get_plugins() as $file => $plugin )
+			{
+				do_action( 'deactivate_' . $file );
+			}
+		}
+
+		/* ---------------------------------------------------------------------------------------------------------- */
+
+		/**
+		 * On Enqueue Scripts
+		 *
+		 * @return void
+		 */
+
+		public function on_enqueue_scripts()
+		{	
+			// styles
+			wp_register_style( 'motionmill', plugins_url('css/style.css', __FILE__), null, '1.0.0', 'all' );
+			
+			wp_enqueue_style( 'motionmill' );
+			
+			// scripts
+			wp_register_script( 'motionmill-plugins', plugins_url('js/plugins.js', __FILE__), array( 'jquery' ), '1.0.0', false );
+			wp_register_script( 'motionmill', plugins_url('js/scripts.js', __FILE__), array( 'jquery', 'motionmill-plugins' ), '1.0.0', false );
+			wp_localize_script( 'motionmill', 'Motionmill', apply_filters( 'motionmill_javascript_vars', array() ) );
+		
+			wp_enqueue_script( 'motionmill' );
+		}
+
+		/* ---------------------------------------------------------------------------------------------------------- */
+
+		/**
+		 * On Javascript Vars
+		 *
+		 * @return void
+		 */
+
+		public function on_javascript_vars( $vars )
+		{
+			return array_merge( $vars, array
+			(
+				'ajaxurl' => admin_url( 'admin-ajax.php' )
+			));
+		}
+
+		/* ---------------------------------------------------------------------------------------------------------- */
+
+		/**
+		 * On Settings Options
+		 *
+		 * @return void
+		 */
+
+		public function on_settings_options( $options )
+		{
+			return array_merge( $options, array
+			(
+				'page_capability'    => 'manage_options',
+				'page_parent_slug'   => 'motionmill',
+				'page_option_format' => 'motionmill_settings_page-%s-options',
+				'page_admin_bar'     => true,
+				'page_submit_button' => true,
+				'page_title_prefix'  => __( 'Motionmill - ', Motionmill::TEXTDOMAIN )
+			));
+		}
+
+		/* ---------------------------------------------------------------------------------------------------------- */
+
+		/**
+		 * On Settings Pages
+		 *
+		 * @return void
+		 */
+
+		public function on_settings_pages( $pages )
+		{
+			$pages[] = array
+			(
+				'id' 		    => 'motionmill',
+				'title' 	    => __( 'Dashboard', Motionmill::TEXTDOMAIN ),
+				'menu_title'    => __( 'Motionmill', Motionmill::TEXTDOMAIN ),
+				'parent_slug'   => '',
+				'submit_button' => false
+			);
+
+			return $pages;
+		}
 	}
 
 	$motionmill = Motionmill::get_instance();
+	$motionmill->initialize();
 }
+
 ?>

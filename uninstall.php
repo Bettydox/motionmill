@@ -1,11 +1,43 @@
-<?php if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) exit;
+<?php if ( ! defined( 'ABSPATH' ) ) exit; // exits when accessed directly
 
-if ( ! class_exists('Motionmill') )
+/*
+------------------------------------------------------------------------------------------------------------------------
+ Checks for valid uninstallation request
+------------------------------------------------------------------------------------------------------------------------
+*/
+
+if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) )
 {
-	require_once( dirname(__FILE__) . '/motionmill.php');
+	return;
 }
 
-$motionmill = Motionmill::get_instance();
-$motionmill->on_uninstall();
+/*
+------------------------------------------------------------------------------------------------------------------------
+ Uninstallation Process
+------------------------------------------------------------------------------------------------------------------------
+*/
+
+// loads plugins uninstall.php file
+
+$options = get_option( 'motionmill', array() );
+
+if ( isset( $options['active_plugins'] ) && is_array( $options['active_plugins'] ) )
+{
+	$active_plugins = $options['active_plugins'];
+
+	foreach ( $active_plugins as $file )
+	{
+		$path = trailingslashit( WP_PLUGIN_DIR ) . dirname( $file ) . '/uninstall.php';
+
+		if ( ! file_exists( $path ) )
+		{
+			continue;
+		}
+
+		include( $path );
+	}
+}
+
+delete_option( 'motionmill' );
 
 ?>

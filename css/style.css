@@ -1,0 +1,136 @@
+/*
+------------------------------------------------------------------------------------------------------------------------
+ Removes default styling from <ul> and <ol>
+------------------------------------------------------------------------------------------------------------------------
+*/
+
+ul, ol
+{
+	margin    : 0;
+	padding   : 0;
+	list-style: none;
+}
+
+li
+{
+	margin: 0; padding: 0;
+}
+
+/*
+------------------------------------------------------------------------------------------------------------------------
+ List Layout
+------------------------------------------------------------------------------------------------------------------------
+*/
+
+ul.list
+{
+	display            : block;
+	list-style-type    : disc;
+	list-style-position: outside;
+	margin             : 16px 0;
+	padding            : 0 0 0 15px;
+}
+
+ul.list ul
+{ 
+   list-style-type: circle;
+}
+
+ol.list ol
+{ 
+   list-style-type: lower-latin;
+}
+
+ul.list li
+{
+	display: list-item;
+	margin : 0;
+	padding: 0;
+}
+
+/*
+------------------------------------------------------------------------------------------------------------------------
+ Miscellaneous
+------------------------------------------------------------------------------------------------------------------------
+*/
+
+.p
+{
+	display: block;
+	margin : 10px 0;
+}
+
+.stretch
+{
+	width: 100%;
+}
+
+.hide-if-no-js
+{
+	display: none;
+}
+
+/*
+------------------------------------------------------------------------------------------------------------------------
+ Ajax Loader
+------------------------------------------------------------------------------------------------------------------------
+*/
+
+.mm-loader
+{
+	display    : none;
+	width      : 16px;
+	height     : 16px;
+	margin     : 0px 5px;
+	line-height: 16px;
+	text-indent: 16px;
+	overflow   : hidden;
+	background : transparent url( '../images/ajax-loader.gif' ) no-repeat top left;
+}
+
+/*
+------------------------------------------------------------------------------------------------------------------------
+ Table Layout
+------------------------------------------------------------------------------------------------------------------------
+*/
+
+.table { display: table }
+.row   { display: table-row; }
+.col   { display: table-cell; text-align: left; vertical-align: top;   }
+
+.row.cols-0 .col,
+.row.cols-1 .col { width: 100%; }
+.row.cols-2 .col { width: 50%; }
+.row.cols-3 .col { width: 33.33%; }
+.row.cols-4 .col { width: 25%; }
+.row.cols-5 .col { width: 20%; }
+.row.cols-6 .col { width: 16.66%; }
+.row.cols-7 .col { width: 24.28%; }
+.row.cols-8 .col { width: 12.5%; }
+.row.cols-9 .col { width: 11.11%; }
+.row.cols-10 .col { width: 10%; }
+
+@media all and ( max-width: 670px ) {
+  
+	.table,
+	.table .row,
+	.table .col
+	{
+		display: block;
+	}
+
+	.table .row
+	{
+		margin: 0 0 10px 0;
+	}
+
+	.table .row:last-child
+	{
+		margin-bottom: 0;
+	}
+
+	.table.stretch .col
+	{
+		width: 100%;
+	}
+}

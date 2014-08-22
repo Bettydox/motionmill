@@ -4,30 +4,40 @@ if ( ! class_exists('MM_Plugin') )
 {
 	class MM_Plugin
 	{
+		protected $id         = __CLASS__;
+		protected $file       = __FILE__;
 		protected $motionmill = null;
 
 		public function __construct()
-		{			
-			$this->motionmill = Motionmill::get_instance();			
+		{	
+			$this->id = get_class($this);
+
+			$ref = new ReflectionClass($this);
+			$this->file = $ref->getFileName();
+
+			$this->motionmill = Motionmill::get_instance();	
 
 			add_action( 'motionmill_init', array(&$this, 'initialize') );
-			add_filter( 'motionmill_helpers', array(&$this, 'on_helpers') );
+
+			error_log( sprintf( '%s constructed', get_class($this) ) );
 		}
 
 		public function initialize()
 		{
-			
+			error_log( sprintf( '%s initialized', get_class($this) ) );
 		}
 
-		public function on_helpers($helpers)
+		public function get_id()
 		{
-			return $helpers;
+			return $this->id;
 		}
+
+		public function get_file()
+		{
+			return $this->file;
+		}
+
 		
-		public function _($plugin)
-		{
-			return $this->motionmill->get_plugin($plugin);
-		}
 	}
 }
 ?>
