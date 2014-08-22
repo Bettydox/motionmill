@@ -6,7 +6,7 @@
  Plugin Name: Motionmill
  Plugin URI:
  Description: Motionmill provides tools that facilitates the creation process of WordPress plugins.
- Version: 1.4.0
+ Version: 1.4.1
  Author: Maarten Menten
  Author URI: http://motionmill.com
  License: GPL2
@@ -24,7 +24,7 @@ if ( ! class_exists( 'Motionmill' ) )
 		const TEXTDOMAIN  = 'motionmill';
 		const NONCE_NAME  = 'motionmill';
 		const NEWLINE     = "\n";
-		const VERSION     = '1.4.0';
+		const VERSION     = '1.4.1';
 
 		static private $instance = null;
 
@@ -73,14 +73,9 @@ if ( ! class_exists( 'Motionmill' ) )
 			------------------------------------------------------------------------------------------------------------
 			*/
 
-			foreach ( $this->get_plugins() as $file => $plugin )
+			foreach ( (array) $this->get_option( 'active_plugins' ) as $file )
 			{
 				$path = trailingslashit( WP_PLUGIN_DIR ) . $file;
-
-				if ( ! file_exists($path) )
-				{
-					continue;
-				}
 
 				require_once( $path );
 			}
@@ -332,10 +327,16 @@ if ( ! class_exists( 'Motionmill' ) )
 		{
 			$this->set_option( 'version', self::VERSION );
 
+			$active_plugins = array();
+
 			foreach ( $this->get_plugins() as $file => $plugin )
 			{
+				$active_plugins[] = $file;
+
 				do_action( 'activate_' . $file );
 			}
+
+			$this->set_option( 'active_plugins', $active_plugins );
 		}
 
 		/* ---------------------------------------------------------------------------------------------------------- */
@@ -352,10 +353,12 @@ if ( ! class_exists( 'Motionmill' ) )
 
 		public function on_deactivate()
 		{
-			foreach ( $this->get_plugins() as $file => $plugin )
+			foreach ( (array) $this->get_option( 'active_plugins' ) as $file )
 			{
 				do_action( 'deactivate_' . $file );
 			}
+
+			$this->set_option( 'active_plugins', array() );
 		}
 
 		/* ---------------------------------------------------------------------------------------------------------- */
