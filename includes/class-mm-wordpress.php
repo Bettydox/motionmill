@@ -4,6 +4,35 @@ if ( ! class_exists('MM_Wordpress') )
 {
 	class MM_Wordpress
 	{
+<<<<<<< HEAD
+=======
+		static public function get_abs($path, $server = true)
+		{
+			$path = self::get_rel( $path );
+
+			$root = trailingslashit( $server ? ABSPATH : site_url() );
+
+			return $root . $path;
+		}
+
+		static public function get_rel($path)
+		{	
+			$root = '';
+
+			if ( stripos($path, ABSPATH) === 0 )
+			{
+				$root = ABSPATH;
+			}
+
+			if ( stripos( $path, site_url() ) === 0 )
+			{
+				$root = site_url();
+			}
+
+			return substr( $path , strlen( $root ) );
+		}
+
+>>>>>>> FETCH_HEAD
 		/* ---------------------------------------------------------------------------------------------------------- */
 
 		/**
@@ -19,7 +48,11 @@ if ( ! class_exists('MM_Wordpress') )
 		 * @return mixed The role of the user or false if the user could not be found.
 		 */
 
+<<<<<<< HEAD
 		static public function get_user_role( $user_id = 0 )
+=======
+		static public function get_user_role($user_id = 0)
+>>>>>>> FETCH_HEAD
 		{
 			global $wp_roles;
 
@@ -65,7 +98,11 @@ if ( ! class_exists('MM_Wordpress') )
 		 * @return Boolean
 		 */
 
+<<<<<<< HEAD
 		static public function is_user_blog( $user_id = 0, $blog_id = 0 )
+=======
+		static public function is_user_blog ($user_id = 0, $blog_id = 0)
+>>>>>>> FETCH_HEAD
 		{
 		    if ( ! $user_id && is_user_logged_in() )
 		    {

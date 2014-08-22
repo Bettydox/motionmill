@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 /*
 ------------------------------------------------------------------------------------------------------------------------
  Removes default styling from <ul> and <ol>
@@ -87,6 +88,16 @@ ul.list li
 	overflow   : hidden;
 	background : transparent url( '../images/ajax-loader.gif' ) no-repeat top left;
 }
+=======
+.hide-if-no-js { display: none; }
+
+ul { margin: 0; padding: 0; list-style: none; }
+li { margin: 0; padding: 0; }
+
+.stretch 	{ width: 100%; }
+.shrink 	{ width: 1% }
+.p 			{ display: block; margin: 10px 0; }
+>>>>>>> FETCH_HEAD
 
 /*
 ------------------------------------------------------------------------------------------------------------------------
@@ -96,6 +107,7 @@ ul.list li
 
 .table { display: table }
 .row   { display: table-row; }
+<<<<<<< HEAD
 .col   { display: table-cell; text-align: left; vertical-align: top;   }
 
 .row.cols-0 .col,
@@ -133,4 +145,13 @@ ul.list li
 	{
 		width: 100%;
 	}
+=======
+.col   { display: table-cell; text-align: left; vertical-align: top; }
+
+.table > p, .row > p, .table > br, .row > br { display: none; }
+
+@media all and ( max-width: 670px ) {
+  
+	.table, .row, .col { display: block; }
+>>>>>>> FETCH_HEAD
 }

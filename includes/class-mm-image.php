@@ -1,6 +1,10 @@
 <?php if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
+<<<<<<< HEAD
 if ( ! class_exists('MM_Image') )
+=======
+if ( ! class_exists('MM_Image_Helper') )
+>>>>>>> FETCH_HEAD
 {
 	class MM_Image
 	{

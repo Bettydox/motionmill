@@ -4,7 +4,11 @@ if ( ! class_exists('MM_File') )
 {
 	class MM_File
 	{
+<<<<<<< HEAD
 		public static function get_content( $file, $offset = 0, $limit = -1, $line_length = 1024 )
+=======
+		public static function get_lines( $file, $offset = 0, $limit = -1, $line_length = 1024 )
+>>>>>>> FETCH_HEAD
 		{
 			if ( $handle = fopen( $file, 'r' ) )
 			{
@@ -31,7 +35,11 @@ if ( ! class_exists('MM_File') )
 				return $contents;
 			}
 
+<<<<<<< HEAD
 			return new WP_Error( 'cannot_open_file', __( 'Cannot open file.' ), $file );
+=======
+			return false;
+>>>>>>> FETCH_HEAD
 		}
 
 		public function is_404($url)

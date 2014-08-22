@@ -30,7 +30,10 @@ if ( ! class_exists('MM_Array') )
 		 * @param search mixed The search parameters (String or Array).
 		 * @param container mixed The container to search into (Array or Object).
 		 * @return mixed The first element that matches the search criteria.
+<<<<<<< HEAD
 		 * @uses MM_Array::get_elements_by
+=======
+>>>>>>> FETCH_HEAD
 		 */
 
 		static public function get_element_by($search, $container)
@@ -118,6 +121,7 @@ if ( ! class_exists('MM_Array') )
 			return $elements;
 		}
 
+<<<<<<< HEAD
 		static public function get_unique_element_values( $key, $container )
 		{
 			$values = array();
@@ -147,6 +151,8 @@ if ( ! class_exists('MM_Array') )
 			return $values;
 		}
 
+=======
+>>>>>>> FETCH_HEAD
 		/* ---------------------------------------------------------------------------------------------------------- */
 
 		/**
