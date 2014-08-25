@@ -22,6 +22,9 @@ if ( ! class_exists('MM_Roles') )
 
 		public function __construct()
 		{
+			add_filter( 'motionmill_settings_pages', array(&$this, 'on_settings_pages') );
+			add_filter( 'motionmill_settings_sections', array(&$this, 'on_settings_sections') );
+			add_filter( 'motionmill_settings_sanitize_options', array(&$this, 'on_sanitize_options'), 10, 2 );
 			add_action( 'motionmill_init', array( &$this, 'initialize' ) );
 		}
 
@@ -29,10 +32,6 @@ if ( ! class_exists('MM_Roles') )
 		{
 			$this->motionmill = Motionmill::get_instance();
 			
-			add_filter( 'motionmill_settings_pages', array(&$this, 'on_settings_pages') );
-			add_filter( 'motionmill_settings_sections', array(&$this, 'on_settings_sections') );
-			add_filter( 'motionmill_settings_sanitize_options', array(&$this, 'on_sanitize_options'), 10, 2 );
-
 			add_action( 'init', array( &$this, 'on_init' ) );
 			add_action( 'admin_init', array(&$this, 'on_admin_init') );
 
