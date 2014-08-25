@@ -2,7 +2,7 @@
 /**
 * Plugin Name: Motionmill General
 * Plugin URI:
-* Description: Add favicon, HTML &lt;body&gt; tag parameters and much more...
+* Description: Handles general WordPress settings.
 * Version: 1.0.0
 * Author: Maarten Menten
 * Author URI: http://motionmill.com
@@ -17,16 +17,15 @@ if ( ! class_exists('MM_General') )
 
 		public function __construct()
 		{
+			add_filter( 'motionmill_settings_pages', array(&$this, 'on_settings_pages') );
+			add_filter( 'motionmill_settings_sections', array(&$this, 'on_settings_sections') );
+			add_filter( 'motionmill_settings_fields', array(&$this, 'on_settings_fields') );
 			add_action( 'motionmill_init', array( &$this, 'initialize' ) );
 		}
 
 		public function initialize()
 		{
 			$this->motionmill = Motionmill::get_instance();
-			
-			add_filter( 'motionmill_settings_pages', array(&$this, 'on_settings_pages') );
-			add_filter( 'motionmill_settings_sections', array(&$this, 'on_settings_sections') );
-			add_filter( 'motionmill_settings_fields', array(&$this, 'on_settings_fields') );
 			
 			add_action( 'wp_head', array( &$this, 'on_wp_head' ) );
 			add_action( 'wp_enqueue_scripts', array( &$this, 'on_enqueue_scripts' ) );
@@ -35,20 +34,16 @@ if ( ! class_exists('MM_General') )
 			add_filter( 'mce_css', array( &$this, 'on_mce_css' ) );
 			add_filter( 'excerpt_length', array( &$this, 'on_excerpt_length' ) );
 
-			add_filter( 'motionmill_javascript_vars', array( &$this, 'on_javascript_vars' ) );
+			if ( $this->get_option( 'mail_enable' ) )
+			{
+				add_action( 'wp_mail_from', array(&$this, 'on_mail_from') );
+				add_filter( 'wp_mail_from_name', array(&$this, 'on_mail_from_name') );
+			}
 
-			register_activation_hook( __FILE__, array( &$this, 'on_activate' ) );
-			register_deactivation_hook( __FILE__, array( &$this, 'on_deactivate' ) );
-		}
-
-		public function on_activate()
-		{
-			error_log( __CLASS__ . '::' . __FUNCTION__ );
-		}
-
-		public function on_deactivate()
-		{
-			error_log( __CLASS__ . '::' . __FUNCTION__ );
+			if ( $this->get_option( 'tracking_enable' ) )
+			{
+				add_action( 'wp_head', array(&$this, 'print_tracking_code'), 999 );
+			}
 		}
 
 		public function get_option( $key = null, $default = '' )
@@ -62,7 +57,7 @@ if ( ! class_exists('MM_General') )
 			(
 				'id'          => 'motionmill_general',
 				'title'       => __('General', Motionmill::TEXTDOMAIN),
-				'description' => __('Add favicon, HTML &lt;body&gt; tag parameters and much more...', Motionmill::TEXTDOMAIN),
+				'description' => __('', Motionmill::TEXTDOMAIN),
 				'priority'    => 10
 			);
 
@@ -75,9 +70,9 @@ if ( ! class_exists('MM_General') )
 
 			$sections[] = array
 			(
-				'id' 		  => 'motionmill_general_favicon',
-				'title' 	  => __( 'Favicon', Motionmill::TEXTDOMAIN ),
-				'description' => __( "Also known as a Web site icon or bookmark icon. Browsers that provide favicon support typically display a favicon in the browser's address bar.", Motionmill::TEXTDOMAIN ),
+				'id' 		  => 'motionmill_general_general',
+				'title' 	  => __( 'Miscellanious', Motionmill::TEXTDOMAIN ),
+				'description' => __( '', Motionmill::TEXTDOMAIN ),
 				'page'        => 'motionmill_general'
 			);
 
@@ -91,24 +86,34 @@ if ( ! class_exists('MM_General') )
 				'page'        => 'motionmill_general'
 			);
 
-			// excerpt
+			// posts
 
 			$sections[] = array
 			(
-				'id' 		  => 'motionmill_general_excerpt',
-				'title' 	  => __( 'Excerpt', Motionmill::TEXTDOMAIN ),
+				'id' 		  => 'motionmill_general_post',
+				'title' 	  => __( 'Post', Motionmill::TEXTDOMAIN ),
 				'description' => __( '', Motionmill::TEXTDOMAIN ),
 				'page'        => 'motionmill_general'
 			);
 
-			// editor
+			// tracking
 
 			$sections[] = array
 			(
-				'id' 		  => 'motionmill_general_editor',
-				'title' 	  => __( 'Rich Text Editor', Motionmill::TEXTDOMAIN ),
-				'description' => __( '', Motionmill::TEXTDOMAIN ),
-				'page'        => 'motionmill_general'
+				'id' 		  => 'motionmill_general_tracking',
+				'title' 	  => __('Tracking', Motionmill::TEXTDOMAIN),
+				'description' => __('', Motionmill::TEXTDOMAIN),
+				'page'		  => 'motionmill_general'
+			);
+
+			// mail
+
+			$sections[] = array
+			(
+				'id' 		  => 'motionmill_general_mail',
+				'title' 	  => __('Mail', Motionmill::TEXTDOMAIN),
+				'description' => __('', Motionmill::TEXTDOMAIN),
+				'page'		  => 'motionmill_general'
 			);
 
 			return $sections;
@@ -121,12 +126,12 @@ if ( ! class_exists('MM_General') )
 			$fields[] = array
 			(
 				'id' 		  => 'favicon',
-				'title' 	  => __( 'Image', Motionmill::TEXTDOMAIN ),
-				'description' => __( 'Most commonly 16×16 pixels', Motionmill::TEXTDOMAIN ),
+				'title' 	  => __( 'Favicon', Motionmill::TEXTDOMAIN ),
+				'description' => __( "Also known as a Web site icon or bookmark icon. Browsers that provide favicon support typically display a favicon in the browser's address bar. Most commonly 16×16 pixels", Motionmill::TEXTDOMAIN ),
 				'type'		  => 'media',
 				'value'       => '',
 				'page'		  => 'motionmill_general',
-				'section'     => 'motionmill_general_favicon'
+				'section'     => 'motionmill_general_general'
 			);
 
 			// body class
@@ -164,30 +169,88 @@ if ( ! class_exists('MM_General') )
 				'section'     => 'motionmill_general_body_class'
 			);
 
-			// excerpt
+			// post
 
 			$fields[] = array
 			(
-				'id' 		  => 'excerpt_length',
-				'title' 	  => __( 'Length', Motionmill::TEXTDOMAIN ),
+				'id' 		  => 'post_excerpt_length',
+				'title' 	  => __( 'Excerpt Length', Motionmill::TEXTDOMAIN ),
 				'description' => __( 'The length of a single-post <a href="http://codex.wordpress.org/Excerpt" target="_blank">excerpt</a>.', Motionmill::TEXTDOMAIN ),
 				'type'		  => 'textfield',
 				'value'       => 20,
 				'page'		  => 'motionmill_general',
-				'section'     => 'motionmill_general_excerpt'
+				'section'     => 'motionmill_general_post'
 			);
-
-			// editor
 
 			$fields[] = array
 			(
-				'id' 		  => 'mce_css',
-				'title' 	  => __( 'CSS', Motionmill::TEXTDOMAIN ),
+				'id' 		  => 'post_editor_css',
+				'title' 	  => __( 'Editor CSS', Motionmill::TEXTDOMAIN ),
 				'description' => __( 'Additional CSS file URLs for the rich text editor. (One entry per line)', Motionmill::TEXTDOMAIN ),
 				'type'		  => 'textarea',
 				'value'       => '',
 				'page'		  => 'motionmill_general',
-				'section'     => 'motionmill_general_editor'
+				'section'     => 'motionmill_general_post'
+			);
+
+			// tracking
+
+			$fields[] = array
+			(
+				'id' 		  => 'tracking_code',
+				'title' 	  => __( 'Code', Motionmill::TEXTDOMAIN ),
+				'description' => __( 'The <a href="http://google.com/analytics" target="_blank">Google Analytics</a> tracking code.', Motionmill::TEXTDOMAIN ),
+				'type'		  => 'textfield',
+				'value'       => '',
+				'page'		  => 'motionmill_general',
+				'section'     => 'motionmill_general_tracking'
+			);
+
+			$fields[] = array
+			(
+				'id' 		  => 'tracking_enable',
+				'title' 	  => __( 'Enable', Motionmill::TEXTDOMAIN ),
+				'description' => __( 'Check/uncheck to enable/disable.', Motionmill::TEXTDOMAIN ),
+				'type'		  => 'checkbox',
+				'value'       => 0,
+				'page'		  => 'motionmill_general',
+				'section'     => 'motionmill_general_tracking'
+			);
+
+			// mail
+			$fields[] = array
+			(
+				'id'          => 'mail_from_name',
+				'title'       => __( "Sender's name", Motionmill::TEXTDOMAIN ),
+				'description' => __( '', Motionmill::TEXTDOMAIN ),
+				'type'        => 'textfield',
+				'class'       => 'regular-text',
+				'value'       => get_bloginfo( 'name' ),
+				'page'        => 'motionmill_general',
+				'section'     => 'motionmill_general_mail'
+			);
+
+			$fields[] = array
+			(
+				'id'          => 'mail_from',
+				'title'       => __( "Sender's email", Motionmill::TEXTDOMAIN ),
+				'description' => __( '', Motionmill::TEXTDOMAIN ),
+				'type'        => 'textfield',
+				'class'       => 'regular-text',
+				'value'       => get_option( 'admin_email' ),
+				'page'        => 'motionmill_general',
+				'section'     => 'motionmill_general_mail'
+			);
+
+			$fields[] = array
+			(
+				'id' 		  => 'mail_enable',
+				'title' 	  => __( 'Enable', Motionmill::TEXTDOMAIN ),
+				'description' => __( 'Check/uncheck to enable/disable.', Motionmill::TEXTDOMAIN ),
+				'type'		  => 'checkbox',
+				'value'       => 1,
+				'page'		  => 'motionmill_general',
+				'section'     => 'motionmill_general_mail'
 			);
 
 			return $fields;
@@ -215,7 +278,9 @@ if ( ! class_exists('MM_General') )
 			// language
 			if ( $this->get_option( 'body_class_language' ) )
 			{
-				$classes[] = sprintf( 'lang-%s', strtolower( $this->get_language_code() ) );
+				$language = defined('ICL_LANGUAGE_CODE') ? ICL_LANGUAGE_CODE : substr( get_bloginfo('language') , 0, 2 );
+
+				$classes[] = sprintf( 'lang-%s', strtolower($language) );
 			}
 
 			// post count
@@ -229,14 +294,14 @@ if ( ! class_exists('MM_General') )
 			return $classes;
 		}
 
-		public function on_excerpt_length($length)
+		public function on_excerpt_length( $length )
 		{
-			return $this->get_option( 'excerpt_length', $length );
+			return $this->get_option( 'post_excerpt_length', $length );
 		}
 
-		public function on_mce_css($mce_css)
+		public function on_mce_css( $mce_css )
 		{
-			$my_css = $this->get_option( 'mce_css' );
+			$my_css = $this->get_option( 'post_editor_css' );
 			$my_css = explode( "\n", $my_css );
 			$my_css = array_filter( $my_css );
 			$my_css = array_values( $my_css );
@@ -248,19 +313,34 @@ if ( ! class_exists('MM_General') )
 
 			return $mce_css;
 		}
-
-		public function on_comments_open( $open, $post_id )
+		
+		public function on_mail_from_name($default)
 		{
-			$post_types = (array) $this->get_option( 'comments_post_types' );
+			return $this->get_option( 'mail_from_name' );
+		}
 
-			$post_type = get_post_type( $post_id );
+		public function on_mail_from( $default )
+		{
+			return $this->get_option( 'mail_from' );
+		}
 
-			if ( ! in_array( $post_type, $post_types ) )
-			{
-				return false;
-			}
+		public function print_tracking_code()
+		{
+			?>
 
-		    return true;
+			<script type="text/javascript">
+
+			  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+			  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+			  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+			  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+			  ga('create', '<?php echo esc_html( $this->get_option( "tracking_code" ) ); ?>', 'auto');
+			  ga('send', 'pageview');
+
+			</script>
+
+			<?php
 		}
 
 		public function on_enqueue_scripts()
@@ -268,24 +348,6 @@ if ( ! class_exists('MM_General') )
 			wp_enqueue_script( 'motionmill-general', plugins_url( 'js/scripts.js', __FILE__ ), array( 'jquery' ), '1.0.0', false );
 		
 			wp_localize_script( 'motionmill-general', 'mm_general_options', $this->get_option() );
-		}
-
-		public function on_javascript_vars( $vars )
-		{
-			return array_merge( $vars, array
-			(
-				'lang' => $this->get_language_code()
-			));
-		}
-
-		protected function get_language_code()
-		{
-			if ( defined( 'ICL_LANGUAGE_CODE' ) )
-			{
-				return ICL_LANGUAGE_CODE;
-			}
-
-			return substr( get_bloginfo('language') , 0, 2 );
 		}
 	}
 
