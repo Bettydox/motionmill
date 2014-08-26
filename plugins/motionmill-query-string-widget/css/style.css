@@ -1,0 +1,60 @@
+.mm-query-string-widget .tag-wrapper
+{
+	margin: -10px 0 10px 0;
+}
+
+/*
+------------------------------------------------------------------------------------------------------------------------
+ Tag Categories
+------------------------------------------------------------------------------------------------------------------------
+*/
+
+.mm-query-string-widget ul.cats
+{
+	display: inline;
+}
+
+.mm-query-string-widget ul.cats > li
+{
+	display: inline;
+}
+
+.mm-query-string-widget ul.cats > li:after
+{
+	content: ' - ';
+}
+
+.mm-query-string-widget ul.cats > li:last-child:after
+{
+	content: '';
+}
+
+.mm-query-string-widget ul.cats > li a
+{
+	text-decoration: none;
+}
+
+.mm-query-string-widget ul.cats > li a.active
+{
+	text-decoration: underline;
+}
+
+/*
+------------------------------------------------------------------------------------------------------------------------
+ Tags
+------------------------------------------------------------------------------------------------------------------------
+*/
+
+.mm-query-string-widget ul.tags
+{
+	margin: 10px 0;
+	display: none;
+}
+
+.mm-query-string-widget ul.tags > li
+{
+	display: inline;
+	line-height: 32px;
+}
+
+
