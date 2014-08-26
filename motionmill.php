@@ -3,9 +3,9 @@
 /*
 ------------------------------------------------------------------------------------------------------------------------
  Plugin Name: Motionmill
- Plugin URI: https://github.com/addwittz/motionmill
+ Plugin URI:
  Description: Motionmill provides tools that facilitates the creation process of WordPress plugins.
- Version: 1.4.3
+ Version: 1.5.0
  Author: Maarten Menten
  Author URI: http://motionmill.com
  License: GPL2
@@ -23,7 +23,7 @@ if ( ! class_exists( 'Motionmill' ) )
 		const TEXTDOMAIN  = 'motionmill';
 		const NONCE_NAME  = 'motionmill';
 		const NEWLINE     = "\n";
-		const VERSION     = '1.4.3';
+		const VERSION     = '1.0.0';
 
 		static private $instance = null;
 
@@ -447,10 +447,7 @@ if ( ! class_exists( 'Motionmill' ) )
 			// scripts
 			wp_register_script( 'motionmill-plugins', plugins_url( 'js/plugins.js', __FILE__ ), array( 'jquery' ), '1.0.0', false );
 			wp_register_script( 'motionmill', plugins_url('js/scripts.js', __FILE__), array( 'jquery', 'motionmill-plugins' ), '1.0.0', false );
-			wp_localize_script( 'motionmill', 'Motionmill', apply_filters( 'motionmill_javascript_vars',array
-			(
-				'ajaxurl' => admin_url( 'admin-ajax.php' )
-			)));
+			wp_localize_script( 'motionmill', 'Motionmill', apply_filters( 'motionmill_javascript_vars', array() ) );
 		
 			wp_enqueue_script( 'motionmill' );
 		}

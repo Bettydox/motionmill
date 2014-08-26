@@ -2,7 +2,8 @@
 {
 	$(document).ready(function()
 	{
-		// Shows/hides Elements
+		$('body').addClass( 'js' );
+		
 		$('.hide-if-js').hide();
 		$('.hide-if-no-js').show();
 

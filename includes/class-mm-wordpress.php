@@ -4,6 +4,16 @@ if ( ! class_exists('MM_Wordpress') )
 {
 	class MM_Wordpress
 	{
+		static public function get_language_code()
+		{
+			if ( defined( 'ICL_LANGUAGE_CODE' ) )
+			{
+				return ICL_LANGUAGE_CODE;
+			}
+
+			return substr( get_bloginfo('language') , 0, 2 );
+		}
+
 		/* ---------------------------------------------------------------------------------------------------------- */
 
 		/**
