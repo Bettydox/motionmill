@@ -44,6 +44,11 @@ __v1.0.1__
 
 - added footer
 - added authenrication type
+ 
+__v1.0.1__
+
+- bug fix: removed handler registration. handler did not exist.
+
 
 Download
 --------
