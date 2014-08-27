@@ -56,16 +56,14 @@ if ( ! class_exists( 'Motionmill' ) )
 			Loads assets
 			------------------------------------------------------------------------------------------------------------
 			*/
-
+			
+			require_once( ABSPATH . 'wp-admin/includes/plugin.php' ); // needed for get_plugins() in front
+			
 			if ( is_admin() )
 			{
 				require_once( $this->get_absolute_path( self::INCLUDE_DIR ) . 'motionmill-menu-page-dashboard.php' );
 			}
 
-			else
-			{
-				require_once( ABSPATH . 'wp-admin/includes/plugin.php' ); // needed for get_plugins() in front
-			}
 
 			/*
 			------------------------------------------------------------------------------------------------------------
