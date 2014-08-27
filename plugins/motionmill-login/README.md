@@ -1,6 +1,9 @@
 Motionmill Login
 ================
 
+Summary
+-------
+
 This plugin customizes the WordPress login page.
 
 Options
@@ -52,8 +55,4 @@ __v1.0.1__
 Download
 --------
 
-This plugin requires the [Motionmill](https://github.com/addwittz/motionmill) Plugin.
-
-[Download](https://github.com/addwittz/motionmill-login "Download")
-
-
+This plugin is included in the [Motionmill](https://github.com/addwittz/motionmill) plugin.
