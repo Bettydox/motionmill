@@ -8,27 +8,27 @@ Options
 
 __Header image__
 
-> The header image.
+The header image.
 
 __Header title__
 
-> The text that appears when hovering the header image.
+The text that appears when hovering the header image.
 
 __Header URL__
 
-> The url to visit when clicking the header image.
+The url to visit when clicking the header image.
 
 __Message__
 
-> Optional text/html above the form.
+Optional text/html above the form.
 
 __Footer__
 
-> Optional text/html below the form.
+Optional text/html below the form.
 
 __Authentication type__
 
-> Username, Email or username and email
+Username, Email or username and email
 
 Screenshots
 -----------
@@ -43,7 +43,7 @@ Changelog
 __v1.0.2__
 
 - bug fix: removed handler registration. handler did not exist.
--
+
 __v1.0.1__
 
 - added footer
