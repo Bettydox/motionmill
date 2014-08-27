@@ -33,9 +33,9 @@ __Authentication type__
 Screenshots
 -----------
 
-![Login page](https://github.com/addwittz/motionmill-login/screenshot-2.png)
+![Login page](https://raw.githubusercontent.com/addwittz/motionmill/master/plugins/motionmill-login/screenshot-2.png)
 
-![Settings page](https://github.com/addwittz/motionmill-login/screenshot-1.png)
+![Settings page](https://raw.githubusercontent.com/addwittz/motionmill/master/plugins/motionmill-login/screenshot-1.png)
 
 Changelog
 ---------
