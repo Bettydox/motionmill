@@ -5,7 +5,7 @@
  Plugin Name: Motionmill Login
  Plugin URI:
  Description: Customizes the login page.
- Version: 1.0.1
+ Version: 1.0.2
  Author: Maarten Menten
  Author URI: http://motionmill.com
  License: GPL2
@@ -52,8 +52,6 @@ if ( ! class_exists('MM_Login') )
 		public function initialize()
 		{	
 			$this->motionmill = Motionmill::get_instance();
-				
-			add_action( 'plugins_loaded', array( &$this, 'load_textdomain') );
 
 			add_action( 'login_head', array(&$this, 'on_login_head') );
 			add_filter( 'login_headerurl', array(&$this, 'on_login_headerurl') );
