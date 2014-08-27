@@ -5,7 +5,7 @@
  Plugin Name: Motionmill
  Plugin URI:
  Description: Motionmill provides tools that facilitates the creation process of WordPress plugins.
- Version: 1.5.0
+ Version: 1.5.1
  Author: Maarten Menten
  Author URI: http://motionmill.com
  License: GPL2
@@ -23,7 +23,7 @@ if ( ! class_exists( 'Motionmill' ) )
 		const TEXTDOMAIN  = 'motionmill';
 		const NONCE_NAME  = 'motionmill';
 		const NEWLINE     = "\n";
-		const VERSION     = '1.0.0';
+		const VERSION     = '1.5.1';
 
 		static private $instance = null;
 
@@ -131,6 +131,8 @@ if ( ! class_exists( 'Motionmill' ) )
 
 			add_action( 'wp_enqueue_scripts', array( &$this, 'on_enqueue_scripts' ), 5 );
 			add_action( 'admin_enqueue_scripts', array( &$this, 'on_enqueue_scripts' ), 5 );
+
+			add_action( 'plugins_loaded', array( &$this, 'load_textdomain' ) );
 
 			do_action( 'motionmill_init' ); // prefered hook for plugin initialization
 
@@ -330,6 +332,31 @@ if ( ! class_exists( 'Motionmill' ) )
 		public function get_relative_path( $suffix = '' )
 		{
 			return plugin_basename( $this->get_absolute_path( $suffix ) );
+		}
+
+		/* ---------------------------------------------------------------------------------------------------------- */
+
+		/**
+		 * Load Textdomain
+		 *
+		 * Loads languages folder of each Motionmill plugin
+		 *
+		 * @return void
+		 */
+
+		public function load_textdomain()
+		{
+			foreach ( $this->get_all_plugins() as $file => $plugin )
+			{
+				$dir = dirname( $file ) . '/languages/';
+
+				if ( ! file_exists( trailingslashit( WP_PLUGIN_DIR ) . $dir ) )
+				{
+					continue;
+				}
+
+				load_plugin_textdomain( Motionmill::TEXTDOMAIN, false, $dir );
+			}
 		}
 
 		/* ---------------------------------------------------------------------------------------------------------- */
