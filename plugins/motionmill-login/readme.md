@@ -1,37 +1,55 @@
-#Motionmill Login
+Motionmill Login
+================
 
 This plugin customizes the WordPress login page.
 
-##Options
+Options
+-------
 
-###Header image
+__Header image__
 
-The header image.
+> The header image.
 
-###Header title
+__Header title__
 
-The text that appears when hovering the header image.
+> The text that appears when hovering the header image.
 
-###Header URL
+__Header URL__
 
-The url to visit when clicking the header image.
+> The url to visit when clicking the header image.
 
-###Message
+__Message__
 
-Optional text/html that can be added.
+> Optional text/html above the form.
 
-##Screenshots
+__Footer__
 
-###Login page
+> Optional text/html below the form.
 
-![Settings page](http://maartenmenten.be/wp-content/uploads/2014/08/motionmill-login.png)
+__Authentication type__
 
-###Setting page
+> Username, Email or username and email
 
-![Settings page](http://maartenmenten.be/wp-content/uploads/2014/08/motionmill-login-settings.png)
+Screenshots
+-----------
 
-## Download
+![Login page](https://github.com/addwittz/motionmill-login/screenshot-2.png)
+
+![Settings page](https://github.com/addwittz/motionmill-login/screenshot-1.png)
+
+Changelog
+---------
+
+__v1.0.1__
+
+- added footer
+- added authenrication type
+
+Download
+--------
 
 This plugin requires the [Motionmill](https://github.com/addwittz/motionmill) Plugin.
 
 [Download](https://github.com/addwittz/motionmill-login "Download")
+
+

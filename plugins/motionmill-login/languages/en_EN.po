@@ -1,0 +1,35 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: Maarten Menten <maarten@motionmill.com>\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=iso-8859-1\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 1.5.7\n"
+
+#: motionmill-login/motionmill-login.php:28
+msgid "Username"
+msgstr "Username"
+
+#: motionmill-login/motionmill-login.php:29
+msgid "Invalid username."
+msgstr "Invalid username."
+
+#: motionmill-login/motionmill-login.php:34
+msgid "Email"
+msgstr "Email"
+
+#: motionmill-login/motionmill-login.php:35
+msgid "Invalid email."
+msgstr "Invalid email."
+
+#: motionmill-login/motionmill-login.php:40
+msgid "Username or Email"
+msgstr "Username or Email"
+
+#: motionmill-login/motionmill-login.php:41
+msgid "Invalid username or email."
+msgstr "Invalid username or email."
