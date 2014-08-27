@@ -1,6 +1,9 @@
 Motionmill Query String Widget
 ==============================
 
+Summary
+-------
+
 Shows posts by query string parameters in an editable template.
 
 Screenshots
