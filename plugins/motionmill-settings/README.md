@@ -4,6 +4,23 @@ Motionmill Settings
 Page
 ----
 
+	  function my_settings_pages( $pages )
+	  {
+	    $pages[] = array
+	    (
+		'id'          	=> 'my_settings_page',
+		'title'		=> __( 'My Settings Page' ),
+		'description' 	=> __( 'A brief description about this page.' )
+	    );
+	    
+	    return $pages;
+	  }
+  
+  	add_filter( 'motionmill_settings_pages', 'my_settings_pages' );
+
+Options
+------
+
 __id__
 
 (_String_) (_required_) The id of the page. Must be unique.
@@ -52,7 +69,7 @@ __scripts__
 
 (_Array_) (_optional_) The scripts for this page. default: (empty array)
 
-see [wp\_enqueue_\script](http://codex.wordpress.org/Function_Reference/wp_enqueue_script)
+see [wp\_enqueue_script](http://codex.wordpress.org/Function_Reference/wp_enqueue_script)
 
 list of handles
 
@@ -78,24 +95,9 @@ __styles__
 
 (_Array_) (_optional_) The styles for this page. default: (empty array)
 
-see [wp\_enqueue_\style](http://codex.wordpress.org/Function_Reference/wp_enqueue_style)
+see [wp\_enqueue_style](http://codex.wordpress.org/Function_Reference/wp_enqueue_style)
 
 same usage as the __scripts__ parameter
 
-### Example
-
-	  function my_settings_pages( $pages )
-	  {
-	    $pages[] = array
-	    (
-		'id'          	=> 'my_settings_page',
-		'title'		=> __( 'My Settings Page' ),
-		'description' 	=> __( 'A brief description about this page.' )
-	    );
-	    
-	    return $pages;
-	  }
-  
-  	add_filter( 'motionmill_settings_pages', 'my_settings_pages' );
   
   
