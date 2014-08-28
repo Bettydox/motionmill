@@ -68,11 +68,11 @@ list of arguments
   
 combined
 
-  array
-  (
-    'jquery',
-    array( 'my-script', 'http://domain.com/js/scripts.js', null, true )
-  )
+  	array
+  	(
+    	'jquery',
+	 array( 'my-script', 'http://domain.com/js/scripts.js', null, true )
+  	)
 
 __styles__
 
