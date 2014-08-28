@@ -56,7 +56,7 @@ see [wp\_enqueue_\script](http://codex.wordpress.org/Function_Reference/wp_enque
 
 list of handles
 
-  array( 'jquery-color', 'jquery-masonry' )
+  	array( 'jquery-color', 'jquery-masonry' )
 
 list of arguments
 
@@ -96,6 +96,6 @@ same usage as the __scripts__ parameter
 	    return $pages;
 	  }
   
-  add_filter( 'motionmill_settings_pages', 'my_settings_pages' );
+  	add_filter( 'motionmill_settings_pages', 'my_settings_pages' );
   
   
