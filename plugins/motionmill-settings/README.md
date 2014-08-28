@@ -1,8 +1,10 @@
 Motionmill Settings
 ===================
 
-Page
-----
+Settings Page
+-------------
+
+### Examples
 
 	  function my_settings_pages( $pages )
 	  {
@@ -18,8 +20,8 @@ Page
   
   	add_filter( 'motionmill_settings_pages', 'my_settings_pages' );
 
-Options
-------
+
+### Options
 
 __id__
 
