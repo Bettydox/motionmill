@@ -255,3 +255,10 @@ __scripts__
 (_String_) (_optional_) scripts to enqueue. default: (empty array)
 
 see page options
+
+
+Download
+--------
+
+This plugin is included in the [Motionmill](https://github.com/addwittz/motionmill) plugin.
+
