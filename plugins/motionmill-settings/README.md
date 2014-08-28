@@ -184,7 +184,7 @@ possible values: textfield, textarea, checkbox, dropdown, editor, colorpicker, m
 
 __type_args__
 
-(__Array__) (__optional__) The id of the section. Must be unique.
+(__Array__) (__optional__) Additional arguments voor the field type.
 
 __value__
 
@@ -201,6 +201,8 @@ __section__
 
 Field Types
 -----------
+
+### Examples
 
 		function my_settings_field_types( $types )
 		{
@@ -219,6 +221,7 @@ Field Types
 		
 		function my_type_callback( $args = array() )
 		{
+			
 			$options = array_merge(array
 			(
 				'id'          => '',
@@ -229,3 +232,25 @@ Field Types
 		
 			// print the field
 		}
+		
+### Options
+
+__id__
+
+(_String_) (_required_) The id
+
+__callback__
+
+(_String_) (_required_) The callback that prints the field.
+
+__styles__
+
+(_String_) (__optional__) styles to enqueue. default: (empty array)
+
+see page options
+
+__scripts__
+
+(_String_) (__optional__) scripts to enqueue. default: (empty array)
+
+see page options
