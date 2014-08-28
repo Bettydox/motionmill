@@ -60,18 +60,18 @@ list of handles
 
 list of arguments
 
-  array
-  (
-    array( 'my-plugins', 'http://domain.com/js/plugins.js', array('jquery'), true ),
-    array( 'my-script', 'http://domain.com/js/scripts.js', array('jquery'), true )
-  )
+	  array
+	  (
+		array( 'my-plugins', 'http://domain.com/js/plugins.js', array('jquery'), true ),
+		array( 'my-script', 'http://domain.com/js/scripts.js', array('jquery'), true )
+	  )
   
 combined
 
   	array
   	(
-    	'jquery',
-	 array( 'my-script', 'http://domain.com/js/scripts.js', null, true )
+  		'jquery',
+		array( 'my-script', 'http://domain.com/js/scripts.js', null, true )
   	)
 
 __styles__
@@ -84,17 +84,17 @@ same usage as the __scripts__ parameter
 
 ### Example
 
-  function my_settings_pages( $pages )
-  {
-    $pages[] = array
-    (
-      'id' 		      => 'my_settings_page',
-			'title' 	    => __( 'My Settings Page' ),
-			'description' => __( 'A brief description about this page.' )
-    );
-    
-    return $pages;
-  }
+	  function my_settings_pages( $pages )
+	  {
+	    $pages[] = array
+	    (
+		'id'          	=> 'my_settings_page',
+		'title'		=> __( 'My Settings Page' ),
+		'description' 	=> __( 'A brief description about this page.' )
+	    );
+	    
+	    return $pages;
+	  }
   
   add_filter( 'motionmill_settings_pages', 'my_settings_pages' );
   
