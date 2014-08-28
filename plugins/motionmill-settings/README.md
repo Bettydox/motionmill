@@ -246,12 +246,12 @@ __callback__
 
 __styles__
 
-(_String_) (__optional__) styles to enqueue. default: (empty array)
+(_String_) (_optional_) styles to enqueue. default: (empty array)
 
 see page options
 
 __scripts__
 
-(_String_) (__optional__) scripts to enqueue. default: (empty array)
+(_String_) (_optional_) scripts to enqueue. default: (empty array)
 
 see page options
