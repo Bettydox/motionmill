@@ -101,5 +101,99 @@ see [wp\_enqueue_style](http://codex.wordpress.org/Function_Reference/wp_enqueue
 
 same usage as the __scripts__ parameter
 
+Settings Section
+----------------
+
+### Examples
+
+		function my_settings_sections( $sections )
+		{
+			$sections[] = array
+			(
+				'id'          	=> 'my_settings_section',
+				'title'		    => __( 'My Section' ),
+				'description' 	=> __( 'A brief description about this section.' ),
+				'page'          => 'my_settings_page'
+			);
+		
+			return $sections;
+		}
+		  
+		add_filter( 'motionmill_settings_sections', 'my_settings_sections' );
   
-  
+### Options
+
+__id__
+
+(_String_) (_required_) The id of the section. Must be unique.
+
+__title__
+
+(_String_) (_optional_) The title of the section. default: id
+
+__description__
+
+(_mixed_) (_optional_) The section description or a callback. default: ''
+
+__page__
+
+(_String_) (_optional_) The page id to which the section belongs. default: 'motionmill'
+
+
+Settings Fields
+---------------
+
+### Examples
+		function my_settings_fields( $fields )
+		{
+			$fields[] = array
+			(
+				'id'          	=> 'my_textfield',
+				'title'		    => __( 'My Section' ),
+				'description' 	=> __( 'A brief description about this section.' ),
+				'type'          => 'textfield',
+				'value'         => '',
+				'page'          => 'my_settings_page',
+				'section'       => 'my_settings_section'
+			);
+		
+			return $fields;
+		}
+		  
+		add_filter( 'motionmill_settings_fields', 'my_settings_fields' );
+		
+### Options
+
+__id__
+
+(_String_) (_required_) The id. Must be unique per page.
+
+__title__
+
+(_String_) (__optional__) The title of the field. default: id
+
+__description__
+
+(_String_) (__optional__) The description.
+
+__type__
+
+(_String_) (__optional__) The field type. default: 'textfield'
+
+possible values: textfield, textarea, checkbox, dropdown, editor, colorpicker, media or a custom type
+
+__type_args__
+
+(__Array__) (__optional__) The id of the section. Must be unique.
+
+__value__
+
+(_String_) (_required_) The id of the section. Must be unique.
+
+__page__
+
+(_String_) (_required_) The id of the page. default: 'motionmill'
+
+__section__
+
+(_String_) (_required_) The id of the section.
