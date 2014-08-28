@@ -188,7 +188,7 @@ __type_args__
 
 __value__
 
-(_String_) (_required_) The id of the section. Must be unique.
+(_String_) (_required_) The default value. default: ''
 
 __page__
 
@@ -197,3 +197,35 @@ __page__
 __section__
 
 (_String_) (_required_) The id of the section.
+
+
+Field Types
+-----------
+
+		function my_settings_field_types( $types )
+		{
+			$types[] = array
+			(
+				'id'       => 'my_type',
+				'callback' => 'my_type_callback',
+				'styles'   => array(),
+				'scripts'  => array()
+			);
+		
+			return $types;
+		}
+		  
+		add_filter( 'motionmill_settings_field_types', 'my_settings_field_types' );
+		
+		function my_type_callback( $args = array() )
+		{
+			$options = array_merge(array
+			(
+				'id'          => '',
+				'name'        => '',
+				'value'       => '',
+				'description' => ''
+			), $args);
+		
+			// print the field
+		}
