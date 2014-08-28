@@ -4,7 +4,7 @@ Motionmill Settings
 Settings Page
 -------------
 
-### Examples
+This example creates a settings page.
 
 	  function my_settings_pages( $pages )
 	  {
@@ -104,7 +104,7 @@ same usage as the __scripts__ parameter
 Settings Section
 ----------------
 
-### Examples
+This example creates a settings section.
 
 		function my_settings_sections( $sections )
 		{
@@ -143,7 +143,8 @@ __page__
 Settings Fields
 ---------------
 
-### Examples
+This example creates a settings field.
+
 		function my_settings_fields( $fields )
 		{
 			$fields[] = array
@@ -202,7 +203,7 @@ __section__
 Field Types
 -----------
 
-### Examples
+This example creates a field type.
 
 		function my_settings_field_types( $types )
 		{
