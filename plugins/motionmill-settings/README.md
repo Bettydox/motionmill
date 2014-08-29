@@ -92,6 +92,10 @@ combined
   		'jquery',
 		array( 'my-script', 'http://domain.com/js/scripts.js', null, true )
   	)
+  	
+__localize__
+
+(_Array_) (_optional_) A multi-dimensional array containing arguments for the [wp\_localize_script](http://codex.wordpress.org/Function_Reference/wp_enqueue_style) function. default: (empty array)
 
 __styles__
 
@@ -256,6 +260,16 @@ __scripts__
 
 see page options
 
+Changelog
+---------
+
+__v1.0.1__
+
+- added page parameter __localize__.
+
+__v1.0.0__
+
+First release
 
 Download
 --------
