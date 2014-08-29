@@ -49,6 +49,4 @@ Wether you want to display the Widget title on the website.
 Download
 --------
 
-This plugin requires the [Motionmill](https://github.com/addwittz/motionmill) Plugin.
-
-[Download](https://github.com/addwittz/motionmill-widgets "Download")
+This plugin is included in the [Motionmill](https://github.com/addwittz/motionmill) plugin.
