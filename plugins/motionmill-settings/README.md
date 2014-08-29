@@ -75,27 +75,32 @@ see [wp\_enqueue_script](http://codex.wordpress.org/Function_Reference/wp_enqueu
 
 list of handles
 
-  	array( 'jquery-color', 'jquery-masonry' )
+		array( 'jquery-color', 'jquery-masonry' )
 
 list of arguments
 
-	  array
-	  (
-		array( 'my-plugins', 'http://domain.com/js/plugins.js', array('jquery'), true ),
-		array( 'my-script', 'http://domain.com/js/scripts.js', array('jquery'), true )
-	  )
+		array
+		(
+			array( 'my-plugins', 'http://domain.com/js/plugins.js', array('jquery'), true ),
+			array( 'my-script', 'http://domain.com/js/scripts.js', array('jquery'), true )
+		)
   
 combined
 
-  	array
-  	(
-  		'jquery',
-		array( 'my-script', 'http://domain.com/js/scripts.js', null, true )
-  	)
+	  	array
+	  	(
+	  		'jquery',
+			array( 'my-script', 'http://domain.com/js/scripts.js', null, true )
+	  	)
   	
 __localize__
 
 (_Array_) (_optional_) A multi-dimensional array containing arguments for the [wp\_localize_script](http://codex.wordpress.org/Function_Reference/wp_enqueue_style) function. default: (empty array)
+
+		array
+	  	(
+	  		array( 'handle', 'name', array( 'message' => __( 'Hello World!' ) ) )
+	  	)	
 
 __styles__
 
