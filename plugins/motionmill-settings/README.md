@@ -99,7 +99,7 @@ __localize__
 
 		array
 	  	(
-	  		array( 'handle', 'name', array( 'message' => __( 'Hello World!' ) ) )
+	  		array( 'my-script', 'MyScript', array( 'message' => __( 'Hello World!' ) ) )
 	  	)	
 
 __styles__
