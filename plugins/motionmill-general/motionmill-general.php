@@ -5,7 +5,7 @@
  Plugin Name: Motionmill General
  Plugin URI:
  Description: Handles general WordPress settings.
- Version: 1.0.0
+ Version: 1.0.1
  Author: Maarten Menten
  Author URI: http://motionmill.com
  License: GPL2
@@ -33,16 +33,25 @@ if ( ! class_exists( 'MM_General' ) )
 			$this->motionmill = Motionmill::get_instance();
 			
 			add_action( 'wp_head', array( &$this, 'on_wp_head' ) );
-			add_action( 'wp_enqueue_scripts', array( &$this, 'on_enqueue_scripts' ) );
 
 			add_filter( 'body_class', array( &$this, 'on_body_class' ) );
 			add_filter( 'mce_css', array( &$this, 'on_mce_css' ) );
-			add_filter( 'excerpt_length', array( &$this, 'on_excerpt_length' ) );
 
+			if ( $this->get_option( 'post_excerpt_length' ) != '' )
+			{
+				add_filter( 'excerpt_length', array( &$this, 'on_excerpt_length' ) );
+			}
+
+			if ( $this->get_option( 'post_excerpt_more' ) != '' )
+			{
+				add_filter( 'excerpt_more', array( &$this, 'on_excerpt_more' ) );
+			}
+			
 			if ( $this->get_option( 'tracking_enable' ) )
 			{
 				add_action( 'wp_head', array(&$this, 'print_tracking_code'), 999 );
 			}
+
 		}
 
 		public function get_option( $key = null, $default = '' )
@@ -109,9 +118,20 @@ if ( ! class_exists( 'MM_General' ) )
 			(
 				'id' 		  => 'post_excerpt_length',
 				'title' 	  => __( 'Excerpt Length', Motionmill::TEXTDOMAIN ),
-				'description' => __( 'The length of a single-post <a href="http://codex.wordpress.org/Excerpt" target="_blank">excerpt</a>.', Motionmill::TEXTDOMAIN ),
+				'description' => __( 'The maximum number of words for a single post <a href="http://codex.wordpress.org/Excerpt" target="_blank">excerpt</a>. Leave empty to use the default value.', Motionmill::TEXTDOMAIN ),
 				'type'		  => 'textfield',
-				'value'       => 20,
+				'value'       => '',
+				'page'		  => 'motionmill_general',
+				'section'     => 'motionmill_general_post'
+			);
+
+			$fields[] = array
+			(
+				'id' 		  => 'post_excerpt_more',
+				'title' 	  => __( 'Excerpt More', Motionmill::TEXTDOMAIN ),
+				'description' => __( 'The text after the cut off excerpt. Use <code>[permalink]</code> to refer to the url. (Leave empty to use the default value)', Motionmill::TEXTDOMAIN ),
+				'type'		  => 'textfield',
+				'value'       => '',
 				'page'		  => 'motionmill_general',
 				'section'     => 'motionmill_general_post'
 			);
@@ -154,9 +174,28 @@ if ( ! class_exists( 'MM_General' ) )
 			return $classes;
 		}
 
-		public function on_excerpt_length( $length )
+		public function on_excerpt_length( $default )
 		{
-			return $this->get_option( 'post_excerpt_length', $length );
+			return $this->get_option( 'post_excerpt_length', $default );
+		}
+
+		public function on_excerpt_more( $excerpt )
+		{
+			$vars = array
+			(
+				'permalink' => get_permalink()
+			);
+
+			$str = $this->get_option( 'post_excerpt_more' );
+
+			foreach ( $vars as $key => $value )
+			{
+				$tag = sprintf( '[%s]', $key );
+
+				$str = str_replace( $tag, $value, $str );
+			}
+
+			return $str;
 		}
 
 		public function on_mce_css( $mce_css )
@@ -188,13 +227,6 @@ if ( ! class_exists( 'MM_General' ) )
 			</script>
 
 			<?php
-		}
-
-		public function on_enqueue_scripts()
-		{
-			wp_enqueue_script( 'motionmill-general', plugins_url( 'js/scripts.js', __FILE__ ), array( 'jquery' ), '1.0.0', false );
-		
-			wp_localize_script( 'motionmill-general', 'mm_general_options', $this->get_option() );
 		}
 
 		public function on_helpers( $helpers )
