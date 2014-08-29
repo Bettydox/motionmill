@@ -5,7 +5,7 @@
  Plugin Name: Motionmill Settings
  Plugin URI:
  Description: Creates admin menu pages.
- Version: 1.0.0
+ Version: 1.0.1
  Author: Maarten Menten
  Author URI: http://maartenmenten.be
  License: GPL2
@@ -58,8 +58,9 @@ if ( ! class_exists( 'MM_Settings' ) )
 					'submit_button' => true,
 					'priority'      => 10,
 					'admin_bar'     => true,
-					'styles'   		=> array(),
-					'scripts'  		=> array(),
+					'styles'        => array(),
+					'scripts'       => array(),
+					'localize'      => array(),
 					'hook'          => '', // will be set later
 				), $data );
 			}
@@ -328,6 +329,20 @@ if ( ! class_exists( 'MM_Settings' ) )
 							call_user_func_array( $callback , $args );
 						}
 					}
+				}
+			}
+
+			// localizes scripts
+			foreach ( $pages as $page )
+			{
+				if ( ! is_array( $page['localize'] ) )
+				{
+					continue;
+				}
+
+				foreach ( $page['localize'] as $args )
+				{
+					call_user_func_array( 'wp_localize_script', $args );
 				}
 			}
 		}
