@@ -4,6 +4,93 @@ if ( ! class_exists('MM_Wordpress') )
 {
 	class MM_Wordpress
 	{
+		/* ---------------------------------------------------------------------------------------------------------- */
+
+		/**
+		 * Get Error Messages
+		 *
+		 * Gets error messages from an array
+		 *
+		 * @return Array The translate array
+		 */
+
+		static public function get_error_messages( $errors )
+		{
+			$translations = array();
+
+			foreach ( $errors as $key => $error )
+			{
+				if ( is_wp_error( $error ) )
+				{
+					$translation = $error->get_error_message();
+				}
+
+				else
+				{
+					$translation = $result;
+				}
+
+				$translations[ $key ] = $translation;
+			}
+
+			return $translations;
+		}
+
+		/* ---------------------------------------------------------------------------------------------------------- */
+
+		/**
+		 * Get Post Vars
+		 *
+		 * Returns post vars
+		 *
+		 * @return Array
+		 */
+
+		static public function get_post_vars()
+		{
+			return get_object_vars( new WP_Post() );
+		}
+
+		/* ---------------------------------------------------------------------------------------------------------- */
+		
+		/**
+		 * Filter Post Data
+		 *
+		 * removes non post data from an associative array or object and returns the filtered results.
+		 *
+		 * @return Array
+		 */
+
+		static public function filter_post_vars( $data )
+		{
+			return array_intersect_key( get_object_vars( $data ), self::get_post_vars() );
+		}
+
+		/* ---------------------------------------------------------------------------------------------------------- */
+		
+		/**
+		 * Filter Post Meta Data
+		 *
+		 * removes post data from an associative array and returns the filtered results.
+		 *
+		 * @return Array
+		 */
+
+		static public function filter_post_meta_vars( $data )
+		{
+			return array_diff_key( get_object_vars( $data ), self::get_post_vars() );
+		}
+
+		/* ---------------------------------------------------------------------------------------------------------- */
+		
+		/**
+		 * Get Language Code
+		 *
+		 * Returns the current language code
+		 *
+		 * @return String
+		 */
+
 		static public function get_language_code()
 		{
 			if ( defined( 'ICL_LANGUAGE_CODE' ) )
