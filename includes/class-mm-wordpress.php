@@ -4,6 +4,40 @@ if ( ! class_exists('MM_Wordpress') )
 {
 	class MM_Wordpress
 	{
+		static public function get_admin_notice( $message, $args = array() )
+		{
+			$options = array_merge( array
+			(
+				'type'      => 'updated',
+				'title'     => ''
+			), (array) $args );
+
+			// recursive
+			if ( is_array( $message ) )
+			{
+				$str = '';
+
+				foreach ( $message as $key => $value )
+				{
+					$str .= self::get_admin_notice( $value, $args ) . Motionmill::NEWLINE;
+				}
+
+				return $str;
+			}
+
+			if ( empty( $message ) )
+			{
+				return '';
+			}
+
+			if ( $options['title'] )
+			{
+				$message = sprintf( '<strong>%s</strong> - %s', $options['title'], $message );
+			}
+
+			return sprintf( '<div class="%s"><p>%s</p></div>', esc_attr( $options['type'] ), $message );
+		}
+
 		/* ---------------------------------------------------------------------------------------------------------- */
 
 		/**
@@ -14,23 +48,43 @@ if ( ! class_exists('MM_Wordpress') )
 		 * @return Array The translate array
 		 */
 
-		static public function get_error_messages( $errors )
+		static public function get_error_messages( $errors, $args = array() )
 		{
+			$options = array_merge( array
+			(
+				'no_duplicates' => true,
+				'only_errors'   => true
+
+			), (array) $args );
+
 			$translations = array();
 
-			foreach ( $errors as $key => $error )
+			if ( is_array( $errors ) )
 			{
-				if ( is_wp_error( $error ) )
+				foreach ( $errors as $key => $value )
 				{
-					$translation = $error->get_error_message();
-				}
+					if ( is_wp_error( $value ) )
+					{
+						$translation = $value->get_error_message();
+					}
 
-				else
-				{
-					$translation = $result;
-				}
+					else if ( $options['only_errors'] == false )
+					{
+						$translation = $value;
+					}
 
-				$translations[ $key ] = $translation;
+					if ( $options['no_duplicates'] && in_array( $translation, $translations ) )
+					{
+						continue;
+					}
+
+					if ( ! isset( $translation ) )
+					{
+						continue;
+					}
+
+					$translations[ $key ] = $translation;
+				}
 			}
 
 			return $translations;
