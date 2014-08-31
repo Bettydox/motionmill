@@ -70,6 +70,16 @@ ul.list li
 	display: none;
 }
 
+.wp-admin .mm-error
+{
+	color: #dd3d36;
+}
+
+.wp-admin .mm-success
+{
+	color: #7ad03a;
+}
+
 /*
 ------------------------------------------------------------------------------------------------------------------------
  Ajax Loader
@@ -96,7 +106,6 @@ ul.list li
 
 .table { display: table }
 .row   { display: table-row; }
-<<<<<<< HEAD
 .col   { display: table-cell; text-align: left; vertical-align: top;   }
 
 .row.cols-0 .col,
@@ -111,28 +120,8 @@ ul.list li
 .row.cols-9 .col { width: 11.11%; }
 .row.cols-10 .col { width: 10%; }
 
-@media all and ( max-width: 670px )
-{
+@media all and ( max-width: 670px ) {
   
-	.table,
-	.table .row,
-	.table .col
-	{
-		display: block;
-	}
+	.table, .row, .col { display: block; }
 
-	.table .row
-	{
-		margin: 0 0 10px 0;
-	}
-
-	.table .row:last-child
-	{
-		margin-bottom: 0;
-	}
-
-	.table.stretch .col
-	{
-		width: 100%;
-	}
 }
