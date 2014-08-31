@@ -21,11 +21,11 @@ if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) )
 
 $options = get_option( 'motionmill', array() );
 
-if ( isset( $options['active_plugins'] ) && is_array( $options['active_plugins'] ) )
+if ( isset( $options['plugins'] ) && is_array( $options['plugins'] ) )
 {
-	$active_plugins = $options['active_plugins'];
+	$plugins = $options['plugins'];
 
-	foreach ( $active_plugins as $file )
+	foreach ( $plugins as $file )
 	{
 		$path = trailingslashit( WP_PLUGIN_DIR ) . dirname( $file ) . '/uninstall.php';
 
