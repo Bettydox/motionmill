@@ -3,9 +3,9 @@
 /*
 ------------------------------------------------------------------------------------------------------------------------
  Plugin Name: Motionmill General
- Plugin URI: https://github.com/addwittz/motionmill/tree/master/plugins/motionmill-general
+ Plugin URI:
  Description: Handles general WordPress settings.
- Version: 1.0.1
+ Version: 1.0.2
  Author: Maarten Menten
  Author URI: http://motionmill.com
  License: GPL2
@@ -66,7 +66,7 @@ if ( ! class_exists( 'MM_General' ) )
 				'id'          => 'motionmill_general',
 				'title'       => __('General', Motionmill::TEXTDOMAIN),
 				'description' => __('', Motionmill::TEXTDOMAIN),
-				'priority'    => 10
+				'priority'    => 5
 			);
 
 			return $pages;
@@ -79,7 +79,7 @@ if ( ! class_exists( 'MM_General' ) )
 			$sections[] = array
 			(
 				'id' 		  => 'motionmill_general_general',
-				'title' 	  => __( 'Miscellanious', Motionmill::TEXTDOMAIN ),
+				'title' 	  => __( '', Motionmill::TEXTDOMAIN ),
 				'description' => __( '', Motionmill::TEXTDOMAIN ),
 				'page'        => 'motionmill_general'
 			);
@@ -89,7 +89,7 @@ if ( ! class_exists( 'MM_General' ) )
 			$sections[] = array
 			(
 				'id' 		  => 'motionmill_general_post',
-				'title' 	  => __( 'Post', Motionmill::TEXTDOMAIN ),
+				'title' 	  => __( '', Motionmill::TEXTDOMAIN ),
 				'description' => __( '', Motionmill::TEXTDOMAIN ),
 				'page'        => 'motionmill_general'
 			);
