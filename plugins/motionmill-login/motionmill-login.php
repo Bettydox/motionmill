@@ -3,7 +3,7 @@
 /*
 ------------------------------------------------------------------------------------------------------------------------
  Plugin Name: Motionmill Login
- Plugin URI: https://github.com/addwittz/motionmill/tree/master/plugins/motionmill-login
+ Plugin URI:
  Description: Customizes the login page.
  Version: 1.0.2
  Author: Maarten Menten
@@ -23,6 +23,12 @@ if ( ! class_exists('MM_Login') )
 		{
 			$this->auth_types = array
 			(
+				'' => array
+				(
+					'title' => __( '- don\'t change -', Motionmill::TEXTDOMAIN ),
+					'error' => '',
+				),
+
 				'login' => array
 				(
 					'title' => __( 'Username', Motionmill::TEXTDOMAIN ),
@@ -53,14 +59,22 @@ if ( ! class_exists('MM_Login') )
 		{	
 			$this->motionmill = Motionmill::get_instance();
 
+			if ( ! $this->get_option( 'enable' ) )
+			{
+				return;
+			}
+
 			add_action( 'login_head', array(&$this, 'on_login_head') );
 			add_filter( 'login_headerurl', array(&$this, 'on_login_headerurl') );
 			add_filter( 'login_headertitle', array(&$this, 'on_login_headertitle') );
 			add_filter( 'login_message', array(&$this, 'on_login_message') );
 			add_filter( 'login_footer', array(&$this, 'on_login_footer') );
-			add_filter( 'authenticate', array( &$this, 'on_authenticate' ), 30, 3 );
 
-			add_filter( 'gettext', array( &$this, 'on_gettext' ), 20, 3 );
+			if ( $this->get_option('auth_type') != '' )
+			{
+				add_filter( 'authenticate', array( &$this, 'on_authenticate' ), 30, 3 );
+				add_filter( 'gettext', array( &$this, 'on_gettext' ), 20, 3 );
+			}
 		}
 
 		public function get_option( $key = null, $default = '' )
@@ -206,16 +220,8 @@ if ( ! class_exists('MM_Login') )
 		{
 			$sections[] = array
 			(
-				'id' 		  => 'motionmill_login_layout',
-				'title' 	  => __( 'Layout', Motionmill::TEXTDOMAIN ),
-				'description' => __( '', Motionmill::TEXTDOMAIN ),
-				'page'        => 'motionmill_login'
-			);
-
-			$sections[] = array
-			(
-				'id' 		  => 'motionmill_login_authentication',
-				'title' 	  => __( 'Authentication', Motionmill::TEXTDOMAIN ),
+				'id' 		  => 'motionmill_login_general',
+				'title' 	  => __( '', Motionmill::TEXTDOMAIN ),
 				'description' => __( '', Motionmill::TEXTDOMAIN ),
 				'page'        => 'motionmill_login'
 			);
@@ -233,7 +239,7 @@ if ( ! class_exists('MM_Login') )
 				'type'        => 'media',
 				'value'       => __( plugins_url('images/logo-motionmill.png', Motionmill::FILE), Motionmill::TEXTDOMAIN ),
 				'page'		  => 'motionmill_login',
-				'section'     => 'motionmill_login_layout'
+				'section'     => 'motionmill_login_general'
 			);
 
 			$fields[] = array
@@ -244,7 +250,7 @@ if ( ! class_exists('MM_Login') )
 				'type'        => 'textfield',
 				'value'       => __( 'Powered by Motionmill', Motionmill::TEXTDOMAIN ),
 				'page'		  => 'motionmill_login',
-				'section'     => 'motionmill_login_layout'
+				'section'     => 'motionmill_login_general'
 			);
 
 			$fields[] = array
@@ -255,7 +261,7 @@ if ( ! class_exists('MM_Login') )
 				'type'		  => 'textfield',
 				'value'       => __( 'http://motionmill.com', Motionmill::TEXTDOMAIN ),
 				'page'		  => 'motionmill_login',
-				'section'     => 'motionmill_login_layout'
+				'section'     => 'motionmill_login_general'
 			);
 
 			$fields[] = array
@@ -266,7 +272,7 @@ if ( ! class_exists('MM_Login') )
 				'type'		  => 'editor',
 				'value'       => '',
 				'page'		  => 'motionmill_login',
-				'section'     => 'motionmill_login_layout'
+				'section'     => 'motionmill_login_general'
 			);
 
 			$fields[] = array
@@ -277,7 +283,7 @@ if ( ! class_exists('MM_Login') )
 				'type'		  => 'editor',
 				'value'       => '',
 				'page'		  => 'motionmill_login',
-				'section'     => 'motionmill_login_layout'
+				'section'     => 'motionmill_login_general'
 			);
 
 			$options = array();
@@ -290,13 +296,24 @@ if ( ! class_exists('MM_Login') )
 			$fields[] = array
 			(
 				'id'          => 'auth_type',
-				'title'       => __( 'Type', Motionmill::TEXTDOMAIN ),
+				'title'       => __( 'Authentication', Motionmill::TEXTDOMAIN ),
 				'description' => __( '', Motionmill::TEXTDOMAIN ),
 				'type'		  => 'dropdown',
 				'type_args'   => array( 'options' => $options ),
-				'value'       => 'login',
+				'value'       => '',
 				'page'		  => 'motionmill_login',
-				'section'     => 'motionmill_login_authentication'
+				'section'     => 'motionmill_login_general'
+			);
+
+			$fields[] = array
+			(
+				'id'          => 'enable',
+				'title'       => __( 'Enable', Motionmill::TEXTDOMAIN ),
+				'description' => __( 'Check/uncheck to enable/disable.', Motionmill::TEXTDOMAIN ),
+				'type'		  => 'checkbox',
+				'value'       => 1,
+				'page'		  => 'motionmill_login',
+				'section'     => 'motionmill_login_general'
 			);
 
 			return $fields;

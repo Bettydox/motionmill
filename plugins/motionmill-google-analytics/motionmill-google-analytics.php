@@ -3,7 +3,7 @@
 /*
 ------------------------------------------------------------------------------------------------------------------------
  Plugin Name: Motionmill Google Analytics
- Plugin URI: https://github.com/addwittz/motionmill/tree/master/plugins/motionmill-google-analytics
+ Plugin URI:
  Description: Connects your blog with Google Analytics.
  Version: 1.0.1
  Author: Maarten Menten
