@@ -3,7 +3,7 @@
 /*
 ------------------------------------------------------------------------------------------------------------------------
  Plugin Name: Motionmill General
- Plugin URI:
+ Plugin URI: https://github.com/addwittz/motionmill/tree/master/plugins/motionmill-general
  Description: Handles general WordPress settings.
  Version: 1.0.1
  Author: Maarten Menten
