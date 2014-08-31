@@ -5,7 +5,7 @@
  Plugin Name: Motionmill Settings
  Plugin URI:
  Description: Creates admin menu pages.
- Version: 1.0.1
+ Version: 1.0.2
  Author: Maarten Menten
  Author URI: http://maartenmenten.be
  License: GPL2
@@ -52,6 +52,7 @@ if ( ! class_exists( 'MM_Settings' ) )
 					'menu_title'    => $data['title'],
 					'capability'    => 'manage_options',
 					'menu_slug'     => $data['id'],
+					'menu_counter'  => false,
 					'parent_slug'   => 'motionmill',
 					'description'   => '',
 					'option_name'   => $data['id'],
@@ -100,6 +101,7 @@ if ( ! class_exists( 'MM_Settings' ) )
 					'type_args'    => array(),
 					'value'        => '',
 					'description'  => '',
+					'rules'        => 'trim', 
 					'page'         => 'motionmill',
 					'section'      => ''
 				), $data );
@@ -126,6 +128,8 @@ if ( ! class_exists( 'MM_Settings' ) )
 			add_action( 'admin_enqueue_scripts', array( &$this, 'on_admin_enqueue_scripts' ) );
 			add_action( 'admin_menu', array( &$this, 'on_admin_menu' ) );
 			add_action( 'admin_bar_menu', array( &$this, 'on_admin_bar_menu' ), 100 );
+
+			add_filter( 'motionmill_settings_sanitize_option', array( &$this, 'on_sanitize_option' ), 5, 2 );
 
 			register_deactivation_hook( self::FILE, array( &$this, 'on_deactivate' ) );
 		}
@@ -182,7 +186,7 @@ if ( ! class_exists( 'MM_Settings' ) )
 
 		public function get_default_options( $page_id )
 		{
-			$fields =  MM_Array::get_elements_by( array( 'page' => $page_id ), $this->fields );
+			$fields = MM_Array::get_elements_by( array( 'page' => $page_id ), $this->fields );
 
 			$options = array();
 
@@ -263,7 +267,17 @@ if ( ! class_exists( 'MM_Settings' ) )
 		{
 			foreach ( $this->pages as &$page )
 			{
-				$page['hook'] = add_submenu_page( $page['parent_slug'], $page['title'], $page['menu_title'], $page['capability'], $page['menu_slug'], array( &$this, 'on_print_page') );
+				if ( $page['menu_counter'] )
+				{
+					$menu_title = sprintf( '%s <span class="update-plugins count-%s"><span class="plugin-count">%s</span></span>', $page['menu_title'], esc_attr( $page['menu_counter'] ), esc_html( $page['menu_counter'] ) );
+				}
+
+				else
+				{
+					$menu_title = $page['menu_title'];
+				}
+
+				$page['hook'] = add_submenu_page( $page['parent_slug'], $page['title'], $menu_title, $page['capability'], $page['menu_slug'], array( &$this, 'on_print_page') );
 			}
 		}
 
@@ -387,8 +401,48 @@ if ( ! class_exists( 'MM_Settings' ) )
 		}
 
 		public function on_sanitize_options( $options )
+		{	
+			$page_id = $_POST['option_page'];
+
+			$fields = MM_Array::get_elements_by( array( 'page' => $page_id ), $this->fields );
+
+			foreach ( $fields as $field )
+			{
+				if ( ! isset( $options[ $field['id'] ] ) )
+				{
+					continue;
+				}
+
+				$option = &$options[ $field['id'] ];
+
+				$rules = MM_Array::explode( '|', $field['rules'] );
+
+				foreach ( $rules as $rule )
+				{
+					$option = apply_filters( 'motionmill_settings_sanitize_option', $option, $rule );
+				}
+			}
+
+			return apply_filters( 'motionmill_settings_sanitize_options', $options, $page_id );
+		}
+
+		public function on_sanitize_option( $option, $rule )
 		{
-			return apply_filters( 'motionmill_settings_sanitize_options', $options, $_POST['option_page'] );
+			switch ( $rule )
+			{
+				case 'trim'	     	: return trim( $option );
+				case 'lowercase' 	: return strtolower( $option );
+				case 'upercase' 	: return strtoupper( $option );
+				case 'email'    	: return sanitize_email( $option );
+				case 'file_name'	: return sanitize_file_name( $option );
+				case 'html_class'	: return sanitize_html_class( $option );
+				case 'mime_type'	: return sanitize_mime_type( $option );
+				case 'text_field'	: return sanitize_text_field( $option );
+				case 'user'			: return sanitize_user( $option );
+				case 'title'		: return sanitize_title( $option );
+			}
+
+			return $option;
 		}
 
 		public function on_deactivate()
