@@ -28,6 +28,19 @@ if ( ! class_exists('MM_Form') )
 
 			return $default;
 		}
+		
+		static public function parse_attributes( $attributes )
+		{
+			$str = '';
+
+			foreach ( $attributes as $key => $value )
+			{
+				$str .= sprintf( ' %s="%s"', esc_html( $key ), esc_attr( $value ) );
+			}
+
+			return $str;
+		}
+
 	}
 }
 
