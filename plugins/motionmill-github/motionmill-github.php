@@ -1,78 +1,42 @@
 <?php if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
-if ( ! class_exists('MM_GitHub') )
+/*
+------------------------------------------------------------------------------------------------------------------------
+ Plugin Name: Motionmill GitHub
+ Plugin URI:
+ Description: Fetches data from GitHub
+ Version: 1.0.0
+ Author: Maarten Menten
+ Author URI: http://motionmill.com
+ License: GPL2
+------------------------------------------------------------------------------------------------------------------------
+*/
+
+if ( ! class_exists( 'MM_GitHub' ) )
 {
 	class MM_GitHub
 	{
-		static public function plugin_to_repo( $file )
-		{
-			if ( stripos( $file, '.php' ) === false )
-			{
-				return $file;
-			}
+		const FILE = __FILE__;
+		
+		protected $http_codes = array();
+		protected $options = array();
 
-			return dirname( trim( $file, '/' ) );
+		public function __construct()
+		{	
+			add_action( 'motionmill_init', array( &$this, 'initialize' ) );
 		}
-
-		static public function get_tags( $repo )
+		
+		public function initialize()
 		{
-			$data = self::do_request( $repo . '/git/refs/tags' );
-
-			if ( is_wp_error( $data ) )
-			{
-				return $data;
-			}
-
-			$tags = array();
-
-			foreach ( $data as $tag )
-			{	
-				$tags[] = basename( $tag->url );
-			}
-
-			return $tags;
-		}
-
-		static public function get_versions( $repo )
-		{
-			$tags = self::get_tags( $repo );
-
-			if ( is_wp_error( $tags ) )
-			{
-				return $tags;
-			}
-
-			$versions = array();
-
-			foreach ( $tags as $tag )
-			{	
-				if ( stripos( $tag, 'v') !== 0 )
-				{
-					return;
-				}
-
-				$versions[] = substr( $tag, 1 );
-			}
-
-			usort( $versions , function( $a, $b )
-			{
-				return version_compare( $a, $b );
-			});
-
-			return $versions;
-		}
-
-		static public function do_request( $extra )
-		{
-			$url = sprintf( 'https://api.github.com/repos/addwittz/%s', ltrim( $extra, '/' ) );
-
-			$response = self::do_curl( $url, array
+			$this->options = apply_filters( 'motionmill_github_options', array
 			(
-				'username' => 'mmaarten',
-				'password' => 'e280054b8a4afd585b21f43774b34aa4fb3a0c28'
+				'account'       => 'addwittz',
+				'auth_username' => 'mmaarten',
+				'auth_password' => 'e280054b8a4afd585b21f43774b34aa4fb3a0c28',
+				'auth_type'     => 'token'
 			));
 
-			$http_codes = array
+			$this->http_codes = array
 	        (
 			    100 => __( 'Continue', Motionmill::TEXTDOMAIN ),
 			    101 => __( 'Switching Protocols', Motionmill::TEXTDOMAIN ),
@@ -130,19 +94,89 @@ if ( ! class_exists('MM_GitHub') )
 			    509 => __( 'Bandwidth Limit Exceeded', Motionmill::TEXTDOMAIN ),
 			    510 => __( 'Not Extended', Motionmill::TEXTDOMAIN ),
 	        );
+		}
+
+		public function plugin_to_repo( $file )
+		{
+			if ( stripos( $file, '.php' ) === false )
+			{
+				return $file;
+			}
+
+			return dirname( trim( $file, '/' ) );
+		}
+
+		public function get_tags( $repo )
+		{
+			$data = $this->do_request( $repo . '/git/refs/tags' );
+
+			if ( is_wp_error( $data ) )
+			{
+				return $data;
+			}
+
+			$tags = array();
+
+			foreach ( $data as $tag )
+			{	
+				$tags[] = basename( $tag->url );
+			}
+
+			return $tags;
+		}
+
+		public function get_versions( $repo )
+		{
+			$tags = $this->get_tags( $repo );
+
+			if ( is_wp_error( $tags ) )
+			{
+				return $tags;
+			}
+
+			$versions = array();
+
+			foreach ( $tags as $tag )
+			{	
+				if ( stripos( $tag, 'v') !== 0 )
+				{
+					return;
+				}
+
+				$versions[] = substr( $tag, 1 );
+			}
+
+			usort( $versions , function( $a, $b )
+			{
+				return version_compare( $a, $b );
+			});
+
+			return $versions;
+		}
+
+		public function do_request( $extra )
+		{
+			$url = sprintf( 'https://api.github.com/repos/%s/%s', $this->options['account'], ltrim( $extra, '/' ) );
+
+			$response = $this->do_curl( $url, array
+			(
+				'username'  => $this->options['auth_username'],
+				'password'  => $this->options['auth_password'],
+				'auth_type' => $this->options['auth_type']
+			));
 			
 			$http_code = $response['headers']['http_code'];
 
 			if ( ! in_array( $http_code, array( 0, 200, 201 ) ) )
 			{
-				if ( isset( $http_codes[ $http_code ] ) )
+				if ( isset( $this->http_codes[ $http_code ] ) )
 				{
-					$message = $http_codes[ $http_code ];
+					$message = $this->http_codes[ $http_code ];
 				}
 
 				else
 				{
-					$message = __( 'An unknown error occured.', Motionmill::TEXTDOMAIN );
+					$message = __( 'An unknown HTTP error occured.', Motionmill::TEXTDOMAIN );
 				}
 
 				return new WP_Error( 'github_api', sprintf( '%s - %s', $http_code, $message ) );
@@ -156,13 +190,14 @@ if ( ! class_exists('MM_GitHub') )
 	        return $response;
 		}
 
-		static public function do_curl( $url, $options = array() )
+		protected function do_curl( $url, $options = array() )
 		{
 			$options = array_merge( array
 			(
 				'username'  => '',
 				'password'  => '',
 				'useragent' => $_SERVER['HTTP_USER_AGENT'],
+				'auth_type' => '',
 				'port'      => 0
 			), (array) $options );
 
@@ -170,17 +205,23 @@ if ( ! class_exists('MM_GitHub') )
 
 			error_log( $url );
 
-			curl_setopt_array( $ch, array
+			$curl_options = array
 			(
 				CURLOPT_URL            => $url,
-				CURLOPT_USERPWD        => sprintf( '%s/token:%s', $options['username'], $options['password'] ),
 				CURLOPT_USERAGENT      => $options['useragent'],
 				CURLOPT_RETURNTRANSFER => 1,
 				CURLOPT_FOLLOWLOCATION => 1,
 				CURLOPT_SSL_VERIFYPEER => 0,
 				CURLOPT_TIMEOUT        => 0,
 				CURLOPT_PORT           => $options['port']
-			));
+			);
+
+			if ( $options['auth_type'] == 'token' )
+			{
+				$curl_options[ CURLOPT_USERPWD ] =  sprintf( '%s/token:%s', $options['username'], $options['password'] );
+			}
+
+			curl_setopt_array( $ch, $curl_options );
 
 			$response = array
 			(
@@ -195,6 +236,19 @@ if ( ! class_exists('MM_GitHub') )
 			return $response;
 		}
 	}
+}
+
+// registers plugin
+if ( ! function_exists('motionmill_plugins_add_github') )
+{
+	function motionmill_plugins_add_github( $plugins )
+	{
+		$plugins[] = 'MM_GitHub';
+
+		return $plugins;
+	}
+
+	add_filter( 'motionmill_plugins', 'motionmill_plugins_add_github' );
 }
 
 ?>
