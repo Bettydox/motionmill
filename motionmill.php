@@ -5,7 +5,7 @@
  Plugin Name: Motionmill
  Plugin URI: https://github.com/addwittz/motionmill
  Description: Motionmill provides tools that facilitates the creation process of WordPress plugins.
- Version: 1.5.3
+ Version: 1.5.4
  Author: Maarten Menten
  Author URI: http://motionmill.com
  License: GPL2
@@ -23,7 +23,7 @@ if ( ! class_exists( 'Motionmill' ) )
 		const TEXTDOMAIN   = 'motionmill';
 		const NONCE_NAME   = 'motionmill';
 		const NEWLINE      = "\n";
-		const VERSION      = '1.5.3';
+		const VERSION      = '1.5.4';
 
 		static private $instance = null;
 
@@ -57,6 +57,7 @@ if ( ! class_exists( 'Motionmill' ) )
 			------------------------------------------------------------------------------------------------------------
 			*/
 
+			require_once( $this->get_absolute_path( self::INCLUDE_DIR ) . 'common.php' );
 			require_once( ABSPATH . 'wp-admin/includes/plugin.php' ); // needed for <codeget_plugins</code> and <codeget_plugin_data</code>
 
 			/*
@@ -72,6 +73,8 @@ if ( ! class_exists( 'Motionmill' ) )
 				require_once( trailingslashit( WP_PLUGIN_DIR ) . $file );
 
 				$plugins[] = $file;
+
+				$this->log( 'plugin %s loaded.', $file );
 			}
 
 			$this->set_option( 'plugins', $plugins );
@@ -90,6 +93,8 @@ if ( ! class_exists( 'Motionmill' ) )
 				}
 
 				$this->plugins[ $class ] = new $class();
+
+				$this->log( 'plugin %s registered.', $class );
 			}
 
 			/*
@@ -110,6 +115,8 @@ if ( ! class_exists( 'Motionmill' ) )
 				require_once( $this->get_absolute_path( self::INCLUDE_DIR ) . $file );
 
 				$this->helpers[ $class ] = true;
+
+				$this->log( 'helper %s registered.', $class );
 			}
 
 			/* ------------------------------------------------------------------------------------------------------ */
@@ -236,6 +243,25 @@ if ( ! class_exists( 'Motionmill' ) )
 		public function get_relative_path( $suffix = '' )
 		{
 			return plugin_basename( $this->get_absolute_path( $suffix ) );
+		}
+
+		public function log( $value )
+		{
+			$args = func_get_args();
+
+			if ( count( $args) > 1 )
+			{
+				$message = call_user_func_array( 'sprintf' , $args );
+			}
+
+			else
+			{
+				$message = $args[0];
+			}
+
+			$message = sprintf( '[motionmill] %s', $message );
+
+			return error_log( $message );
 		}
 
 		public function load_textdomain()
