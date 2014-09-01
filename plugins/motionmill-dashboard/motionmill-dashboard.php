@@ -3,9 +3,9 @@
 /*
 ------------------------------------------------------------------------------------------------------------------------
  Plugin Name: Motionmill Dashboard
- Plugin URI:
- Description:
- Version: 1.0.1
+ Plugin URI: https://github.com/addwittz/motionmill/tree/master/plugins/motionmill-dashboard
+ Description: Creates the Motionmill Dashboard page.
+ Version: 1.0.2
  Author: Maarten Menten
  Author URI: http://motionmill.com
  License: GPL2
