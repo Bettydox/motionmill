@@ -1,9 +1,6 @@
 Motionmill Google Analytics
 ===========================
 
-Summary
--------
-
 Connects Wordpress with Google Analytics
 
 Options
@@ -19,6 +16,10 @@ Enable tracking
 
 changelog
 ---------
+
+__v1.0.1__
+
+- changed the way to call Motionmil
 
 __v1.0.0__
 
