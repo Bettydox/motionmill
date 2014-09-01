@@ -98,7 +98,7 @@ if ( ! class_exists( 'MM_Settings' ) )
 					'type_args'    => array(),
 					'value'        => '',
 					'description'  => '',
-					'rules'        => 'trim', 
+					'rules'        => array( 'trim' ), 
 					'page'         => 'motionmill',
 					'section'      => ''
 				), $data );
@@ -412,11 +412,12 @@ if ( ! class_exists( 'MM_Settings' ) )
 
 				$option = &$options[ $field['id'] ];
 
-				$rules = MM_Array::explode( '|', $field['rules'] );
-
-				foreach ( $rules as $rule )
+				if ( is_array( $field['rules'] ) )
 				{
-					$option = apply_filters( 'motionmill_settings_sanitize_option', $option, $rule );
+					foreach ( $field['rules'] as $rule )
+					{
+						$option = apply_filters( 'motionmill_settings_sanitize_option', $option, $rule );
+					}
 				}
 			}
 
@@ -427,16 +428,16 @@ if ( ! class_exists( 'MM_Settings' ) )
 		{
 			switch ( $rule )
 			{
-				case 'trim'	     	: return trim( $option );
-				case 'lowercase' 	: return strtolower( $option );
-				case 'upercase' 	: return strtoupper( $option );
-				case 'email'    	: return sanitize_email( $option );
-				case 'file_name'	: return sanitize_file_name( $option );
-				case 'html_class'	: return sanitize_html_class( $option );
-				case 'mime_type'	: return sanitize_mime_type( $option );
-				case 'text_field'	: return sanitize_text_field( $option );
-				case 'user'			: return sanitize_user( $option );
-				case 'title'		: return sanitize_title( $option );
+				case 'trim'	     			: return trim( $option );
+				case 'lowercase' 			: return strtolower( $option );
+				case 'upercase' 			: return strtoupper( $option );
+				case 'sanitize_email'    	: return sanitize_email( $option );
+				case 'sanitize_file_name'	: return sanitize_file_name( $option );
+				case 'sanitize_html_class'	: return sanitize_html_class( $option );
+				case 'sanitize_mime_type'	: return sanitize_mime_type( $option );
+				case 'sanitize_text_field'	: return sanitize_text_field( $option );
+				case 'sanitize_user'		: return sanitize_user( $option );
+				case 'sanitize_title'		: return sanitize_title( $option );
 			}
 
 			return $option;
