@@ -1,3 +1,4 @@
-#Motionmill Plugin Example
+Motionmill Github
+=================
 
-Basic functionallity you need for creating a Motionmill plugin.
+Fetched data from [GitHub](https://github.com).
