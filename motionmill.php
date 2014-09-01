@@ -5,7 +5,7 @@
  Plugin Name: Motionmill
  Plugin URI: https://github.com/addwittz/motionmill
  Description: Motionmill provides tools that facilitates the creation process of WordPress plugins.
- Version: 1.5.4
+ Version: 1.5.5
  Author: Maarten Menten
  Author URI: http://motionmill.com
  License: GPL2
@@ -23,7 +23,7 @@ if ( ! class_exists( 'Motionmill' ) )
 		const TEXTDOMAIN   = 'motionmill';
 		const NONCE_NAME   = 'motionmill';
 		const NEWLINE      = "\n";
-		const VERSION      = '1.5.4';
+		const VERSION      = '1.5.5';
 
 		static private $instance = null;
 
@@ -137,9 +137,9 @@ if ( ! class_exists( 'Motionmill' ) )
 			$this->initialized = true;
 		}
 		
-		public function get_option( $key = null, $default = '' )
+		public function get_option( $key = null, $default = '', $group = 'general' )
 		{
-			$options = (array) get_option( self::OPTION_NAME, array() );
+			$options = $this->get_options( $group );
 
 			if ( $key == null )
 			{
@@ -154,24 +154,40 @@ if ( ! class_exists( 'Motionmill' ) )
 			return $default;
 		}
 
-		public function set_option( $key, $value )
+		public function get_options( $group = '' )
 		{
-			// recursive
-			if ( is_array( $key ) )
-			{
-				foreach ( $key as $option_name => $option_value )
-				{
-					$this->set_option( $option_name, $option_value );
-				}
+			$options = (array) get_option( self::OPTION_NAME, array() );
 
-				return;
+			if ( ! $group )
+			{
+				return $options;
 			}
 
-			$options = $this->get_option();
+			if ( isset( $options[ $group ] ) )
+			{
+				return $options[ $group ];
+			}
 
-			$options[ $key ] = $value;
+			return array();
+		}
 
-			update_option( self::OPTION_NAME, $options );
+		public function set_option( $key, $value, $group = 'general' )
+		{
+			if ( ! $group )
+			{
+				return false;
+			}
+
+			$options = $this->get_options();
+
+			if ( ! isset( $options[ $group ] ) )
+			{
+				$options[ $group ] = array();
+			}
+
+			$options[ $group ][ $key ] = $value;
+
+			return update_option( self::OPTION_NAME, $options );
 		}
 
 		public function get_plugin( $class )
