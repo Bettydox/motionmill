@@ -1,9 +1,6 @@
 Motionmill Login
 ================
 
-Summary
--------
-
 This plugin customizes the WordPress login page.
 
 Options
@@ -42,6 +39,10 @@ Screenshots
 
 Changelog
 ---------
+
+__v1.0.3__
+
+- changed the way to call Motionmil
 
 __v1.0.2__
 
