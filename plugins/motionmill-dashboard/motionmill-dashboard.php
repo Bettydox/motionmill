@@ -5,7 +5,7 @@
  Plugin Name: Motionmill Dashboard
  Plugin URI: https://github.com/addwittz/motionmill/tree/master/plugins/motionmill-dashboard
  Description: Creates the Motionmill Dashboard page.
- Version: 1.0.2
+ Version: 1.0.3
  Author: Maarten Menten
  Author URI: http://motionmill.com
  License: GPL2
@@ -174,7 +174,7 @@ if ( ! class_exists( 'MM_Dashboard' ) )
 				{
 					$data = get_plugin_data( trailingslashit( WP_PLUGIN_DIR ) . $file );
 
-					printf( '<li><h4>%s</h4></li>', $plugin['Name'] );
+					printf( '<li><h4>%s</h4></li>', $data['Name'] );
 				}
 
 				print '</ul>';
