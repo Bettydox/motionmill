@@ -3,9 +3,9 @@
 /*
 ------------------------------------------------------------------------------------------------------------------------
  Plugin Name: Motionmill Settings
- Plugin URI:
+ Plugin URI: https://github.com/addwittz/motionmill/tree/master/plugins/motionmill-settings
  Description: Creates admin menu pages.
- Version: 1.0.3
+ Version: 1.0.4
  Author: Maarten Menten
  Author URI: http://maartenmenten.be
  License: GPL2
