@@ -21,3 +21,8 @@ The text after the cut off excerpt.
 __Post Editor CSS__
 
 Additional CSS file URLs for the rich text editor
+
+Dependencies
+------------
+
+[Motionmill](https://github.com/addwittz/motionmill)
