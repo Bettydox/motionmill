@@ -5,7 +5,7 @@
  Plugin Name: Motionmill Updates
  Plugin URI: 
  Description: Checks Updates for Motionmill plugins.
- Version: 1.0.0
+ Version: 1.0.1
  Author: Maarten Menten
  Author URI: http://motionmill.com
  License: GPL2
@@ -22,7 +22,6 @@ if ( ! class_exists( 'MM_Updates' ) )
 
 		public function __construct()
 		{	
-			add_filter( 'motionmill_helpers', array( &$this, 'on_helpers' ) );
 			add_filter( 'motionmill_settings_pages', array( &$this, 'on_settings_pages' ) );
 			add_filter( 'motionmill_settings_sections', array( &$this, 'on_settings_sections' ) );
 			add_filter( 'motionmill_settings_sanitize_options', array( &$this, 'on_sanitize_options' ) );
@@ -43,7 +42,7 @@ if ( ! class_exists( 'MM_Updates' ) )
 
 		public function get_updateables()
 		{
-			$versions = MM()->get_option( 'plugin_versions', array() );
+			$versions = MM()->get_option( 'versions', array(), 'updates' );
 
 			$plugins = array();
 
@@ -77,9 +76,9 @@ if ( ! class_exists( 'MM_Updates' ) )
 
 		public function print_updates()
 		{
-			$versions    = MM()->get_option( 'plugin_versions', array() );
-			$last_check  = MM()->get_option( 'plugin_versions_last_check', false );
-			$errors      = MM()->get_option( 'plugin_versions_errors', array() );
+			$versions    = MM()->get_option( 'versions', array(), 'updates' );
+			$last_check  = MM()->get_option( 'versions_last_check', false, 'updates' );
+			$errors      = MM()->get_option( 'versions_errors', array(), 'updates' );
 			$schedule    = wp_get_schedule( 'motionmill_updates_check_versions' );
 			$updateables = $this->get_updateables();
 
@@ -114,12 +113,12 @@ if ( ! class_exists( 'MM_Updates' ) )
 
 					else
 					{
-						$latest = $update_to_date = __( '?', Motionmill::TEXTDOMAIN );
+						$latest = $update_to_date = __( '-', Motionmill::TEXTDOMAIN );
 					}
 
 					if ( isset( $errors[$file] ) )
 					{
-						$comments = $errors[$file];
+						$comments = __( 'Update information not available.', Motionmill::TEXTDOMAIN );
 					}
 
 					else
@@ -152,7 +151,6 @@ if ( ! class_exists( 'MM_Updates' ) )
 				<?php endif; ?>
 
 				<?php submit_button( __( 'Check Again', Motionmill::TEXTDOMAIN ), 'secondary', 'submit', false ); ?>
-
 			</p>
 
 			<?php
@@ -167,16 +165,16 @@ if ( ! class_exists( 'MM_Updates' ) )
 
 		public function check_versions()
 		{
-			$checked_versions = MM()->get_option( 'plugin_versions', array() );
+			$checked_versions = MM()->get_option( 'versions', array(), 'updates' );
 
 			$errors   = array();
 			$versions = array();
 
 			foreach ( $this->get_subjects() as $file => $data )
 			{
-				$repo = MM_GitHub::plugin_to_repo( $file );
+				$repo = MM('GitHub')->plugin_to_repo( $file );
 
-				$plugin_versions = MM_GitHub::get_versions( $repo );
+				$plugin_versions = MM('GitHub')->get_versions( $repo );
 
 				if ( is_wp_error( $plugin_versions ) )
 				{
@@ -200,9 +198,9 @@ if ( ! class_exists( 'MM_Updates' ) )
 				$versions[ $file ] = $version;
 			}
 
-			MM()->set_option( 'plugin_versions', $versions );
-			MM()->set_option( 'plugin_versions_errors', $errors );
-			MM()->set_option( 'plugin_versions_last_check', time() );		
+			MM()->set_option( 'versions', $versions, 'updates' );
+			MM()->set_option( 'versions_errors', $errors, 'updates' );
+			MM()->set_option( 'versions_last_check', time(), 'updates' );		
 		}
 
 		public function run_check_versions_schedule()
@@ -222,13 +220,6 @@ if ( ! class_exists( 'MM_Updates' ) )
 					wp_schedule_event( time(), $this->options['schedule_interval'], 'motionmill_updates_check_versions' );
 				}
 			}
-		}
-
-		public function on_helpers( $helpers )
-		{
-			array_push( $helpers , 'MM_GitHub', 'MM_Wordpress' );
-
-			return $helpers;
 		}
 
 		public function on_settings_pages( $pages )
