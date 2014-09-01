@@ -21,8 +21,6 @@ if ( ! class_exists('MM_Roles') )
 		protected $roles = array();
 		protected $caps  = array();
 
-		protected $motionmill = null;
-
 		public function __construct()
 		{
 			add_filter( 'motionmill_settings_pages', array(&$this, 'on_settings_pages') );
@@ -33,8 +31,6 @@ if ( ! class_exists('MM_Roles') )
 
 		public function initialize()
 		{
-			$this->motionmill = Motionmill::get_instance();
-			
 			add_action( 'init', array( &$this, 'on_init' ) );
 			add_action( 'admin_init', array(&$this, 'on_admin_init') );
 

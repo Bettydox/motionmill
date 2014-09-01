@@ -5,7 +5,7 @@
  Plugin Name: Motionmill General
  Plugin URI:
  Description: Handles general WordPress settings.
- Version: 1.0.2
+ Version: 1.0.3
  Author: Maarten Menten
  Author URI: http://motionmill.com
  License: GPL2
@@ -16,8 +16,6 @@ if ( ! class_exists( 'MM_General' ) )
 {
 	class MM_General
 	{
-		protected $motionmill = null;
-
 		public function __construct()
 		{
 			add_filter( 'motionmill_helpers', array(&$this, 'on_helpers') );
@@ -30,8 +28,6 @@ if ( ! class_exists( 'MM_General' ) )
 
 		public function initialize()
 		{
-			$this->motionmill = Motionmill::get_instance();
-			
 			add_action( 'wp_head', array( &$this, 'on_wp_head' ) );
 
 			add_filter( 'body_class', array( &$this, 'on_body_class' ) );
@@ -56,7 +52,7 @@ if ( ! class_exists( 'MM_General' ) )
 
 		public function get_option( $key = null, $default = '' )
 		{
-			return $this->motionmill->get_plugin('MM_Settings')->get_option( 'motionmill_general', $key, $default );
+			return MM('Settings')->get_option( 'motionmill_general', $key, $default );
 		}
 
 		public function on_settings_pages($pages)

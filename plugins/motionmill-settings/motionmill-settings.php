@@ -5,7 +5,7 @@
  Plugin Name: Motionmill Settings
  Plugin URI:
  Description: Creates admin menu pages.
- Version: 1.0.2
+ Version: 1.0.3
  Author: Maarten Menten
  Author URI: http://maartenmenten.be
  License: GPL2
@@ -20,7 +20,6 @@ if ( ! class_exists( 'MM_Settings' ) )
 	{	
 		const FILE = __FILE__;
 
-		protected $motionmill  = null;
 		protected $options     = array();
 		protected $pages       = array();
 		protected $sections    = array();
@@ -29,8 +28,6 @@ if ( ! class_exists( 'MM_Settings' ) )
 
 		public function __construct()
 		{
-			$this->motionmill = Motionmill::get_instance();
-
 			add_filter( 'motionmill_helpers', array( &$this, 'on_helpers' ) );
 			add_action( 'motionmill_init', array( &$this, 'initialize' ), 5 );
 		}

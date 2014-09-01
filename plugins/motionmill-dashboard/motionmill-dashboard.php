@@ -5,7 +5,7 @@
  Plugin Name: Motionmill Dashboard
  Plugin URI:
  Description:
- Version: 1.0.0
+ Version: 1.0.1
  Author: Maarten Menten
  Author URI: http://motionmill.com
  License: GPL2
@@ -17,8 +17,6 @@ if ( ! class_exists( 'MM_Dashboard' ) )
 	class MM_Dashboard
 	{
 		const FILE = __FILE__;
-
-		protected $motionmill = null;
 		
 		public function __construct()
 		{	
@@ -30,8 +28,6 @@ if ( ! class_exists( 'MM_Dashboard' ) )
 		
 		public function initialize()
 		{
-			$this->motionmill = Motionmill::get_instance();
-			
 			add_action( 'admin_init', array( &$this, 'on_admin_init' ) );
 		}
 
@@ -133,7 +129,7 @@ if ( ! class_exists( 'MM_Dashboard' ) )
 		{
 			$plugins = array();
 
-			foreach ( $this->motionmill->get_plugins_data( 'intern', 'extern' ) as $file => $plugin )
+			foreach ( MM()->get_plugins_data( 'intern', 'extern' ) as $file => $plugin )
 			{
 				if ( $plugin['Description'] == '' )
 				{
@@ -163,11 +159,9 @@ if ( ! class_exists( 'MM_Dashboard' ) )
 
 		public function on_print_updates()
 		{
-			$plugin_manager = $this->motionmill->get_plugin( 'MM_Plugins' );
+			$updates = MM('Updates')->get_updateables();
 
-			$plugins = $plugin_manager->get_plugins_to_update();
-
-			if ( count( $plugins ) == 0 )
+			if ( count( $updates ) == 0 )
 			{
 				_e( 'No updates available.', Motionmill::TEXTDOMAIN );
 			}
@@ -176,7 +170,7 @@ if ( ! class_exists( 'MM_Dashboard' ) )
 			{
 				print '<ul>';
 
-				foreach ( $plugins as $file )
+				foreach ( $updates as $file )
 				{
 					$data = get_plugin_data( trailingslashit( WP_PLUGIN_DIR ) . $file );
 
@@ -193,7 +187,7 @@ if ( ! class_exists( 'MM_Dashboard' ) )
 		{
 			$plugins = array();
 
-			foreach ( $this->motionmill->get_plugins_data( 'intern', 'extern' ) as $file => $plugin )
+			foreach ( MM()->get_plugins_data( 'intern', 'extern' ) as $file => $plugin )
 			{
 				if ( $plugin['PluginURI'] == '' )
 				{

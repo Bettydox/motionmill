@@ -5,7 +5,7 @@
  Plugin Name: Motionmill Google Analytics
  Plugin URI:
  Description: Connects your blog with Google Analytics.
- Version: 1.0.1
+ Version: 1.0.2
  Author: Maarten Menten
  Author URI: http://motionmill.com
  License: GPL2
@@ -16,8 +16,6 @@ if ( ! class_exists( 'MM_Google_Analytics' ) )
 {
 	class MM_Google_Analytics
 	{
-		protected $motionmill = null;
-
 		public function __construct()
 		{
 			add_filter( 'motionmill_settings_pages', array(&$this, 'on_settings_pages') );
@@ -29,8 +27,6 @@ if ( ! class_exists( 'MM_Google_Analytics' ) )
 		
 		public function initialize()
 		{
-			$this->motionmill = Motionmill::get_instance();
-
 			if ( $this->get_option( 'tracking_enable' ) )
 			{
 				add_action( 'wp_head', array(&$this, 'print_tracking_script'), 999 );
@@ -39,7 +35,7 @@ if ( ! class_exists( 'MM_Google_Analytics' ) )
 
 		public function get_option( $key = null, $value = '' )
 		{
-			return $this->motionmill->get_plugin('MM_Settings')->get_option( 'motionmill_google_analytics', $key, $value );
+			return MM('Settings')->get_option( 'motionmill_google_analytics', $key, $value );
 		}
 
 		public function on_settings_pages($pages)

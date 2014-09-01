@@ -5,7 +5,7 @@
  Plugin Name: Motionmill Mail
  Plugin URI:
  Description: Manages email settings and templates.
- Version: 1.0.0
+ Version: 1.0.1
  Author: Maarten Menten
  Author URI: http://motionmill.com
  License: GPL2
@@ -19,8 +19,6 @@ if ( ! class_exists('MM_Mail') )
 	class MM_Mail
 	{
 		protected $templates = array();
-
-		protected $motionmill = null;
 
 		public function __construct()
 		{
@@ -60,9 +58,7 @@ if ( ! class_exists('MM_Mail') )
 		}
 
 		public function initialize()
-		{	
-			$this->motionmill = Motionmill::get_instance();
-			
+		{				
 			add_filter( 'motionmill_mail_parse_tag', array(&$this, 'on_parse_tag' ), 0, 3 );
 
 			add_action( 'wp_mail_from', array(&$this, 'on_mail_from') );
@@ -330,7 +326,7 @@ if ( ! class_exists('MM_Mail') )
 			if ( ! isset($this->templates[$template_id]) )
 				return false;
 
-			$options = $this->motionmill->get_plugin('MM_Settings')->get_option( 'motionmill_mail' );
+			$options = MM('Settings')->get_option( 'motionmill_mail' );
 
 			$html = ! empty( $options[ $template_id . '_html' ] );
 
@@ -382,14 +378,14 @@ if ( ! class_exists('MM_Mail') )
 
 		public function on_mail_from($default)
 		{
-			$options = $this->motionmill->get_plugin('MM_Settings')->get_option('motionmill_mail');
+			$options = MM('Settings')->get_option('motionmill_mail');
 
 			return $options['from'] != '' ? $options['from'] : $default;
 		}
 
 		public function on_mail_from_name($default)
 		{
-			$options = $this->motionmill->get_plugin('MM_Settings')->get_option('motionmill_mail');
+			$options = MM('Settings')->get_option('motionmill_mail');
 
 			return $options['from_name'] != '' ? $options['from_name'] : $default;
 		}
