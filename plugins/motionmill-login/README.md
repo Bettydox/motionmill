@@ -36,24 +36,3 @@ Screenshots
 ![Login page](https://raw.githubusercontent.com/addwittz/motionmill/master/plugins/motionmill-login/screenshot-2.png)
 
 ![Settings page](https://raw.githubusercontent.com/addwittz/motionmill/master/plugins/motionmill-login/screenshot-1.png)
-
-Changelog
----------
-
-__v1.0.3__
-
-- changed the way to call Motionmil
-
-__v1.0.2__
-
-- bug fix: removed handler registration. handler did not exist.
-
-__v1.0.1__
-
-- added footer
-- added authenrication type
-
-Download
---------
-
-This plugin is included in the [Motionmill](https://github.com/addwittz/motionmill) plugin.
