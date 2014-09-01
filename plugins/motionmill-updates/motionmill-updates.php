@@ -3,9 +3,9 @@
 /*
 ------------------------------------------------------------------------------------------------------------------------
  Plugin Name: Motionmill Updates
- Plugin URI: 
+ Plugin URI: https://github.com/addwittz/motionmill/tree/master/plugins/motionmill-updates
  Description: Checks Updates for Motionmill plugins.
- Version: 1.0.1
+ Version: 1.0.2
  Author: Maarten Menten
  Author URI: http://motionmill.com
  License: GPL2
