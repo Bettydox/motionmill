@@ -184,21 +184,21 @@ __id__
 
 __title__
 
-(_String_) (__optional__) The title of the field. default: id
+(_String_) (_optional_) The title of the field. default: id
 
 __description__
 
-(_String_) (__optional__) The description.
+(_String_) (_optional_) The description.
 
 __type__
 
-(_String_) (__optional__) The field type. default: 'textfield'
+(_String_) (_optional_) The field type. default: 'textfield'
 
 possible values: textfield, textarea, checkbox, dropdown, editor, colorpicker, media or a custom type
 
 __type_args__
 
-(__Array__) (__optional__) Additional arguments voor the field type.
+(__Array__) (_optional_) Additional arguments voor the field type.
 
 __value__
 
@@ -206,7 +206,7 @@ __value__
 
 __rules__
 
-(_Array_) (__optional__) A list of rules to apply to the value of the field before it is saved to the database. default: 'trim'
+(_Array_) (_optional_) A list of rules to apply to the value of the field before it is saved to the database. default: 'trim'
 
 possible values are: [trim](http://php.net/manual/en/function.trim.php), [lowercase](http://php.net/manual/en/function.strtolower.php), [uppercase](http://php.net/manual/en/function.strtoupper.php), [sanitize_email](http://codex.wordpress.org/Function_Reference/sanitize_email), [sanitize_file_name](http://codex.wordpress.org/Function_Reference/sanitize_file_name), [sanitize_html_class](http://codex.wordpress.org/Function_Reference/sanitize_html_class), [sanitize_mime_type](http://codex.wordpress.org/Function_Reference/sanitize_mime_type), [sanitize_text_field](http://codex.wordpress.org/Function_Reference/sanitize_text_field), [sanitize_user](http://codex.wordpress.org/Function_Reference/sanitize_user), [sanitize_title](http://codex.wordpress.org/Function_Reference/sanitize_title)
 
@@ -285,7 +285,7 @@ __v1.0.3__
 __v1.0.2__
 
 - added page parameter __menu_counter__.
-- added rules for fields.
+- added field parameter __rules__.
 
 __v1.0.1__
 
