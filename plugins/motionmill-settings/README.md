@@ -275,28 +275,3 @@ __scripts__
 
 see page options
 
-Changelog
----------
-
-__v1.0.3__
-
-- changed the way to call Motionmill
-
-__v1.0.2__
-
-- added page parameter __menu_counter__.
-- added field parameter __rules__.
-
-__v1.0.1__
-
-- added page parameter __localize__.
-
-__v1.0.0__
-
-First release
-
-Download
---------
-
-This plugin is included in the [Motionmill](https://github.com/addwittz/motionmill) plugin.
-
