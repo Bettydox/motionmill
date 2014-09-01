@@ -10,6 +10,17 @@ Motionmill Settings
 
 [read more](https://github.com/addwittz/motionmill/tree/master/plugins/motionmill-settings)
 
+Motionmill General
+------------------
+
+[read more](https://github.com/addwittz/motionmill/tree/master/plugins/motionmill-general)
+
+
+Motionmill Query String Widget
+------------------------------
+
+[read more](https://github.com/addwittz/motionmill/tree/master/plugins/motionmill-query-string-widget)
+
 Motionmill Google Analytics
 ---------------------------
 
