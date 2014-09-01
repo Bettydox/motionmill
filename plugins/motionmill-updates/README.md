@@ -7,4 +7,5 @@ Dependencies
 ------------
 
 - [Motionmill](https://github.com/addwittz/motionmill)
-- [Motionmill GitHub](https://github.com/addwittz/motionmill-github)
+- [Motionmill Settings](https://github.com/addwittz/motionmill/tree/master/plugins/motionmill-settings)
+- [Motionmill GitHub](https://github.com/addwittz/motionmill/tree/master/plugins/motionmill-github)
