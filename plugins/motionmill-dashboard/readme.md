@@ -1,3 +1,4 @@
-#Motionmill Plugin Example
+Motionmill Dashboard
+====================
 
-Basic functionallity you need for creating a Motionmill plugin.
+Creates the Motionmill Dashboard page.
