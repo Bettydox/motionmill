@@ -27,7 +27,7 @@ Changelog
 
 __v1.0.3__
 
-- changed the way to call motionmill
+- changed the way to call Motionmill
 
 __v1.0.2__
 
