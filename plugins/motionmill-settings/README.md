@@ -47,6 +47,10 @@ __parent_slug__
 
 (_String_) (_optional_) The slug name for the parent page. default: 'motionmill'
 
+__menu_counter__
+
+(_String_) (_optional_) Adds a counter next to the menu title. default: false
+
 __description__
 
 (_String_) (_optional_) The page description
@@ -200,6 +204,12 @@ __value__
 
 (_String_) (_required_) The default value. default: ''
 
+__rules__
+
+(_Array_) (__optional__) A list of rules to apply to the value of the field before it is saved to the database. default: 'trim'
+
+possible values are: [trim](http://php.net/manual/en/function.trim.php), [lowercase](http://php.net/manual/en/function.strtolower.php), [uppercase](http://php.net/manual/en/function.strtoupper.php), [sanitize_email](http://codex.wordpress.org/Function_Reference/sanitize_email), [sanitize_file_name](http://codex.wordpress.org/Function_Reference/sanitize_file_name), [sanitize_html_class](http://codex.wordpress.org/Function_Reference/sanitize_html_class), [sanitize_mime_type](http://codex.wordpress.org/Function_Reference/sanitize_mime_type), [sanitize_text_field](http://codex.wordpress.org/Function_Reference/sanitize_text_field), [sanitize_user](http://codex.wordpress.org/Function_Reference/sanitize_user), [sanitize_title](http://codex.wordpress.org/Function_Reference/sanitize_title)
+
 __page__
 
 (_String_) (_required_) The id of the page. default: 'motionmill'
@@ -267,6 +277,15 @@ see page options
 
 Changelog
 ---------
+
+__v1.0.3__
+
+- changed the way to call Motionmill
+
+__v1.0.2__
+
+- added page parameter __menu_counter__.
+- added rules for fields.
 
 __v1.0.1__
 
