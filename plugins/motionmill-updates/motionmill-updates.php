@@ -2,9 +2,9 @@
 
 /*
 ------------------------------------------------------------------------------------------------------------------------
- Plugin Name: Motionmill Plugins
- Plugin URI:
- Description: Manages Motionmill Plugins
+ Plugin Name: Motionmill Updates
+ Plugin URI: 
+ Description: Checks Updates for Motionmill plugins.
  Version: 1.0.0
  Author: Maarten Menten
  Author URI: http://motionmill.com
@@ -12,18 +12,16 @@
 ------------------------------------------------------------------------------------------------------------------------
 */
 
-if ( ! class_exists( 'MM_Plugins' ) )
+if ( ! class_exists( 'MM_Updates' ) )
 {
-	class MM_Plugins
+	class MM_Updates
 	{
 		const FILE = __FILE__;
 
-		protected $motionmill = null;
-		
+		protected $options = array();
+
 		public function __construct()
 		{	
-			$this->motionmill = Motionmill::get_instance();
-
 			add_filter( 'motionmill_helpers', array( &$this, 'on_helpers' ) );
 			add_filter( 'motionmill_settings_pages', array( &$this, 'on_settings_pages' ) );
 			add_filter( 'motionmill_settings_sections', array( &$this, 'on_settings_sections' ) );
@@ -34,48 +32,18 @@ if ( ! class_exists( 'MM_Plugins' ) )
 
 		public function initialize()
 		{
-			add_action( 'wp', array( &$this, 'schedule_check_plugins_versions' ) );
-			add_action( 'motionmill_plugins_check_versions', array( &$this, 'check_plugin_versions' ) );
-		}
-
-		public function on_helpers( $helpers )
-		{
-			array_push( $helpers , 'MM_GitHub', 'MM_Wordpress' );
-
-			return $helpers;
-		}
-
-		public function on_settings_pages( $pages )
-		{
-			$pages[] = array
+			$this->options = apply_filters( 'motionmill_updates_options', array
 			(
-				'id'            => 'motionmill_plugins',
-				'title'         => __( 'Updates', Motionmill::TEXTDOMAIN ),
-				'description'   => __( '', Motionmill::TEXTDOMAIN ),
-				'submit_button' => false,
-				'menu_counter'  => count( $this->get_plugins_to_update() ),
-				'priority'      => 3
-			);
+				'schedule_interval' => 'daily'
+			));
 
-			return $pages;
+			add_action( 'wp', array( &$this, 'run_check_versions_schedule' ) );
+			add_action( 'motionmill_updates_check_versions', array( &$this, 'check_versions' ) );
 		}
 
-		public function on_settings_sections( $sections )
+		public function get_updateables()
 		{
-			$sections[] = array
-			(
-				'id' 		  => 'motionmill_plugins_general',
-				'title' 	  => __( '', Motionmill::TEXTDOMAIN ),
-				'description' => array( &$this, 'print_plugins_section' ),
-				'page'        => 'motionmill_plugins',
-			);
-
-			return $sections;
-		}
-
-		public function get_plugins_to_update()
-		{
-			$versions = $this->motionmill->get_option( 'plugin_versions', array() );
+			$versions = MM()->get_option( 'plugin_versions', array() );
 
 			$plugins = array();
 
@@ -97,23 +65,23 @@ if ( ! class_exists( 'MM_Plugins' ) )
 			return $plugins;
 		}
 
-		public function get_plugins_to_check()
+		public function get_subjects()
 		{	
 			$motionmill_file = plugin_basename( Motionmill::FILE );
 
-			$plugins = $this->motionmill->get_plugins_data( 'extern' );
+			$plugins = MM()->get_plugins_data( 'extern' );
 			$plugins[ $motionmill_file ] = get_plugin_data( trailingslashit( WP_PLUGIN_DIR ) . $motionmill_file );
 
 			return $plugins;
 		}
 
-		public function print_plugins_section()
+		public function print_updates()
 		{
-			$versions    = $this->motionmill->get_option( 'plugin_versions', array() );
-			$last_check  = $this->motionmill->get_option( 'plugin_versions_last_check', false );
-			$errors      = $this->motionmill->get_option( 'plugin_versions_errors', array() );
-			$schedule    = wp_get_schedule( 'motionmill_plugins_check_versions' );
-			$updateables = $this->get_plugins_to_update();
+			$versions    = MM()->get_option( 'plugin_versions', array() );
+			$last_check  = MM()->get_option( 'plugin_versions_last_check', false );
+			$errors      = MM()->get_option( 'plugin_versions_errors', array() );
+			$schedule    = wp_get_schedule( 'motionmill_updates_check_versions' );
+			$updateables = $this->get_updateables();
 
 			?>
 
@@ -127,7 +95,7 @@ if ( ! class_exists( 'MM_Plugins' ) )
 					<th><?php _e( '', Motionmill::TEXTDOMAIN ); ?></th>
 				</tr>
 
-				<?php foreach ( $this->get_plugins_to_check() as $file => $data ) :
+				<?php foreach ( $this->get_subjects() as $file => $data ) :
 
 					if ( isset( $versions[ $file ] ) )
 					{
@@ -172,13 +140,14 @@ if ( ! class_exists( 'MM_Plugins' ) )
 
 			</table>
 			
+			<?php if ( $schedule ) : ?>
 			<p><?php printf( __( 'Updates will be automatically checked %s.', Motionmill::TEXTDOMAIN ), $schedule ); ?></p>
+			<?php endif; ?>
 
 			<p>
 				<?php if ( $last_check !== false ) : ?>
 
-				<?php printf( __( 'last checked on %s at %s.', Motionmill::TEXTDOMAIN ), 
-				date( get_option( 'date_format' ), $last_check ), date( get_option( 'time_format' ), $last_check ) ); ?>
+				<?php printf( __( 'Last checked on %1$s at %2$s.',  Motionmill::TEXTDOMAIN ), date_i18n( get_option( 'date_format' ), $last_check ), date_i18n( get_option( 'time_format' ), $last_check ) ); ?>
 				
 				<?php endif; ?>
 
@@ -191,19 +160,19 @@ if ( ! class_exists( 'MM_Plugins' ) )
 
 		public function on_sanitize_options( $options )
 		{
-			$this->check_plugin_versions();
+			$this->check_versions();
 
 			return $options;
 		}
 
-		public function check_plugin_versions()
+		public function check_versions()
 		{
-			$checked_versions = $this->motionmill->get_option( 'plugin_versions', array() );
+			$checked_versions = MM()->get_option( 'plugin_versions', array() );
 
 			$errors   = array();
 			$versions = array();
 
-			foreach ( $this->get_plugins_to_check() as $file => $data )
+			foreach ( $this->get_subjects() as $file => $data )
 			{
 				$repo = MM_GitHub::plugin_to_repo( $file );
 
@@ -231,32 +200,78 @@ if ( ! class_exists( 'MM_Plugins' ) )
 				$versions[ $file ] = $version;
 			}
 
-			$this->motionmill->set_option( 'plugin_versions', $versions );
-			$this->motionmill->set_option( 'plugin_versions_errors', $errors );
-			$this->motionmill->set_option( 'plugin_versions_last_check', time() );		
+			MM()->set_option( 'plugin_versions', $versions );
+			MM()->set_option( 'plugin_versions_errors', $errors );
+			MM()->set_option( 'plugin_versions_last_check', time() );		
 		}
 
-		public function schedule_check_plugins_versions()
+		public function run_check_versions_schedule()
 		{
-			if ( ! wp_next_scheduled( 'motionmill_plugins_check_versions' ) )
+			if ( empty( $this->options['schedule_interval'] ) )
 			{
-				wp_schedule_event( time(), 'daily', 'motionmill_plugins_check_versions' );
+				if ( wp_next_scheduled( 'motionmill_updates_check_versions' ) )
+				{
+					wp_clear_scheduled_hook( 'motionmill_updates_check_versions' );
+				}
 			}
+
+			else
+			{
+				if ( ! wp_next_scheduled( 'motionmill_updates_check_versions' ) )
+				{
+					wp_schedule_event( time(), $this->options['schedule_interval'], 'motionmill_updates_check_versions' );
+				}
+			}
+		}
+
+		public function on_helpers( $helpers )
+		{
+			array_push( $helpers , 'MM_GitHub', 'MM_Wordpress' );
+
+			return $helpers;
+		}
+
+		public function on_settings_pages( $pages )
+		{
+			$pages[] = array
+			(
+				'id'            => 'motionmill_updates',
+				'title'         => __( 'Updates', Motionmill::TEXTDOMAIN ),
+				'description'   => __( '', Motionmill::TEXTDOMAIN ),
+				'submit_button' => false,
+				'menu_counter'  => count( $this->get_updateables() ),
+				'priority'      => 3
+			);
+
+			return $pages;
+		}
+
+		public function on_settings_sections( $sections )
+		{
+			$sections[] = array
+			(
+				'id' 		  => 'motionmill_updates_general',
+				'title' 	  => __( '', Motionmill::TEXTDOMAIN ),
+				'description' => array( &$this, 'print_updates' ),
+				'page'        => 'motionmill_updates',
+			);
+
+			return $sections;
 		}
 	}
 }
 
 // registers plugin
-if ( ! function_exists('motionmill_plugins_add_plugins') )
+if ( ! function_exists('motionmill_updates_add_updates') )
 {
-	function motionmill_plugins_add_plugins( $plugins )
+	function motionmill_updates_add_updates( $plugins )
 	{
-		$plugins[] = 'MM_Plugins';
+		$plugins[] = 'MM_Updates';
 
 		return $plugins;
 	}
 
-	add_filter( 'motionmill_plugins', 'motionmill_plugins_add_plugins' );
+	add_filter( 'motionmill_plugins', 'motionmill_updates_add_updates' );
 }
 
 ?>
