@@ -5,7 +5,7 @@
  Plugin Name: Motionmill Updates
  Plugin URI: https://github.com/addwittz/motionmill/tree/master/plugins/motionmill-updates
  Description: Checks Updates for Motionmill plugins.
- Version: 1.0.2
+ Version: 1.0.3
  Author: Maarten Menten
  Author URI: http://motionmill.com
  License: GPL2
@@ -52,6 +52,8 @@ if ( ! class_exists( 'MM_Updates' ) )
 				{
 					continue;
 				}
+
+				$data = get_plugin_data( trailingslashit( WP_PLUGIN_DIR ) . $file );
 
 				if ( version_compare( $data['Version'], $version, '<' ) )
 				{
