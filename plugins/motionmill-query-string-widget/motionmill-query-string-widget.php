@@ -3,7 +3,7 @@
 /*
 ------------------------------------------------------------------------------------------------------------------------
  Plugin Name: Motionmill Query String Widget
- Plugin URI: 
+ Plugin URI: https://github.com/addwittz/motionmill/tree/master/plugins/motionmill-query-string-widget
  Description: Shows posts by query string in an editable template.
  Version: 1.0.0
  Author: Maarten Menten
