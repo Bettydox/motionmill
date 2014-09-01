@@ -3,9 +3,9 @@
 /*
 ------------------------------------------------------------------------------------------------------------------------
  Plugin Name: Motionmill Login
- Plugin URI:
+ Plugin URI: https://github.com/addwittz/motionmill/tree/master/plugins/motionmill-login
  Description: Customizes the login page.
- Version: 1.0.3
+ Version: 1.0.4
  Author: Maarten Menten
  Author URI: http://motionmill.com
  License: GPL2
