@@ -5,7 +5,7 @@
  Plugin Name: Motionmill GitHub
  Plugin URI: https://github.com/addwittz/motionmill/tree/master/plugins/motionmill-github
  Description: Fetches data from GitHub
- Version: 1.0.1
+ Version: 1.0.2
  Author: Maarten Menten
  Author URI: http://motionmill.com
  License: GPL2
@@ -182,12 +182,12 @@ if ( ! class_exists( 'MM_GitHub' ) )
 				return new WP_Error( 'github_api', sprintf( '%s - %s', $http_code, $message ) );
 	        }
 
-	        if ( $response['errorNumber'] != '' )
+	        if ( $response['error_number'] != '' )
 	        {
-	        	return new WP_Error( 'github_api', $response['errorNumber'] );
+	        	return new WP_Error( 'github_api', sprintf( '%s - %s', $response['error_number'], $response['error_message'] ) );
 	        }
 
-	        return $response;
+	        return json_decode( $response['response'] );
 		}
 
 		protected function do_curl( $url, $options = array() )
