@@ -42,10 +42,3 @@ Wether you want to change double line-breaks into HTML paragraphs
 __Display title__
 
 Wether you want to display the Widget title on the website.
-
-Changelog
----------
-
-__v1.0.0__
-
-First release
