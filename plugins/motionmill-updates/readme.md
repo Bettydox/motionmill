@@ -1,3 +1,11 @@
-#Motionmill Plugin Example
+Motionmill Updates
+==================
 
-Basic functionallity you need for creating a Motionmill plugin.
+Checks updates for Motionmill plugins.
+
+Changelog
+---------
+
+__v1.0.0__
+
+First release
