@@ -8,21 +8,34 @@ it includes following plugins:
 Motionmill Settings
 -------------------
 
+[read more](https://github.com/addwittz/motionmill/tree/master/plugins/motionmill-settings)
+
 Motionmill Google Analytics
 ---------------------------
+
+[read more](https://github.com/addwittz/motionmill/tree/master/plugins/motionmill-google-analytics)
 
 Motionmill Roles
 ----------------
 
+[read more](https://github.com/addwittz/motionmill/tree/master/plugins/motionmill-roles)
+
 Motionmill Login
 ----------------
+
+[read more](https://github.com/addwittz/motionmill/tree/master/plugins/motionmill-login)
 
 Motionmill Mail
 ---------------
 
+[read more](https://github.com/addwittz/motionmill/tree/master/plugins/motionmill-mail)
+
 Motionmill Dashboard
 --------------------
 
-Motionmill Plugins
+[read more](https://github.com/addwittz/motionmill/tree/master/plugins/motionmill-dashboard)
+
+Motionmill Updates
 ------------------
 
+[read more](https://github.com/addwittz/motionmill/tree/master/plugins/motionmill-updates)
