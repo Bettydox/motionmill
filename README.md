@@ -50,3 +50,8 @@ Motionmill Updates
 ------------------
 
 [read more](https://github.com/addwittz/motionmill/tree/master/plugins/motionmill-updates)
+
+Motionmill GithHub
+------------------
+
+[read more](https://github.com/addwittz/motionmill/tree/master/plugins/motionmill-github)
