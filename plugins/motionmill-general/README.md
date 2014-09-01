@@ -1,9 +1,6 @@
 Motionmill General
 ==================
 
-Summary
--------
-
 Handles general WordPress settings.
 
 Options
@@ -27,6 +24,14 @@ Additional CSS file URLs for the rich text editor
 
 Changelog
 ---------
+
+__v1.0.3__
+
+- changed the way to call motionmill
+
+__v1.0.2__
+
+- updated settings page description
 
 __v1.0.1__
 
