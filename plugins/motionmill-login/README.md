@@ -36,3 +36,8 @@ Screenshots
 ![Login page](https://raw.githubusercontent.com/addwittz/motionmill/master/plugins/motionmill-login/screenshot-2.png)
 
 ![Settings page](https://raw.githubusercontent.com/addwittz/motionmill/master/plugins/motionmill-login/screenshot-1.png)
+
+Dependencies
+------------
+
+[Motionmill](https://github.com/addwittz/motionmill)
