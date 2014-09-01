@@ -274,3 +274,8 @@ __scripts__
 (_String_) (_optional_) scripts to enqueue. default: (empty array)
 
 see page options
+
+Dependencies
+------------
+
+[Motionmill](https://github.com/addwittz/motionmill)
