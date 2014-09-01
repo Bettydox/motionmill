@@ -1,9 +1,6 @@
 Motionmill Query String Widget
 ==============================
 
-Summary
--------
-
 Shows posts by query string parameters in an editable template.
 
 Screenshots
@@ -46,7 +43,9 @@ __Display title__
 
 Wether you want to display the Widget title on the website.
 
-Download
---------
+Changelog
+---------
 
-This plugin is included in the [Motionmill](https://github.com/addwittz/motionmill) plugin.
+__v1.0.0__
+
+First release
