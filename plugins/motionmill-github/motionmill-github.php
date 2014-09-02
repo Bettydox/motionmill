@@ -100,24 +100,10 @@ if ( ! class_exists( 'MM_GitHub' ) )
 
 		public function get_tags( $repo )
 		{
-			$data = $this->do_request( sprintf( 'repos/%s/%s/git/refs/tags', $this->options['account'], $repo ) );
-
-			if ( is_wp_error( $data ) )
-			{
-				return $data;
-			}
-
-			$tags = array();
-
-			foreach ( $data as $tag )
-			{	
-				$tags[] = basename( $tag->url );
-			}
-
-			return $tags;
+			return $this->do_request( sprintf( 'repos/%s/%s/git/refs/tags', $this->options['account'], $repo ) );
 		}
 
-		public function get_versions( $repo )
+		public function get_versions( $repo, $prefix = 'v' )
 		{
 			$tags = $this->get_tags( $repo );
 
@@ -130,20 +116,49 @@ if ( ! class_exists( 'MM_GitHub' ) )
 
 			foreach ( $tags as $tag )
 			{	
-				if ( stripos( $tag, 'v') !== 0 )
+				$version = basename( $tag->url );
+
+				// removes the prefix
+				if ( stripos( $version, $prefix ) !== 0 )
 				{
-					return;
+					$version = substr( $version, strlen( $prefix ) );
 				}
 
-				$versions[] = substr( $tag, 1 );
+				// checks if version
+				if ( strpos( $version , '.' ) === false && ! is_numeric( $version ) )
+				{
+					continue;
+				}
+
+				$versions[] = $version;
 			}
 
-			usort( $versions , function( $a, $b )
+			// sorts
+			usort( $versions, function( $a, $b )
 			{
 				return version_compare( $a, $b );
 			});
 
 			return $versions;
+		}
+
+		public function get_releases( $repo )
+		{
+			$versions = $this->get_versions( $repo );
+
+			if ( is_wp_error( $versions ) )
+			{
+				return $versions;
+			}
+
+			$releases = array();
+
+			foreach ( $versions as $version )
+			{
+				$releases[ $version ] = sprintf( 'https://github.com/%s/%s/archive/v%s.zip', $this->options['account'], $repo, $version );
+			}
+
+			return $releases;
 		}
 
 		// https://github.com/ornicar/php-github-api/blob/master/lib/Github/HttpClient/Curl.php
