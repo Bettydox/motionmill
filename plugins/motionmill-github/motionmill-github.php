@@ -4,7 +4,7 @@
 ------------------------------------------------------------------------------------------------------------------------
  Plugin Name: Motionmill GitHub
  Plugin URI: https://github.com/addwittz/motionmill/tree/master/plugins/motionmill-github
- Description: Fetches data from GitHub
+ Description: Communicates with the GitHub API.
  Version: 1.0.3
  Author: Maarten Menten
  Author URI: http://motionmill.com
