@@ -81,7 +81,6 @@ if ( ! class_exists( 'MM_Updates' ) )
 			$versions    = MM()->get_option( 'versions', array(), 'updates' );
 			$last_check  = MM()->get_option( 'versions_last_check', false, 'updates' );
 			$errors      = MM()->get_option( 'versions_errors', array(), 'updates' );
-			$schedule    = wp_get_schedule( 'motionmill_updates_check_versions' );
 			$updateables = $this->get_updateables();
 
 			?>
@@ -141,10 +140,6 @@ if ( ! class_exists( 'MM_Updates' ) )
 
 			</table>
 			
-			<?php if ( $schedule ) : ?>
-			<p><?php printf( __( 'Updates will be automatically checked %s.', Motionmill::TEXTDOMAIN ), $schedule ); ?></p>
-			<?php endif; ?>
-
 			<p>
 				<?php if ( $last_check !== false ) : ?>
 
@@ -165,6 +160,11 @@ if ( ! class_exists( 'MM_Updates' ) )
 			return $options;
 		}
 
+		public function get_plugin_repo( $file )
+		{
+			return trim( dirname( $file ), '/' );
+		}
+
 		public function check_versions()
 		{
 			$checked_versions = MM()->get_option( 'versions', array(), 'updates' );
@@ -174,9 +174,7 @@ if ( ! class_exists( 'MM_Updates' ) )
 
 			foreach ( $this->get_subjects() as $file => $data )
 			{
-				$repo = MM('GitHub')->plugin_to_repo( $file );
-
-				$plugin_versions = MM('GitHub')->get_versions( $repo );
+				$plugin_versions = MM('GitHub')->get_versions( $this->get_plugin_repo( $file ) );
 
 				if ( is_wp_error( $plugin_versions ) )
 				{
