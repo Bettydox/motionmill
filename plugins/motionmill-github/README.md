@@ -1,7 +1,7 @@
 Motionmill Github
 =================
 
-Fetched data from [GitHub](https://github.com).
+Communicates with the [GitHub](https://github.com) API.
 
 Dependencies
 ------------
