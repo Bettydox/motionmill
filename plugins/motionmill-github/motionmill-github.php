@@ -5,7 +5,7 @@
  Plugin Name: Motionmill GitHub
  Plugin URI: https://github.com/addwittz/motionmill/tree/master/plugins/motionmill-github
  Description: Fetches data from GitHub
- Version: 1.0.2
+ Version: 1.0.3
  Author: Maarten Menten
  Author URI: http://motionmill.com
  License: GPL2
@@ -16,10 +16,8 @@ if ( ! class_exists( 'MM_GitHub' ) )
 {
 	class MM_GitHub
 	{
-		const FILE = __FILE__;
-		
+		protected $options    = array();
 		protected $http_codes = array();
-		protected $options = array();
 
 		public function __construct()
 		{	
@@ -30,15 +28,19 @@ if ( ! class_exists( 'MM_GitHub' ) )
 		{
 			$this->options = apply_filters( 'motionmill_github_options', array
 			(
-				'account'       => 'addwittz',
-				'auth_username' => 'mmaarten',
-				'auth_password' => 'e280054b8a4afd585b21f43774b34aa4fb3a0c28',
-				'auth_type'     => 'token'
+				'account'       => '',
+				'client_login'  => '',
+				'client_secret' => '',
+				'auth_type'     => 'url_token', // http_password | http_token | url_token
+				'http_port'     => 0,
+				'user_agent'    => $_SERVER[ 'HTTP_USER_AGENT' ],
+				'timeout'       => 0,
+				'base_url'      => 'https://api.github.com'
 			));
 
 			$this->http_codes = array
-	        (
-			    100 => __( 'Continue', Motionmill::TEXTDOMAIN ),
+			(
+				100 => __( 'Continue', Motionmill::TEXTDOMAIN ),
 			    101 => __( 'Switching Protocols', Motionmill::TEXTDOMAIN ),
 			    102 => __( 'Processing', Motionmill::TEXTDOMAIN ),
 			    200 => __( 'OK', Motionmill::TEXTDOMAIN ),
@@ -92,23 +94,13 @@ if ( ! class_exists( 'MM_GitHub' ) )
 			    506 => __( 'Variant Also Negotiates', Motionmill::TEXTDOMAIN ),
 			    507 => __( 'Insufficient Storage', Motionmill::TEXTDOMAIN ),
 			    509 => __( 'Bandwidth Limit Exceeded', Motionmill::TEXTDOMAIN ),
-			    510 => __( 'Not Extended', Motionmill::TEXTDOMAIN ),
-	        );
-		}
-
-		public function plugin_to_repo( $file )
-		{
-			if ( stripos( $file, '.php' ) === false )
-			{
-				return $file;
-			}
-
-			return dirname( trim( $file, '/' ) );
+			    510 => __( 'Not Extended', Motionmill::TEXTDOMAIN )
+			);
 		}
 
 		public function get_tags( $repo )
 		{
-			$data = $this->do_request( $repo . '/git/refs/tags' );
+			$data = $this->do_request( sprintf( 'repos/%s/%s/git/refs/tags', $this->options['account'], $repo ) );
 
 			if ( is_wp_error( $data ) )
 			{
@@ -154,16 +146,65 @@ if ( ! class_exists( 'MM_GitHub' ) )
 			return $versions;
 		}
 
-		public function do_request( $extra )
+		// https://github.com/ornicar/php-github-api/blob/master/lib/Github/HttpClient/Curl.php
+		public function do_request( $url, $parameters = array(), $http_method = 'GET', $options = array() )
 		{
-			$url = sprintf( 'https://api.github.com/repos/%s/%s', $this->options['account'], ltrim( $extra, '/' ) );
+			$options = array_merge( $this->options, $options );
+			
+			$url = trailingslashit( $options['base_url'] ) . ltrim( $url, '/' );
 
-			$response = $this->do_curl( $url, array
-			(
-				'username'  => $this->options['auth_username'],
-				'password'  => $this->options['auth_password'],
-				'auth_type' => $this->options['auth_type']
-			));
+			$curl_options = array();
+
+			if ( $options['client_login'] )
+			{
+				switch ( $options['auth_type'] )
+				{
+					case 'http_password' :
+						
+						$curl_options[ CURLOPT_USERPWD ] = $options['client_login'] . ':' . $options['client_secret'];
+
+						break;
+
+					case 'http_token' :
+						
+						$curl_options[ CURLOPT_USERPWD ] =  sprintf( '%s:%s', $options['client_login'], $options['client_secret'] );
+
+						break;
+					
+					case 'url_token' : default:
+
+						$parameters = array_merge(array
+						(
+							'login' => $options['client_login'],
+							'token' => $options['client_secret']
+						), $parameters);
+				}
+			}
+
+			if ( ! empty( $parameters ) )
+			{
+				$query_string = utf8_encode( http_build_query( $parameters, '', '&') );
+
+				if ( $http_method == 'GET' )
+				{
+					$url .= '?' . $query_string;
+				}
+				else
+				{
+					$curl_options[ CURLOPT_POST ] = true;
+					$curl_options[ CURLOPT_POSTFIELDS ] = $query_string;
+				}
+        	}
+
+			$curl_options[ CURLOPT_URL ]            = $url;
+			$curl_options[ CURLOPT_PORT ]           = $options['http_port'];
+			$curl_options[ CURLOPT_USERAGENT ]      = $options['user_agent'];
+			$curl_options[ CURLOPT_FOLLOWLOCATION ] = true;
+			$curl_options[ CURLOPT_RETURNTRANSFER ] = true;
+			$curl_options[ CURLOPT_SSL_VERIFYPEER ] = false;
+			$curl_options[ CURLOPT_TIMEOUT ]        = $options['timeout'];
+       		
+			$response = $this->do_curl( $curl_options );
 			
 			$http_code = $response['headers']['http_code'];
 
@@ -190,38 +231,11 @@ if ( ! class_exists( 'MM_GitHub' ) )
 	        return json_decode( $response['response'] );
 		}
 
-		protected function do_curl( $url, $options = array() )
+		protected function do_curl( $options )
 		{
-			$options = array_merge( array
-			(
-				'username'  => '',
-				'password'  => '',
-				'useragent' => $_SERVER['HTTP_USER_AGENT'],
-				'auth_type' => '',
-				'port'      => 0
-			), (array) $options );
-
 			$ch = curl_init();
 
-			error_log( $url );
-
-			$curl_options = array
-			(
-				CURLOPT_URL            => $url,
-				CURLOPT_USERAGENT      => $options['useragent'],
-				CURLOPT_RETURNTRANSFER => 1,
-				CURLOPT_FOLLOWLOCATION => 1,
-				CURLOPT_SSL_VERIFYPEER => 0,
-				CURLOPT_TIMEOUT        => 0,
-				CURLOPT_PORT           => $options['port']
-			);
-
-			if ( $options['auth_type'] == 'token' )
-			{
-				$curl_options[ CURLOPT_USERPWD ] =  sprintf( '%s/token:%s', $options['username'], $options['password'] );
-			}
-
-			curl_setopt_array( $ch, $curl_options );
+			curl_setopt_array( $ch, $options );
 
 			$response = array
 			(
