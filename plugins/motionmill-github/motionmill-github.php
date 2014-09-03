@@ -119,7 +119,7 @@ if ( ! class_exists( 'MM_GitHub' ) )
 				$version = basename( $tag->url );
 
 				// removes the prefix
-				if ( stripos( $version, $prefix ) !== 0 )
+				if ( stripos( $version, $prefix ) === 0 )
 				{
 					$version = substr( $version, strlen( $prefix ) );
 				}
