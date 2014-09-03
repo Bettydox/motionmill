@@ -1,5 +1,37 @@
 <?php if ( ! defined('ABSPATH') ) exit; // Exits when accessed directly
 
+function motionmill_settings_pages( $pages )
+{
+	$pages[] = array
+	(
+		'id' 		    => 'motionmill',
+		'title' 	    => __( 'Motionmill', Motionmill::TEXTDOMAIN ),
+		'menu_title'    => __( 'Motionmill', Motionmill::TEXTDOMAIN ),
+		'parent_slug'   => '',
+		'menu_slug'     => 'motionmill'
+	);
+
+	return $pages;
+}
+
+add_filter( 'motionmill_settings_pages', 'motionmill_settings_pages', 5 );
+
+function motionmill_settings_options( $options )
+{
+	return array_merge( $options, array
+	(
+		'page_capability'    => 'manage_options',
+		'page_parent_slug'   => 'motionmill',
+		'page_priority'      => 10,
+		'page_submit_button' => true,
+		'page_admin_bar'     => true,
+		'field_rules'        => array( 'trim' ),
+		'field_type'         => 'textfield'
+	));
+}
+
+add_filter( 'motionmill_settings_options', 'motionmill_settings_options', 5 );
+
 function motionmill_github_options( $options )
 {
 	return array_merge( $options, array

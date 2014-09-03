@@ -124,9 +124,6 @@ if ( ! class_exists( 'Motionmill' ) )
 			register_activation_hook( self::FILE, array( &$this, 'on_activate' ), 5 );
 			register_deactivation_hook( self::FILE, array( &$this, 'on_deactivate' ), 5 );
 
-			add_action( 'admin_menu', array( &$this, 'on_admin_menu' ), 5 );
-			add_action( 'admin_bar_menu', array( &$this, 'on_admin_bar_menu' ), 100 );
-
 			add_action( 'wp_enqueue_scripts', array( &$this, 'on_enqueue_scripts' ), 5 );
 			add_action( 'admin_enqueue_scripts', array( &$this, 'on_enqueue_scripts' ), 5 );
 
@@ -311,46 +308,6 @@ if ( ! class_exists( 'Motionmill' ) )
 			{
 				do_action( 'deactivate_' . $file );
 			}
-		}
-		
-		public function on_admin_menu()
-		{
-			$page = apply_filters( 'motionmill_menu_page', array
-			(
-				'title'      => __( 'Motionmill', self::TEXTDOMAIN ),
-				'menu_title' => __( 'Motionmill', self::TEXTDOMAIN ),
-				'capability' => 'manage_options',
-				'menu_slug'  => 'motionmill',
-				'function'   => null,
-				'icon_url'   => '',
-				'position'   => null
-			));
-
-			if ( ! $page )
-			{
-				return;
-			}
-
-			$this->page_hook = add_menu_page( $page['title'], $page['menu_title'], $page['capability'], $page['menu_slug'], $page['function'], $page['icon_url'], $page['position'] );
-		}
-
-		public function on_admin_bar_menu()
-		{
-			global $wp_admin_bar;
-    		
-    		if ( ! is_super_admin() || ! is_admin_bar_showing() )
-    		{
-    			return;
-    		}
-
-    		$wp_admin_bar->add_menu(array
-			(
-				'id'     => 'motionmill',
-				'meta'   => array(),
-				'title'  => __( 'Motionmill', Motionmill::TEXTDOMAIN ),
-				'href'   => admin_url( 'admin.php?page=motionmill' ),
-				'parent' => ''
-		    ));
 		}
 
 		public function on_enqueue_scripts()
