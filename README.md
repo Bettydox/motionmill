@@ -46,11 +46,6 @@ Motionmill Dashboard
 
 [read more](https://github.com/addwittz/motionmill/tree/master/plugins/motionmill-dashboard)
 
-Motionmill Updates
-------------------
-
-[read more](https://github.com/addwittz/motionmill/tree/master/plugins/motionmill-updates)
-
 Motionmill GithHub
 ------------------
 
