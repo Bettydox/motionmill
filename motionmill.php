@@ -5,7 +5,7 @@
  Plugin Name: Motionmill
  Plugin URI: https://github.com/addwittz/motionmill
  Description: Motionmill provides tools that facilitates the creation process of WordPress plugins.
- Version: 1.5.8
+ Version: 1.5.9
  Author: Maarten Menten
  Author URI: http://motionmill.com
  License: GPL2
@@ -19,11 +19,12 @@ if ( ! class_exists( 'Motionmill' ) )
 		const FILE         = __FILE__;
 		const PLUGIN_DIR   = 'plugins';
 		const INCLUDE_DIR  = 'includes';
+		const LANGUAGE_DIR = 'languages';
 		const OPTION_NAME  = 'motionmill';
 		const TEXTDOMAIN   = 'motionmill';
 		const NONCE_NAME   = 'motionmill';
 		const NEWLINE      = "\n";
-		const VERSION      = '1.5.8';
+		const VERSION      = '1.5.9';
 
 		static private $instance = null;
 
@@ -56,10 +57,12 @@ if ( ! class_exists( 'Motionmill' ) )
 			Loads assets
 			------------------------------------------------------------------------------------------------------------
 			*/
-			require_once( $this->get_absolute_path() . 'config.php' );
-			require_once( $this->get_absolute_path( self::INCLUDE_DIR ) . 'common.php' );
-			require_once( ABSPATH . 'wp-admin/includes/plugin.php' ); // needed for <codeget_plugins</code> and <codeget_plugin_data</code>
+			
+			require_once( plugin_dir_path( self::FILE ) . 'config.php' );
+			require_once( plugin_dir_path( self::FILE ) . trailingslashit( self::INCLUDE_DIR ) . 'common.php' );
 
+			require_once( ABSPATH . 'wp-admin/includes/plugin.php' ); // needed for <codeget_plugins</code> and <codeget_plugin_data</code>
+			
 			/*
 			------------------------------------------------------------------------------------------------------------
 			Loads plugins
@@ -68,13 +71,11 @@ if ( ! class_exists( 'Motionmill' ) )
 
 			$plugins = array();
 
-			foreach ( $this->get_plugins_data() as $file => $data )
+			foreach ( $this->get_internal_plugins() as $file => $data )
 			{
 				require_once( trailingslashit( WP_PLUGIN_DIR ) . $file );
 
 				$plugins[] = $file;
-
-				$this->log( 'plugin %s loaded.', $file );
 			}
 
 			$this->set_option( 'plugins', $plugins );
@@ -93,8 +94,6 @@ if ( ! class_exists( 'Motionmill' ) )
 				}
 
 				$this->plugins[ $class ] = new $class();
-
-				$this->log( 'plugin %s registered.', $class );
 			}
 
 			/*
@@ -112,11 +111,9 @@ if ( ! class_exists( 'Motionmill' ) )
 
 				$file = 'class-' . str_replace( '_' , '-', strtolower( $class ) ) . '.php'; // MM_Array => class-mm-array.php
 
-				require_once( $this->get_absolute_path( self::INCLUDE_DIR ) . $file );
+				require_once( plugin_dir_path( self::FILE ) . trailingslashit( self::INCLUDE_DIR ) . $file );
 
 				$this->helpers[ $class ] = true;
-
-				$this->log( 'helper %s registered.', $class );
 			}
 
 			/* ------------------------------------------------------------------------------------------------------ */
@@ -126,17 +123,18 @@ if ( ! class_exists( 'Motionmill' ) )
 
 			add_action( 'wp_enqueue_scripts', array( &$this, 'on_enqueue_scripts' ), 5 );
 			add_action( 'admin_enqueue_scripts', array( &$this, 'on_enqueue_scripts' ), 5 );
-
 			add_action( 'plugins_loaded', array( &$this, 'load_textdomain' ) );
+
+			add_filter( 'motionmill_settings_pages', array( &$this, 'on_settings_pages' ), 5 );
 
 			do_action( 'motionmill_init' ); // prefered hook for plugin initialization
 
 			$this->initialized = true;
 		}
-		
-		public function get_option( $key = null, $default = '', $group = 'general' )
+
+		public function get_option( $key = null, $default = '' )
 		{
-			$options = $this->get_options( $group );
+			$options = get_option( self::OPTION_NAME, array() );
 
 			if ( $key == null )
 			{
@@ -151,38 +149,11 @@ if ( ! class_exists( 'Motionmill' ) )
 			return $default;
 		}
 
-		public function get_options( $group = '' )
+		public function set_option( $key, $value )
 		{
-			$options = (array) get_option( self::OPTION_NAME, array() );
+			$options = $this->get_option();
 
-			if ( ! $group )
-			{
-				return $options;
-			}
-
-			if ( isset( $options[ $group ] ) )
-			{
-				return $options[ $group ];
-			}
-
-			return array();
-		}
-
-		public function set_option( $key, $value, $group = 'general' )
-		{
-			if ( ! $group )
-			{
-				return false;
-			}
-
-			$options = $this->get_options();
-
-			if ( ! isset( $options[ $group ] ) )
-			{
-				$options[ $group ] = array();
-			}
-
-			$options[ $group ][ $key ] = $value;
+			$options[ $key ] = $value;
 
 			return update_option( self::OPTION_NAME, $options );
 		}
@@ -197,91 +168,54 @@ if ( ! class_exists( 'Motionmill' ) )
 			return null;
 		}
 
-		public function get_plugins_data( $type = 'intern' )
+		public function get_plugins( $dir = '' )
 		{
-			$types = func_get_args();
-			
-			if ( count( $types ) == 0 )
+			$dir = trailingslashit( ltrim( $dir, '/' ) );
+
+			$plugins = array();
+
+			foreach ( get_plugins( '/' . $dir ) as $file => $plugin )
 			{
-				$types[] = 'intern';
-			}
-
-			// relative to WP_PLUGIN_DIR
-			$dirs = array
-			(
-				'intern' => '/' . $this->get_relative_path( self::PLUGIN_DIR ),
-				'extern' => ''
-			);
-
-			$dirs = array_intersect_key( $dirs , array_flip( $types ) );
-
-			$data = array();
-
-			foreach ( $dirs as $dir )
-			{
-				foreach ( get_plugins( $dir ) as $file => $plugin_data )
+				if ( strpos( $file, 'motionmill-' ) !== 0  )
 				{
-					if ( stripos( dirname($file), 'motionmill-' ) !== 0 )
-					{
-						continue;
-					}
-
-					// makes sure file is relative to WP_PLUGIN_DIR
-					$file = trailingslashit( ltrim( $dir, '/' ) ) . $file;
-
-					$data[ $file ] = $plugin_data;
+					continue;
 				}
+
+				// makes sure file is relative to WP_PLUGIN_DIR
+				$file = trailingslashit( $dir ) . $file;
+
+				$plugins[ $file ] = $plugin;
 			}
 
-			uksort( $data, function( $a, $b )
-			{
-				return basename( $a ) > basename( $b );
-			});
-
-			return $data;
+			return $plugins;
 		}
 
-		public function get_absolute_path( $suffix = '' )
+		public function get_internal_plugins()
 		{
-			$path = plugin_dir_path( self::FILE );
+			$dir = trailingslashit( dirname( plugin_basename( self::FILE ) ) ) . self::PLUGIN_DIR;
 
-			if ( $suffix != '' )
-			{
-				$path .= trailingslashit( ltrim( $suffix, '/' ) );
-			}
-
-			return $path;
+			return $this->get_plugins( $dir );
 		}
 
-		public function get_relative_path( $suffix = '' )
+		public function get_external_plugins()
 		{
-			return plugin_basename( $this->get_absolute_path( $suffix ) );
+			return $this->get_plugins();
 		}
 
-		public function log( $value )
+		public function get_all_plugins()
 		{
-			$args = func_get_args();
+			$plugins = array_merge( $this->get_external_plugins(), $this->get_internal_plugins() );
 
-			if ( count( $args) > 1 )
-			{
-				$message = call_user_func_array( 'sprintf' , $args );
-			}
+			uksort( $plugins, array( &$this, 'on_sort_plugins' ) );
 
-			else
-			{
-				$message = $args[0];
-			}
-
-			$message = sprintf( '[motionmill] %s', $message );
-
-			return error_log( $message );
+			return $plugins;
 		}
 
 		public function load_textdomain()
 		{
-			foreach ( $this->get_plugins_data( 'intern', 'extern' ) as $file => $plugin )
+			foreach ( $this->get_all_plugins() as $file => $plugin )
 			{
-				$dir = dirname( $file ) . '/languages/';
+				$dir = dirname( $file ) . '/' . self::LANGUAGE_DIR . '/';
 
 				if ( ! file_exists( trailingslashit( WP_PLUGIN_DIR ) . $dir ) )
 				{
@@ -292,19 +226,38 @@ if ( ! class_exists( 'Motionmill' ) )
 			}
 		}
 
+		function on_settings_pages( $pages )
+		{
+			$pages[] = array
+			(
+				'id' 		    => 'motionmill',
+				'title' 	    => __( 'Motionmill', Motionmill::TEXTDOMAIN ),
+				'menu_title'    => __( 'Motionmill', Motionmill::TEXTDOMAIN ),
+				'parent_slug'   => '',
+				'menu_slug'     => 'motionmill'
+			);
+
+			return $pages;
+		}
+
+		public function on_sort_plugins( $a, $b )
+		{
+			return basename( $a ) < basename( $b );
+		}
+
 		public function on_activate()
 		{
-			foreach ( $this->get_plugins_data() as $file => $data )
+			foreach ( $this->get_internal_plugins() as $file => $data )
 			{
 				do_action( 'activate_' . $file );
 			}
 
-			$this->set_option( 'version', self::VERSION );
+			$this->set_option( 'version', self::VERSION, '_core' );
 		}
 
 		public function on_deactivate()
 		{
-			foreach ( $this->get_plugins_data() as $file => $data )
+			foreach ( $this->get_internal_plugins() as $file => $data )
 			{
 				do_action( 'deactivate_' . $file );
 			}

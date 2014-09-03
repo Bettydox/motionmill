@@ -65,7 +65,6 @@ if ( ! class_exists( 'MM_Dashboard' ) )
 		public function on_admin_init()
 		{
 			add_meta_box( 'motionmill-dashboard-overview', __( 'At a glance', Motionmill::TEXTDOMAIN ), array(&$this, 'on_print_plugins'), 'motionmill_dashboard', 'normal', 'default' );
-			add_meta_box( 'motionmill-dashboard-updates', __( 'Updates', Motionmill::TEXTDOMAIN ), array(&$this, 'on_print_updates'), 'motionmill_dashboard', 'side', 'default' );
 			add_meta_box( 'motionmill-dashboard-docs', __( 'Documentation', Motionmill::TEXTDOMAIN ), array(&$this, 'on_print_documentation'), 'motionmill_dashboard', 'side', 'default' );
 		}
 
@@ -83,7 +82,7 @@ if ( ! class_exists( 'MM_Dashboard' ) )
 
 					<h3><?php printf( __( 'Welcome to %s!',  Motionmill::TEXTDOMAIN ), $plugin['Name'] ); ?></h3>
 
-					<p class="about-description"><?php printf( __( 'v.%s', Motionmill::TEXTDOMAIN ), $plugin['Version'] ); ?></p>
+					<p class="about-description"><?php printf( __( 'v%s', Motionmill::TEXTDOMAIN ), $plugin['Version'] ); ?></p>
 
 					<p><?php echo $plugin['Description']; ?></p>
 
@@ -129,7 +128,7 @@ if ( ! class_exists( 'MM_Dashboard' ) )
 		{
 			$plugins = array();
 
-			foreach ( MM()->get_plugins_data( 'intern', 'extern' ) as $file => $plugin )
+			foreach ( MM()->get_all_plugins() as $file => $plugin )
 			{
 				if ( $plugin['Description'] == '' )
 				{
@@ -157,37 +156,11 @@ if ( ! class_exists( 'MM_Dashboard' ) )
 			}
 		}
 
-		public function on_print_updates()
-		{
-			$updates = MM('Updates')->get_updateables();
-
-			if ( count( $updates ) == 0 )
-			{
-				_e( 'No updates available.', Motionmill::TEXTDOMAIN );
-			}
-
-			else
-			{
-				print '<ul>';
-
-				foreach ( $updates as $file )
-				{
-					$data = get_plugin_data( trailingslashit( WP_PLUGIN_DIR ) . $file );
-
-					printf( '<li><h4>%s</h4></li>', $data['Name'] );
-				}
-
-				print '</ul>';
-
-				_e( 'Check the <a href="%s">updates section</a> for more information.', '?page=motionmill_plugins', Motionmill::TEXTDOMAIN );
-			}
-		}
-
 		public function on_print_documentation()
 		{
 			$plugins = array();
 
-			foreach ( MM()->get_plugins_data( 'intern', 'extern' ) as $file => $plugin )
+			foreach ( MM()->get_all_plugins() as $file => $plugin )
 			{
 				if ( $plugin['PluginURI'] == '' )
 				{

@@ -1,21 +1,5 @@
 <?php if ( ! defined('ABSPATH') ) exit; // Exits when accessed directly
 
-function motionmill_settings_pages( $pages )
-{
-	$pages[] = array
-	(
-		'id' 		    => 'motionmill',
-		'title' 	    => __( 'Motionmill', Motionmill::TEXTDOMAIN ),
-		'menu_title'    => __( 'Motionmill', Motionmill::TEXTDOMAIN ),
-		'parent_slug'   => '',
-		'menu_slug'     => 'motionmill'
-	);
-
-	return $pages;
-}
-
-add_filter( 'motionmill_settings_pages', 'motionmill_settings_pages', 5 );
-
 function motionmill_settings_options( $options )
 {
 	return array_merge( $options, array
