@@ -30,7 +30,7 @@ if ( ! class_exists( 'MM_Updates' ) )
 
 		public function on_update_plugins( $data )
 		{
-			//$plugins = MM()->get_plugins_data('extern');
+			$plugins = MM()->get_plugins_data('extern');
 			$plugins[ plugin_basename( Motionmill::FILE ) ] = get_plugin_data( trailingslashit( WP_PLUGIN_DIR ) . plugin_basename( Motionmill::FILE ) );
 
 			foreach ( $plugins as $file => $plugin )
