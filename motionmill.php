@@ -43,7 +43,7 @@ if ( ! class_exists( 'Motionmill' ) )
 		}
 
 		public function __construct()
-		{	
+		{
 			
 		}
 
