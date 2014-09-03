@@ -5,7 +5,7 @@
  Plugin Name: Motionmill Settings
  Plugin URI: https://github.com/addwittz/motionmill/tree/master/plugins/motionmill-settings
  Description: Creates admin menu pages.
- Version: 1.0.4
+ Version: 1.0.5
  Author: Maarten Menten
  Author URI: http://maartenmenten.be
  License: GPL2
@@ -34,12 +34,33 @@ if ( ! class_exists( 'MM_Settings' ) )
 
 		public function initialize()
 		{
+			$this->options = apply_filters( 'motionmill_settings_options', array
+			(
+				'page_capability'    => 'manage_options',
+				'page_parent_slug'   => '',
+				'page_priority'      => 10,
+				'page_submit_button' => true,
+				'page_admin_bar'     => true,
+				'field_rules'        => array( 'trim' ),
+				'field_type'         => 'textfield'
+			), array() );
+
 			// registers pages
-			foreach ( apply_filters( 'motionmill_settings_pages', $this->pages ) as $data )
+			foreach ( apply_filters( 'motionmill_settings_pages', array() ) as $data )
 			{
 				if ( empty( $data['id'] ) || empty( $data['title'] ) )
 				{
 					continue;
+				}
+
+				if ( ( isset( $data['parent_slug'] ) && $data['parent_slug'] == '' ) || ( ! isset( $data['parent_slug'] ) && $this->options['page_parent_slug'] == '' ) )
+				{
+					$priority = null;
+				}
+
+				else
+				{
+					$priority = $this->options['page_priority'];
 				}
 
 				$this->pages[] = array_merge( array
@@ -47,15 +68,15 @@ if ( ! class_exists( 'MM_Settings' ) )
 					'id'            => $data['id'],
 					'title'         => $data['title'],
 					'menu_title'    => $data['title'],
-					'capability'    => 'manage_options',
+					'capability'    => $this->options['page_capability'],
 					'menu_slug'     => $data['id'],
 					'menu_counter'  => false,
-					'parent_slug'   => 'motionmill',
+					'parent_slug'   => $this->options['page_parent_slug'],
 					'description'   => '',
 					'option_name'   => $data['id'],
-					'submit_button' => true,
-					'priority'      => 10,
-					'admin_bar'     => true,
+					'submit_button' => $this->options['page_submit_button'],
+					'priority'      => $priority,
+					'admin_bar'     => $this->options['page_admin_bar'],
 					'styles'        => array(),
 					'scripts'       => array(),
 					'localize'      => array(),
@@ -64,7 +85,7 @@ if ( ! class_exists( 'MM_Settings' ) )
 			}
 
 			usort( $this->pages, array( &$this, 'on_sort_priority' ) );
-
+			
 			// registers sections
 			foreach ( apply_filters( 'motionmill_settings_sections', array() ) as $data )
 			{
@@ -78,7 +99,7 @@ if ( ! class_exists( 'MM_Settings' ) )
 					'id' 		   => $data['id'],
 					'title'  	   => '',
 					'description'  => '',
-					'page'         => 'motionmill'
+					'page'         => $this->options['page_parent_slug']
 				), $data );
 			}
 
@@ -94,12 +115,12 @@ if ( ! class_exists( 'MM_Settings' ) )
 				(
 					'id' 		   => $data['id'],
 					'title'  	   => '',
-					'type'         => '',
+					'type'         => $this->options['field_type'],
 					'type_args'    => array(),
 					'value'        => '',
 					'description'  => '',
-					'rules'        => array( 'trim' ), 
-					'page'         => 'motionmill',
+					'rules'        => $this->options['field_rules'], 
+					'page'         => $this->options['page_parent_slug'],
 					'section'      => ''
 				), $data );
 			}
@@ -274,7 +295,15 @@ if ( ! class_exists( 'MM_Settings' ) )
 					$menu_title = $page['menu_title'];
 				}
 
-				$page['hook'] = add_submenu_page( $page['parent_slug'], $page['title'], $menu_title, $page['capability'], $page['menu_slug'], array( &$this, 'on_print_page') );
+				if ( $page['parent_slug'] == '' )
+				{
+					$page['hook'] = add_menu_page( $page['title'], $menu_title, $page['capability'], $page['menu_slug'], array( &$this, 'on_print_page'), null, $page['priority'] );
+				}
+
+				else
+				{
+					$page['hook'] = add_submenu_page( $page['parent_slug'], $page['title'], $menu_title, $page['capability'], $page['menu_slug'], array( &$this, 'on_print_page') );
+				}
 			}
 		}
 
@@ -282,27 +311,27 @@ if ( ! class_exists( 'MM_Settings' ) )
 		{
 			global $wp_admin_bar;
     		
-    		if ( ! is_super_admin() || ! is_admin_bar_showing() )
-    		{
-    			return;
-    		}
-
-    		foreach ( $this->pages as $page )
-    		{
-    			if ( ! $page['admin_bar'] )
-    			{
-    				continue;
-    			}
-
-    			$wp_admin_bar->add_menu(array
-    			(
-					'id'     => $page['id'],
-					'meta'   => array(),
-					'title'  => $page['menu_title'],
-					'href'   => admin_url( 'admin.php?page=' . $page['menu_slug'] ),
-					'parent' => $page['parent_slug']
-			    ));
-    		}
+	    		if ( ! is_super_admin() || ! is_admin_bar_showing() )
+	    		{
+	    			return;
+	    		}
+	
+	    		foreach ( $this->pages as $page )
+	    		{
+	    			if ( ! $page['admin_bar'] )
+	    			{
+	    				continue;
+	    			}
+	
+	    			$wp_admin_bar->add_menu(array
+	    			(
+						'id'     => $page['id'],
+						'meta'   => array(),
+						'title'  => $page['menu_title'],
+						'href'   => admin_url( 'admin.php?page=' . $page['menu_slug'] ),
+						'parent' => $page['parent_slug']
+				    ));
+	    		}
 		}
 
 		public function on_admin_enqueue_scripts()
@@ -362,6 +391,18 @@ if ( ! class_exists( 'MM_Settings' ) )
 		{
 			$page = $this->get_current_page();
 
+			if ( $page['parent_slug'] == '' )
+			{
+				// children
+				$menu_pages = MM_Array::get_elements_by( array( 'parent_slug' => $page['id'] ), $this->pages );
+			}
+
+			else
+			{
+				// siblings
+				$menu_pages = MM_Array::get_elements_by( array( 'parent_slug' => $page['parent_slug'] ), $this->pages );
+			}
+
 			?>
 
 			<div class="wrap">
@@ -371,7 +412,7 @@ if ( ! class_exists( 'MM_Settings' ) )
 				<?php settings_errors(); ?>
 
 				<h2 class="nav-tab-wrapper">
-					<?php foreach ( $this->pages as $menu_page ) : ?>
+					<?php foreach ( $menu_pages as $menu_page ) : ?>
 					<a href="?page=<?php echo esc_attr( $menu_page['menu_slug'] ); ?>" class="nav-tab<?php echo $menu_page['menu_slug'] == $page['menu_slug'] ? ' nav-tab-active' : ''; ?>"><?php echo esc_html( $menu_page['menu_title'] ); ?></a>
 					<?php endforeach; ?>
 				</h2><!-- .nav-tab-wrapper -->
