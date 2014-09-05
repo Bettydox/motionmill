@@ -25,18 +25,63 @@ if ( ! class_exists( 'MM_Updates' ) )
 
 		public function initialize()
 		{
-			add_filter( 'pre_set_site_transient_update_plugins', array( &$this, 'on_update_plugins' ) );
+			add_filter( 'pre_set_site_transient_update_plugins', array( &$this, 'on_transient_update_plugins' ) );
+
+			foreach ( $this->get_updateable_plugins() as $file => $data )
+			{
+				add_action( sprintf( 'in_plugin_update_message-%s', $file ), array( &$this, 'on_plugin_update_message' ), 10, 2 ); 	
+			}
 		}
 
-		public function on_update_plugins( $data )
-		{
-			$plugins = MM()->get_plugins_data('extern');
-			$plugins[ plugin_basename( Motionmill::FILE ) ] = get_plugin_data( trailingslashit( WP_PLUGIN_DIR ) . plugin_basename( Motionmill::FILE ) );
+		public function get_updateable_plugins()
+		{	
+			$motionmill_file = plugin_basename( Motionmill::FILE );
 
-			foreach ( $plugins as $file => $plugin )
+			$plugins = MM()->get_external_plugins();
+			$plugins[ $motionmill_file ] = get_plugin_data( trailingslashit( WP_PLUGIN_DIR ) . $motionmill_file );
+
+			return $plugins;
+		}
+
+		public function on_plugin_update_message( $data, $response )
+		{
+			// changes the details link
+
+			$file = $data['plugin'];
+			
+			$repo = MM()->get_plugin_repository_name( $file );
+
+			$detail_url = MM('GitHub')->get_release_url( $repo, $response->new_version );
+
+			?>
+
+				<script type="text/javascript">
+
+					jQuery(document).ready(function($)
+					{
+						var wrap = $('#the-list').find( '#motionmill' );
+						
+						var message = wrap.next().find('.update-message');
+
+						if ( message.length > 0 )
+						{
+							message.find( 'a.thickbox' )
+								.removeClass( 'thickbox' )
+								.attr( 'target', '_blank' )
+								.attr( 'href', '<?php echo esc_attr( $detail_url ); ?>' );
+						};
+					});
+
+				</script>
+
+			<?php
+		}
+
+		public function on_transient_update_plugins( $data )
+		{
+			foreach ( $this->get_updateable_plugins() as $file => $plugin )
 			{
-				$file = trim( $file, '/' );
-				$repo = dirname( $file );
+				$repo = MM()->get_plugin_repository_name( $file );
 
 				$versions = MM( 'GitHub' )->get_versions( $repo );
 
@@ -45,29 +90,31 @@ if ( ! class_exists( 'MM_Updates' ) )
 					continue;
 				}
 
-				$latest_version = $versions[ count( $versions ) - 1 ];
+				$new_version = $versions[ count( $versions ) - 1 ];
 
-				if ( version_compare( $latest_version,$plugin['Version'], '<=' ) )
+				if ( version_compare( $new_version, $plugin['Version'], '<=' ) )
 				{
 					continue;
 				}
 
-				$releases = MM( 'GitHub' )->get_releases( $repo );
+				$dir = basename( dirname( $file ) );
 
-				if ( is_wp_error( $releases ) || empty( $releases ) || ! isset( $releases[ $latest_version ] ) )
+				$package = sprintf( 'http://motionmill.com/plugins/releases/%s-%s.zip', $dir, $new_version );
+
+				if ( ! MM_Common::url_exists( $package ) )
 				{
 					continue;
 				}
 
-				$latest_release = $releases[ $latest_version ];
+				$latest_release = $releases[ $new_version ];
 
 				$response = new stdClass();
-				$response->id          = $file;
-				$response->slug        = $file;
+				$response->id          = $file;  // whatever
+				$response->slug        = $file;  // whatever
 				$response->plugin      = $file;
-				$response->new_version = $latest_version;
-				$response->url         = $plugin['PluginURI'];
-				$response->package     = $latest_release;
+				$response->new_version = $new_version;
+				$response->url         = 'http://motionmill.com'; // whatever
+				$response->package     = $package;
 
 				$data->response[ $file ] = $response;
 			}
