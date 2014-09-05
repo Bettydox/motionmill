@@ -22,4 +22,22 @@ if ( ! function_exists( 'MM' ) )
 	}
 }
 
+if ( ! class_exists('MM_Wordpress') )
+{
+	class MM_Common
+	{
+		public static function url_exists( $url )
+		{
+			$headers = @get_headers( $url );
+
+			if( empty( $headers ) || $headers[0] == 'HTTP/1.1 404 Not Found')
+			{
+	   			return false;
+	   		}
+
+	   		return true;
+	   	}
+	}
+}
+
 ?>
