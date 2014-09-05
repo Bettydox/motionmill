@@ -19,25 +19,27 @@ if ( ! class_exists( 'MM_GitHub' ) )
 		protected $options    = array();
 		protected $http_codes = array();
 
-		public function __construct()
+		public function __construct( $args = array() )
 		{	
+			$this->options = array_merge( array
+			(
+				'account'        => '',
+				'client_login'   => '',
+				'client_secret'  => '',
+				'auth_type'      => 'url_token', // http_password | http_token | url_token
+				'http_port'      => 0,
+				'user_agent'     => $_SERVER[ 'HTTP_USER_AGENT' ],
+				'timeout'        => 0,
+				'github_url'     => 'https://github.com',
+				'github_api_url' => 'https://api.github.com'
+
+			), $args );
+
 			add_action( 'motionmill_init', array( &$this, 'initialize' ) );
 		}
 		
 		public function initialize()
 		{
-			$this->options = apply_filters( 'motionmill_github_options', array
-			(
-				'account'       => '',
-				'client_login'  => '',
-				'client_secret' => '',
-				'auth_type'     => 'url_token', // http_password | http_token | url_token
-				'http_port'     => 0,
-				'user_agent'    => $_SERVER[ 'HTTP_USER_AGENT' ],
-				'timeout'       => 0,
-				'base_url'      => 'https://api.github.com'
-			));
-
 			$this->http_codes = array
 			(
 				100 => __( 'Continue', Motionmill::TEXTDOMAIN ),
@@ -100,7 +102,7 @@ if ( ! class_exists( 'MM_GitHub' ) )
 
 		public function get_tags( $repo )
 		{
-			return $this->do_request( sprintf( 'repos/%s/%s/git/refs/tags', $this->options['account'], $repo ) );
+			return $this->do_request( sprintf( '%s/repos/%s/%s/git/refs/tags', $this->options['github_api_url'], $this->options['account'], $repo ) );
 		}
 
 		public function get_versions( $repo, $prefix = 'v' )
@@ -155,18 +157,21 @@ if ( ! class_exists( 'MM_GitHub' ) )
 
 			foreach ( $versions as $version )
 			{
-				$releases[ $version ] = sprintf( 'https://github.com/%s/%s/archive/v%s.zip', $this->options['account'], $repo, $version );
+				$releases[ $version ] = sprintf( '%s/%s/%s/archive/v%s.zip', $this->options['github_url'], $this->options['account'], $repo, $version );
 			}
 
 			return $releases;
+		}
+
+		public function get_release_url( $repo, $version )
+		{
+			return sprintf( '%s/%s/%s/releases/tag/v%s', $this->options['github_url'], $this->options['account'], $repo, $version ); 
 		}
 
 		// https://github.com/ornicar/php-github-api/blob/master/lib/Github/HttpClient/Curl.php
 		public function do_request( $url, $parameters = array(), $http_method = 'GET', $options = array() )
 		{
 			$options = array_merge( $this->options, $options );
-			
-			$url = trailingslashit( $options['base_url'] ) . ltrim( $url, '/' );
 
 			$curl_options = array();
 
