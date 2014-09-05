@@ -26,15 +26,9 @@ if ( ! class_exists( 'MM_Settings' ) )
 		protected $fields      = array();
 		protected $field_types = array();
 
-		public function __construct()
+		public function __construct( $args = array() )
 		{
-			add_filter( 'motionmill_helpers', array( &$this, 'on_helpers' ) );
-			add_action( 'motionmill_init', array( &$this, 'initialize' ), 5 );
-		}
-
-		public function initialize()
-		{
-			$this->options = apply_filters( 'motionmill_settings_options', array
+			$this->options = array_merge(array
 			(
 				'page_capability'    => 'manage_options',
 				'page_parent_slug'   => '',
@@ -43,8 +37,15 @@ if ( ! class_exists( 'MM_Settings' ) )
 				'page_admin_bar'     => true,
 				'field_rules'        => array( 'trim' ),
 				'field_type'         => 'textfield'
-			), array() );
+				
+			), $args);
 
+			add_filter( 'motionmill_helpers', array( &$this, 'on_helpers' ) );
+			add_action( 'motionmill_init', array( &$this, 'initialize' ), 5 );
+		}
+
+		public function initialize()
+		{
 			// registers pages
 			foreach ( apply_filters( 'motionmill_settings_pages', array() ) as $data )
 			{
@@ -214,6 +215,27 @@ if ( ! class_exists( 'MM_Settings' ) )
 			}
 
 			return $options;
+		}
+
+		public function get_page_ancestors( $page_id )
+		{
+			$page = MM_Array::get_element_by( array( 'id' => $page_id ), $this->pages );
+
+			if ( ! $page )
+			{
+				return false;
+			}
+
+			$ancestors = array();
+
+			while ( $page['parent_slug'] )
+			{
+				$page = MM_Array::get_element_by( array( 'id' => $page['parent_slug'] ), $this->pages );
+
+				array_unshift( $ancestors, $page );
+			}
+
+			return $ancestors;
 		}
 
 		public function get_current_page()
@@ -504,7 +526,7 @@ if ( ! class_exists( 'MM_Settings' ) )
 
 		public function on_helpers( $helpers )
 		{
-			array_push( $helpers, 'MM_Array' );
+			array_push( $helpers, 'MM_Array', 'MM_Wordpress' );
 
 			return $helpers;
 		}
