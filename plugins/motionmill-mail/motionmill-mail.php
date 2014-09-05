@@ -69,10 +69,10 @@ if ( ! class_exists('MM_Mail') )
 		{
 			$pages[] = array
 			(
-				'id'          => 'motionmill_mail',
-				'title'       => __('Mail', Motionmill::TEXTDOMAIN),
-				'description' => __('Customizes the WordPress email settings.', Motionmill::TEXTDOMAIN),
-				'option_name' => 'motionmill_mail'
+				'id'           => 'motionmill_mail',
+				'title'        => __('Mail', Motionmill::TEXTDOMAIN),
+				'description'  => __('Customizes the WordPress email settings.', Motionmill::TEXTDOMAIN),
+				'multilingual' => true
 			);
 
 			return $pages;
