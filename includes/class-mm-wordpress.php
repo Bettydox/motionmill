@@ -4,38 +4,55 @@ if ( ! class_exists('MM_Wordpress') )
 {
 	class MM_Wordpress
 	{
-		static public function get_admin_notice( $message, $args = array() )
+		static public function get_admin_notice( $id, $title, $message, $type = 'updated', $closeable = false )
 		{
-			$options = array_merge( array
-			(
-				'type'      => 'updated',
-				'title'     => ''
-			), (array) $args );
+			//MM()->delete_option( 'admin_notices' );
 
-			// recursive
-			if ( is_array( $message ) )
+			if ( $closeable )
 			{
-				$str = '';
+				$notices = MM()->get_option( 'admin_notices', array() );
+				
+				$user_id = get_current_user_id();
 
-				foreach ( $message as $key => $value )
+				if ( ! isset( $notices[ $user_id ] ) )
 				{
-					$str .= self::get_admin_notice( $value, $args ) . Motionmill::NEWLINE;
+					$notices[ $user_id ] = array();
 				}
 
-				return $str;
+				$user_notices = &$notices[ $user_id ];
+
+				if ( ! isset( $user_notices[ $id ] ) )
+				{
+					$user_notices[ $id ] = true;
+
+					MM()->set_option( 'admin_notices', $notices );
+				}
+
+				if ( isset( $_GET['notice'] ) && $_GET['notice'] == $id )
+				{
+					$user_notices[ $id ] = false;
+
+					MM()->set_option( 'admin_notices', $notices );
+				}
+
+				$notices = MM()->get_option( 'admin_notices', array() );
+
+				if ( $notices[ $user_id ][ $id ] == false )
+				{
+					return '';
+				}
 			}
 
-			if ( empty( $message ) )
+			$css_classes = array( $type );
+
+			$html = sprintf( '<strong>%s</strong> - %s', $title, $message );
+
+			if ( $closeable )
 			{
-				return '';
+				$html .= sprintf( ' <a href="?page=%s&notice=%s">%s</a>', $_GET['page'], $id, __( 'Close', Motionmill::TEXTDOMAIN ) );		
 			}
 
-			if ( $options['title'] )
-			{
-				$message = sprintf( '<strong>%s</strong> - %s', $options['title'], $message );
-			}
-
-			return sprintf( '<div class="%s"><p>%s</p></div>', esc_attr( $options['type'] ), $message );
+			return sprintf( '<div class="%s"><p>%s</p></div>', esc_attr( $type ), $html );
 		}
 
 		/* ---------------------------------------------------------------------------------------------------------- */
@@ -147,12 +164,47 @@ if ( ! class_exists('MM_Wordpress') )
 
 		static public function get_language_code()
 		{
-			if ( defined( 'ICL_LANGUAGE_CODE' ) )
+			if ( self::is_multilingual() )
 			{
 				return ICL_LANGUAGE_CODE;
 			}
 
 			return substr( get_bloginfo('language') , 0, 2 );
+		}
+		
+		public static function is_multilingual()
+		{
+			$wpml = 'sitepress-multilingual-cms/sitepress.php';
+
+			$active_plugins = get_option( 'active_plugins', array() );
+
+			if ( is_array( $active_plugins ) && in_array( $wpml, $active_plugins) )
+			{
+				return true;
+			}
+
+			return false;
+		}
+
+		public function get_languages()
+		{
+			$languages = array();
+
+			if ( self::is_multilingual() )
+			{
+				foreach ( icl_get_languages('skip_missing=N&orderby=KEY&order=DIR&link_empty_to=str') as $code => $lang )
+				{
+					$languages[ $code ] = $lang['native_name'];
+				}
+			}
+
+			else
+			{
+				// TODO
+				$languages[ self::get_language_code() ] = __( 'English', Motionmill::TEXTDOMAIN ); 
+			}
+
+			return $languages;
 		}
 
 		/* ---------------------------------------------------------------------------------------------------------- */
