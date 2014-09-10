@@ -8,27 +8,35 @@ Options
 
 __Header image__
 
-The header image.
+(_optional_) The header image.
 
 __Header title__
 
-The text that appears when hovering the header image.
+(_optional_) The text that appears when hovering the header image.
 
 __Header URL__
 
-The url to visit when clicking the header image.
+(_optional_) The url to visit when clicking the header image.
 
 __Message__
 
-Optional text/html above the form.
+(_optional_) text/html above the form.
 
 __Footer__
 
-Optional text/html below the form.
+(_optional_) text/html below the form.
 
 __Authentication type__
 
-Username, Email or username and email
+(_optional_) Username, Email or username and email
+
+__Redirect__
+
+(_optional_) The url to go to when user is authenticated.
+
+__Enable__
+
+(_optional_) check this option if you want to override the default WordPress settings.
 
 Screenshots
 -----------
