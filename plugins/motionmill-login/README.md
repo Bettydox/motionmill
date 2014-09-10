@@ -32,7 +32,7 @@ __Authentication type__
 
 __Redirect__
 
-(_optional_) The url to go to when user is authenticated.
+(_optional_) The page to go to when user is authenticated.
 
 __Enable__
 
