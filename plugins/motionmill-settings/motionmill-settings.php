@@ -146,7 +146,33 @@ if ( ! class_exists( 'MM_Settings' ) )
 			add_action( 'admin_bar_menu', array( &$this, 'on_admin_bar_menu' ), 100 );
 
 			add_filter( 'motionmill_settings_sanitize_option', array( &$this, 'on_sanitize_option' ), 5, 2 );
-			add_filter( 'motionmill_settings_page_title', array( &$this, 'on_page_title' ), 5, 2 );		
+			add_filter( 'motionmill_settings_page_title', array( &$this, 'on_page_title' ), 5, 2 );
+
+			// makes sure all options are saved (for WPML String Translation)
+
+			if ( is_admin() )
+			{
+				foreach ( $this->get_pages() as $page )
+				{
+					$options = get_option( $page['option_name'] );
+
+					if ( is_array( $options ) )
+					{
+						continue;
+					}
+
+					$options = array();
+
+					$fields = $this->get_fields( array( 'page' => $page['id'] ) );
+
+					foreach ( $fields as $field )
+					{
+						$options[ $field['id'] ] = $field['value'];
+					}
+
+					update_option( $page['option_name'], $options );
+				}
+			}
 		}
 
 		public function get_option( $page_id, $field_id = null, $default = '' )
