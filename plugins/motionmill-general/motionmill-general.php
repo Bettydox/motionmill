@@ -33,21 +33,131 @@ if ( ! class_exists( 'MM_General' ) )
 			add_filter( 'body_class', array( &$this, 'on_body_class' ) );
 			add_filter( 'mce_css', array( &$this, 'on_mce_css' ) );
 
-			if ( $this->get_option( 'post_excerpt_length' ) != '' )
+			if ( $this->get_option( 'post_excerpt_length' ) )
 			{
 				add_filter( 'excerpt_length', array( &$this, 'on_excerpt_length' ) );
 			}
 
-			if ( $this->get_option( 'post_excerpt_more' ) != '' )
+			if ( $this->get_option( 'post_excerpt_more' ) )
 			{
 				add_filter( 'excerpt_more', array( &$this, 'on_excerpt_more' ) );
 			}
-			
-			if ( $this->get_option( 'tracking_enable' ) )
+
+			if ( $this->get_option( 'enable_widget_shortcodes' ) )
 			{
-				add_action( 'wp_head', array(&$this, 'print_tracking_code'), 999 );
+				add_filter('widget_text', 'do_shortcode');
 			}
 
+			if ( $this->get_option( 'wpautop_enable' ) )
+			{
+				add_action( 'add_meta_boxes', array( &$this, 'on_add_meta_boxes' ) );
+				add_action( 'save_post', array( $this, 'on_save_post' ) );
+				add_action( 'the_post', array( $this, 'on_the_post' ) );
+				add_action( 'loop_end', array( $this, 'on_loop_end' ) );
+			}
+		}
+
+		public function on_add_meta_boxes()
+		{
+			add_meta_box( 'motionmill-wpautop', __( 'Motionmill Auto Paragraphs', Motionmill::TEXTDOMAIN ), array( &$this, 'on_print_metabox_autop' ), null, 'side', 'default' );
+		}
+
+		public function on_print_metabox_autop( $post )
+		{
+			wp_nonce_field( 'motionmill_wpautop_save_post', Motionmill::NONCE_NAME );
+
+			$wpautop = get_post_meta( $post->ID, '_motionmill_wpautop', true );
+
+			if ( $wpautop === '' )
+			{
+				$wpautop = true;
+			}
+
+			?>
+
+			<p class="description"><?php _e( 'Changes double line-breaks into HTML paragraphs for content and excerpt fields.', Motionmill::TEXTDOMAIN ); ?></p>
+
+			<p>
+				<label><input type="checkbox" name="motionmill_wpautop" value="1"<?php checked( $wpautop, true ); ?>><?php _e( 'Enable', Motionmill::TEXTDOMAIN ); ?></label>
+			</p>
+
+			<?php
+		}
+
+		public function on_save_post( $post_id )
+		{
+			if ( empty( $_POST[ Motionmill::NONCE_NAME ] ) || ! wp_verify_nonce( $_POST[ Motionmill::NONCE_NAME ], 'motionmill_wpautop_save_post' ) )
+			{
+				return $post_id;
+			}
+
+			if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE )
+			{
+				return $post_id;
+			}
+
+			if ( 'page' == $_POST['post_type'] )
+			{
+				if ( ! current_user_can( 'edit_page', $post_id ) )
+				{
+					return $post_id;
+				}
+			}
+
+			else
+			{
+				if ( ! current_user_can( 'edit_post', $post_id ) )
+				{
+					return $post_id;
+				}
+					
+			}
+
+			update_post_meta( $post_id, '_motionmill_wpautop', ! empty( $_POST[ 'motionmill_wpautop' ] ) );
+		}
+
+		public function the_post( $post )
+		{
+			$wpautop = (boolean) get_post_meta( $post->ID, '_motionmill_wpautop', true );
+
+			if ( $wpautop )
+			{
+				remove_filter( 'the_content', 'wpautop' );
+				remove_filter( 'the_excerpt', 'wpautop' );
+			}
+
+			else
+			{
+				if ( ! has_filter( 'the_content', 'wpautop' ) )
+				{
+					add_filter( 'the_content', 'wpautop' );
+				}
+
+				if ( ! has_filter( 'the_excerpt', 'wpautop' ) )
+				{
+					add_filter( 'the_excerpt', 'wpautop' );
+				}
+			}
+		}
+
+		/**
+		 * loop_end function.
+		 * After we run our loop, everything should be set back to normal
+		 *
+		 * @access public
+		 * @return void
+		 */
+		public function on_loop_end()
+		{
+			if ( ! has_filter( 'the_content', 'wpautop' ) )
+			{
+				add_filter( 'the_content', 'wpautop' );
+			}
+
+			if ( ! has_filter( 'the_excerpt', 'wpautop' ) )
+			{
+				add_filter( 'the_excerpt', 'wpautop' );
+			}
 		}
 
 		public function get_option( $key = null, $default = '' )
@@ -85,8 +195,18 @@ if ( ! class_exists( 'MM_General' ) )
 			$sections[] = array
 			(
 				'id' 		  => 'motionmill_general_post',
-				'title' 	  => __( '', Motionmill::TEXTDOMAIN ),
+				'title' 	  => __( 'Posts', Motionmill::TEXTDOMAIN ),
 				'description' => __( '', Motionmill::TEXTDOMAIN ),
+				'page'        => 'motionmill_general'
+			);
+
+			// body class
+
+			$sections[] = array
+			(
+				'id' 		  => 'motionmill_general_body_class',
+				'title' 	  => __( 'Body classes', Motionmill::TEXTDOMAIN ),
+				'description' => __( 'Add css classes that are assigned to the body HTML element on the current page.', Motionmill::TEXTDOMAIN ),
 				'page'        => 'motionmill_general'
 			);
 
@@ -99,26 +219,28 @@ if ( ! class_exists( 'MM_General' ) )
 
 			$fields[] = array
 			(
-				'id' 		  => 'favicon',
-				'title' 	  => __( 'Favicon', Motionmill::TEXTDOMAIN ),
-				'description' => __( "Also known as a Web site icon or bookmark icon. Browsers that provide favicon support typically display a favicon in the browser's address bar. Most commonly 16×16 pixels", Motionmill::TEXTDOMAIN ),
-				'type'		  => 'media',
-				'value'       => '',
-				'page'		  => 'motionmill_general',
-				'section'     => 'motionmill_general_general'
+				'id'           => 'favicon',
+				'title'        => __( 'Favicon', Motionmill::TEXTDOMAIN ),
+				'description'  => __( "Also known as a Web site icon or bookmark icon. Browsers that provide favicon support typically display a favicon in the browser's address bar. Most commonly 16×16 pixels", Motionmill::TEXTDOMAIN ),
+				'type'         => 'media',
+				'value'        => '',
+				'page'         => 'motionmill_general',
+				'section'      => 'motionmill_general_general',
+				'translatable' => false
 			);
 
 			// post
 
 			$fields[] = array
 			(
-				'id' 		  => 'post_excerpt_length',
-				'title' 	  => __( 'Excerpt Length', Motionmill::TEXTDOMAIN ),
-				'description' => __( 'The maximum number of words for a single post <a href="http://codex.wordpress.org/Excerpt" target="_blank">excerpt</a>. Leave empty to use the default value.', Motionmill::TEXTDOMAIN ),
-				'type'		  => 'textfield',
-				'value'       => '',
-				'page'		  => 'motionmill_general',
-				'section'     => 'motionmill_general_post'
+				'id'           => 'post_excerpt_length',
+				'title'        => __( 'Excerpt Length', Motionmill::TEXTDOMAIN ),
+				'description'  => __( 'The maximum number of words for a single post <a href="http://codex.wordpress.org/Excerpt" target="_blank">excerpt</a>. Leave empty to use the default value.', Motionmill::TEXTDOMAIN ),
+				'type'         => 'textfield',
+				'value'        => '',
+				'page'         => 'motionmill_general',
+				'section'      => 'motionmill_general_post',
+				'translatable' => true
 			);
 
 			$fields[] = array
@@ -129,7 +251,8 @@ if ( ! class_exists( 'MM_General' ) )
 				'type'		  => 'textfield',
 				'value'       => '',
 				'page'		  => 'motionmill_general',
-				'section'     => 'motionmill_general_post'
+				'section'     => 'motionmill_general_post',
+				'translatable' => true
 			);
 
 			$fields[] = array
@@ -140,7 +263,44 @@ if ( ! class_exists( 'MM_General' ) )
 				'type'		  => 'textarea',
 				'value'       => '',
 				'page'		  => 'motionmill_general',
-				'section'     => 'motionmill_general_post'
+				'section'     => 'motionmill_general_post',
+				'translatable' => false
+			);
+
+			$fields[] = array
+			(
+				'id'           => 'enable_widget_shortcodes',
+				'title'        => __( 'Widget Shortcode Support', Motionmill::TEXTDOMAIN ),
+				'description'  => __( 'Enables/disables <a href="http://codex.wordpress.org/Shortcode_API" target="_blank">shortcodes</a> for widgets', Motionmill::TEXTDOMAIN ),
+				'type'         => 'checkbox',
+				'value'        => '',
+				'page'         => 'motionmill_general',
+				'section'      => 'motionmill_general_general',
+				'translatable' => false
+			);
+
+			$fields[] = array
+			(
+				'id' 		  => 'body_class_language',
+				'title' 	  => __( 'language', Motionmill::TEXTDOMAIN ),
+				'description' => __( 'Example: lang-en', Motionmill::TEXTDOMAIN ),
+				'type'		  => 'checkbox',
+				'value'       => '',
+				'page'		  => 'motionmill_general',
+				'section'     => 'motionmill_general_body_class',
+				'translatable' => false
+			);
+
+			$fields[] = array
+			(
+				'id'           => 'wpautop_enable',
+				'title'        => __( 'Toggle Auto Paragraphs', Motionmill::TEXTDOMAIN ),
+				'description'  => __( 'Provides the ability to enable/disable <a href="http://codex.wordpress.org/Function_Reference/wpautop" title="wpautop" target="_blank">wpautop</a>. (see post edit screen).', Motionmill::TEXTDOMAIN ),
+				'type'         => 'checkbox',
+				'value'        => '',
+				'page'         => 'motionmill_general',
+				'section'      => 'motionmill_general_general',
+				'translatable' => false
 			);
 
 			return $fields;
@@ -165,7 +325,10 @@ if ( ! class_exists( 'MM_General' ) )
 		
 		public function on_body_class($classes)
 		{
-			$classes[] = sprintf( 'lang-%s', MM_Wordpress::get_language_code() );
+			if ( $this->get_option( 'body_class_language' ) )
+			{
+				$classes[] = sprintf( 'lang-%s', MM_WordPress::get_language_code() );
+			}
 
 			return $classes;
 		}
@@ -206,28 +369,9 @@ if ( ! class_exists( 'MM_General' ) )
 			return $mce_css;
 		}
 		
-		public function print_tracking_code()
-		{
-			?>
-
-			<script type="text/javascript">
-
-			  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-			  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-			  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-			  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
-
-			  ga('create', '<?php echo esc_html( $this->get_option( "tracking_code" ) ); ?>', 'auto');
-			  ga('send', 'pageview');
-
-			</script>
-
-			<?php
-		}
-
 		public function on_helpers( $helpers )
 		{
-			array_push( $helpers , 'MM_Array', 'MM_Wordpress' );
+			array_push( $helpers , 'MM_Array', 'MM_WordPress' );
 
 			return $helpers;
 		}
@@ -236,8 +380,7 @@ if ( ! class_exists( 'MM_General' ) )
 		{
 			return array_merge(array
 			(
-				'ajaxurl' => admin_url( 'admin-ajax.php' ),
-				'lang' 	  => MM_Wordpress::get_language_code()
+				'lang' => MM_WordPress::get_language_code()
 			), $vars);
 		}
 	}
