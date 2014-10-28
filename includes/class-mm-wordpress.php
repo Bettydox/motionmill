@@ -4,55 +4,96 @@ if ( ! class_exists('MM_Wordpress') )
 {
 	class MM_Wordpress
 	{
-		static public function get_admin_notice( $id, $title, $message, $type = 'updated', $closeable = false )
+		static public function get_language_code()
 		{
-			//MM()->delete_option( 'admin_notices' );
-
-			if ( $closeable )
+			if ( defined( 'ICL_LANGUAGE_CODE' ) )
 			{
-				$notices = MM()->get_option( 'admin_notices', array() );
-				
-				$user_id = get_current_user_id();
-
-				if ( ! isset( $notices[ $user_id ] ) )
-				{
-					$notices[ $user_id ] = array();
-				}
-
-				$user_notices = &$notices[ $user_id ];
-
-				if ( ! isset( $user_notices[ $id ] ) )
-				{
-					$user_notices[ $id ] = true;
-
-					MM()->set_option( 'admin_notices', $notices );
-				}
-
-				if ( isset( $_GET['notice'] ) && $_GET['notice'] == $id )
-				{
-					$user_notices[ $id ] = false;
-
-					MM()->set_option( 'admin_notices', $notices );
-				}
-
-				$notices = MM()->get_option( 'admin_notices', array() );
-
-				if ( $notices[ $user_id ][ $id ] == false )
-				{
-					return '';
-				}
+				return ICL_LANGUAGE_CODE;
 			}
 
-			$css_classes = array( $type );
+			return substr( get_bloginfo('language'), 0, 2 );
+		}
 
-			$html = sprintf( '<strong>%s</strong> - %s', $title, $message );
+		static public function get_language_codes()
+		{
+			return array_keys( self::get_languages() );
+		}
 
-			if ( $closeable )
+		static public function is_active_language( $lang )
+		{
+			$codes = self::get_language_codes();
+
+			return isset( $codes[ $lang ] );
+		}
+		
+		static public function is_multilingual()
+		{
+			include_once( ABSPATH . 'wp-admin/includes/plugin.php' );
+
+			return is_plugin_active( 'sitepress-multilingual-cms/sitepress.php' );
+		}
+
+		static public function get_languages()
+		{
+			$languages = array();
+
+			if ( self::is_multilingual() )
 			{
-				$html .= sprintf( ' <a href="?page=%s&notice=%s">%s</a>', $_GET['page'], $id, __( 'Close', Motionmill::TEXTDOMAIN ) );		
+				foreach ( icl_get_languages('skip_missing=N&orderby=KEY&order=DIR&link_empty_to=str') as $code => $lang )
+				{
+				 	$languages[ $code ] = $lang['native_name'];
+				} 
 			}
 
-			return sprintf( '<div class="%s"><p>%s</p></div>', esc_attr( $type ), $html );
+			else
+			{
+				$languages[ self::get_language_code() ] = __( 'English', Motionmill::TEXTDOMAIN ); 
+			}
+
+			return $languages;
+		}
+
+		static public function get_terms_by_post_type( $taxonomy, $post_type, $args = array() )
+		{
+			extract( array_merge( array
+			(
+				'hide_empty' => true
+			), $args ) );
+
+		    global $wpdb;
+
+		    $query = $wpdb->prepare( "SELECT term.*, COUNT(*) from $wpdb->terms AS term 
+		    	INNER JOIN $wpdb->term_taxonomy AS tax ON term.term_id = tax.term_id 
+		    	INNER JOIN $wpdb->term_relationships AS relation ON relation.term_taxonomy_id = tax.term_taxonomy_id 
+		    	INNER JOIN $wpdb->posts AS post ON post.ID = relation.object_id WHERE post.post_type = %s AND tax.taxonomy = %s GROUP BY term.term_id", $post_type, $taxonomy );
+
+		    $rows = $wpdb->get_results( $query );
+
+		    if ( ! is_array( $rows ) )
+		    {
+		    	return null;
+		    }
+
+		    $terms = array();
+
+		    foreach ( $rows as $row )
+		    {
+		    	if ( $hide_empty && $row->{'COUNT(*)'} == 0 )
+		    	{
+		    		continue;
+		    	}
+
+		    	$term = get_term( $row->term_id, $taxonomy );
+
+		    	if ( ! $term || is_wp_error( $term ) )
+		    	{
+		    		continue;
+		    	}
+
+		    	$terms[] = $term;
+		    }
+
+		    return $terms;
 		}
 
 		/* ---------------------------------------------------------------------------------------------------------- */
@@ -150,61 +191,6 @@ if ( ! class_exists('MM_Wordpress') )
 		static public function filter_post_meta_vars( $data )
 		{
 			return array_diff_key( get_object_vars( $data ), self::get_post_vars() );
-		}
-
-		/* ---------------------------------------------------------------------------------------------------------- */
-		
-		/**
-		 * Get Language Code
-		 *
-		 * Returns the current language code
-		 *
-		 * @return String
-		 */
-
-		static public function get_language_code()
-		{
-			if ( self::is_multilingual() )
-			{
-				return ICL_LANGUAGE_CODE;
-			}
-
-			return substr( get_bloginfo('language') , 0, 2 );
-		}
-		
-		public static function is_multilingual()
-		{
-			$wpml = 'sitepress-multilingual-cms/sitepress.php';
-
-			$active_plugins = get_option( 'active_plugins', array() );
-
-			if ( is_array( $active_plugins ) && in_array( $wpml, $active_plugins) )
-			{
-				return true;
-			}
-
-			return false;
-		}
-
-		public function get_languages()
-		{
-			$languages = array();
-
-			if ( self::is_multilingual() )
-			{
-				foreach ( icl_get_languages('skip_missing=N&orderby=KEY&order=DIR&link_empty_to=str') as $code => $lang )
-				{
-					$languages[ $code ] = $lang['native_name'];
-				}
-			}
-
-			else
-			{
-				// TODO
-				$languages[ self::get_language_code() ] = __( 'English', Motionmill::TEXTDOMAIN ); 
-			}
-
-			return $languages;
 		}
 
 		/* ---------------------------------------------------------------------------------------------------------- */

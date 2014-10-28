@@ -34,6 +34,51 @@ if ( ! class_exists('MM_File') )
 			return new WP_Error( 'cannot_open_file', __( 'Cannot open file.' ), $file );
 		}
 
+		public static function csv_to_array( $file )
+		{
+			$handle = fopen( $file, 'r' );
+
+			if ( ! $handle )
+			{
+				return false;
+			}
+			
+			$data = array();
+			$headers = array();
+
+			$row = 0;
+
+		    while ( ( $entry = fgetcsv( $handle, 1000, ',' ) ) !== false )
+		    {
+		    	if ( $row == 0 )
+		    	{
+		    		for ( $i = 0; $i < count( $entry ) ; $i++ )
+		    		{ 
+		    			$headers[] = $entry[ $i ];
+		    		}
+		    	}
+
+		    	else
+		    	{
+		    		$data[ $row - 1 ] = array();
+
+		    		for ( $i = 0; $i < count( $headers ); $i++ )
+					{
+						$key   = $headers[ $i ];
+						$value = isset( $entry[ $i ] ) ? $entry[ $i ] : '';
+
+						$data[ $row - 1 ][ $key ] = $value;
+					}
+		    	}
+
+				$row++;
+		    }
+
+		    fclose($handle);
+
+			return $data;
+		}
+
 		public function is_404($url)
 		{
 			$file_headers = @get_headers( $url );

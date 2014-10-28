@@ -19,7 +19,7 @@ if ( ! class_exists('MM_Form') )
 		 * @return mixed The value of the post or the default value.
 		 */
 		
-		static public function get_post($key, $default = '')
+		static public function get_post( $key, $default = '' )
 		{
 			if ( isset($_POST[$key]) ) 
 			{
@@ -27,6 +27,11 @@ if ( ! class_exists('MM_Form') )
 			}
 
 			return $default;
+		}
+
+		static public function get_value( $key, $default = '' )
+		{
+			return esc_html( self::get_post( $key, $default ) );
 		}
 		
 		static public function parse_attributes( $attributes )
@@ -39,6 +44,43 @@ if ( ! class_exists('MM_Form') )
 			}
 
 			return $str;
+		}
+
+		static public function get_post_dropdown_options( $post_type = 'post', $parent = '' )
+		{
+			$posts = get_posts(array
+			(
+				'posts_per_page'   => -1,
+				'offset'           => 0,
+				'orderby'          => 'title',
+				'order'            => 'ASC',
+				'post_type'        => $post_type,
+				'post_parent'      => $parent,
+				'post_status'      => 'publish'
+			));
+
+			$options = array();
+
+			foreach ( $posts as $post )
+			{
+				$depth = count( get_post_ancestors( $post->ID ) );
+
+				$prefix = '';
+
+				if ( $depth > 0 )
+				{
+					$prefix = str_repeat( '—', $depth ) . ' ';
+				}
+
+				$options[ $post->ID ] = $prefix . $post->post_title;
+
+				foreach ( self::get_post_dropdown_options( $post_type, $post->ID ) as $key => $value )
+				{
+					$options[ $key ] = $value;
+				}
+			}
+
+			return $options;
 		}
 
 	}

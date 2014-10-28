@@ -16,6 +16,50 @@ if ( ! class_exists('MM_Array') )
 {
 	class MM_Array
 	{
+		static public function key_value( $key_var, $value_var, $container )
+		{
+			$results = array();
+
+			foreach ( $container as $element )
+			{
+				$element = get_object_vars( $element );
+
+				if ( ! isset( $element[ $key_var ] ) )
+				{
+					continue;
+				}
+
+				$key = $element[ $key_var ];
+
+				if ( isset( $element[ $value_var ] ) )
+				{
+					$value = $element[ $value_var ];
+				}
+
+				else
+				{
+					$value = null;
+				}
+
+				$results[ $key ] = $value;
+			}
+
+			return $results;
+		}
+
+		static public function keys_exists( $keys, $array )
+		{
+			foreach ( $keys as $key )
+			{
+				if ( ! array_key_exists( $key, $array ) )
+				{
+					return false;
+				}
+			}
+
+			return true;
+		}
+
 		/* ---------------------------------------------------------------------------------------------------------- */
 
 		/**
@@ -33,11 +77,11 @@ if ( ! class_exists('MM_Array') )
 		 * @uses MM_Array::get_elements_by
 		 */
 
-		static public function get_element_by($search, $container)
+		static public function get_element_by( $search, $container )
 		{
-			$elements = self::get_elements_by($search, $container, 0, 1);
+			$elements = self::get_elements_by( $search, $container, 0, 1 );
 
-			return count($elements) > 0 ? $elements[0] : null;
+			return count( $elements ) > 0 ? $elements[0] : null;
 		}
 
 		/* ---------------------------------------------------------------------------------------------------------- */
@@ -53,55 +97,52 @@ if ( ! class_exists('MM_Array') )
 		 * @version 1.0.0
 		 * @param search mixed The search parameters (String or Array)
 		 * @param container mixed The container to search into (Array or Object)
-		 * @param offset integer The index to start searching
-		 * @param limit integer The amount of elements to return.
 		 * @return Array An array of elements the matches the search criteria.
 		 */
 
-		static public function get_elements_by($search, $container, $offset = 0, $limit = -1)
+		static public function get_elements_by( $search = '', $container, $offset = 0, $limit = -1 )
 		{
-			// makes sure search is array
-			if ( ! is_array($search) )
+			if ( ! is_array( $search ) )
 			{
-				parse_str($search, $search);
+				parse_str( $search, $search );
 			}
 
-			if ( empty($search) )
+			if ( empty( $search ) )
 			{
 				return $container;
 			}
 
-			// checks offset bounds
-			if ( $offset < 0 )
-			{
-				$offset = 0;
-			}
-
-			// searches
 			$elements = array();
-			
-			for ( $i = $offset; $i < count($container); $i++ )
-			{ 
-				if ( $limit != -1 && count($elements) == $limit )
-				{
-					break;
-				}
-				
-				if ( ! isset($container[$i]) )
-				{
-					continue;
-				}
 
-				$element = $container[$i];
-				
+			for ( $i = $offset; $i < count( $container ); $i++ )
+			{ 
+				$element = $container[ $i ];
+			
 				// makes sure element is array
-				$element_array = is_object( $element ) ? get_object_vars($element) : $element;
+				$element_array = ( ! is_array( $element ) ) ? get_object_vars( $element ) : $element;
 
 				$include = true;
 
 				foreach ( $search as $key => $value )
 				{
-					if ( ! isset($element_array[$key]) || $element_array[$key] != $value )
+					if ( ! isset( $element_array[$key] ) )
+					{
+						$include = false;
+
+						break;
+					}
+
+					if ( ! is_array( $value ) )
+					{
+						$values = array( $value );	
+					}
+
+					else
+					{
+						$values = $value;
+					}
+
+					if ( ! in_array( $element_array[$key], $values ) )
 					{
 						$include = false;
 
@@ -109,9 +150,16 @@ if ( ! class_exists('MM_Array') )
 					}
 				}
 
-				if ( $include )
+				if ( ! $include )
 				{
-					$elements[] = $element;
+					continue;
+				}
+
+				$elements[] = $element;
+
+				if ( count( $elements ) == $limit )
+				{
+					break;
 				}
 			}
 

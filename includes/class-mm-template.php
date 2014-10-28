@@ -4,44 +4,74 @@ if ( ! class_exists('MM_Template') )
 {
 	class MM_Template
 	{
-		static public function parse( $template, $vars = array(), $options = array() )
+		static public function parse_tags( $template, $vars = null, $callback = null, $args = array() )
 		{
-			$options = array_merge( array
+			extract( array_merge( array
 			(
-				'tag'  => '[%s]',
-				'html' => false
-
-			), (array) $options );
-
-			$tag = explode( '%s', $options['tag'] );
+				'tag_left'      => '${',
+				'tag_right'     => '}',
+				'tag_meta_sep'  => ':',
+				'tag_meta_vars' => array( 'category' => '', 'name' => '' )
+			), $args) );
 
 			$offset = 0;
 
-			while ( ( $start = strpos($template, $tag[0], $offset) ) !== false && ( $end = strpos($template, $tag[1], $offset + strlen($tag[0]) ) ) !== false )
-			{				
-				$tag  	  = substr( $template , $start, $end + strlen( $tag[1] ) - $start );
-				$tag_name = substr( $tag , strlen( $tag[0] ), - strlen( $tag[1] ) );
+			while ( ( $start = stripos( $template, $tag_left, $offset ) ) !== false && ( $end = stripos( $template, $tag_right, $offset + 1 ) ) !== false  )
+			{	
+				// tag
+				$length = $end - $start + strlen( $tag_right );
 
-				if ( isset($vars[$tag_name]) )
+				$tag       = substr( $template, $start, $length );
+				$tag_inner = substr( $tag, strlen( $tag_left ), - strlen( $tag_right ) );
+
+				// tag meta
+				$tag_meta = array();
+
+				if ( is_array( $tag_meta_vars ) && $tag_meta_sep )
 				{
-					$replacement = $vars[ $tag_name ];
+					if ( stripos( $tag_inner, $tag_meta_sep ) )
+					{
+						$meta = explode( $tag_meta_sep, $tag_inner );
+					}
+
+					else
+					{
+						$meta = array( $tag_inner );
+					}
+
+					$i = 0;
+
+					foreach ( $tag_meta_vars as $key => $default )
+					{
+						$value = isset( $meta[$i] ) ? $meta[$i] : $default;
+
+						$tag_meta[ $key ] = $value;
+
+						$i++;
+					}
 				}
+
+				// replacement
+				if ( is_array( $vars ) && isset( $vars[ $tag_inner ] ) )
+				{
+					$replacement = $vars[ $tag_inner ];
+				}
+
 				else
 				{
-					$replacement = $tag;	
+					$replacement = $tag;
 				}
 
-				if ( $options['html'] )
+				if ( is_callable( $callback ) )
 				{
-					$replacement = esc_html( $replacement );
+					$replacement = call_user_func( $callback, $replacement, $tag, $tag_inner, $tag_meta );
 				}
 
-				$template = substr_replace( $template, $replacement, $start, strlen( $tag ) );
+				//error_log( sprintf( '%s() - $offset: %s, $start: %s, $end: %s, $length: %s, $tag: %s, $replacement: %s', __FUNCTION__, $offset, $start, $end, $length, $tag, $replacement ) );
 
-				if ( $offset < strlen( $template ) )
-				{
-					$offset++;
-				}
+				$template = substr_replace( $template, $replacement, $start, $length );
+
+				$offset = $start + strlen( $replacement );
 			}
 
 			return $template;
