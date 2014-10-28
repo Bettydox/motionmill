@@ -1,0 +1,19 @@
+.wrap ul.subsubsub li:after
+{
+	content: ' | ';
+}
+
+.wrap ul.subsubsub li:last-child:after
+{
+	content: '';
+}
+
+.wrap ul.motionmill-settings-breadcrumbs
+{
+	margin: 0;
+}
+
+.wrap ul.motionmill-settings-breadcrumb-navigation li:after
+{
+	content: ' > ';
+}

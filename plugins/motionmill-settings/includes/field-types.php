@@ -85,6 +85,14 @@ class MM_Settings_Field_types
 			)
 		);
 
+		$types[] = array
+		(
+			'id'       => 'code',
+			'callback' => array( __CLASS__, 'type_code'),
+			'styles'   => array(),
+			'scripts'  => array()
+		);
+
 		return $types;
 	}
 
@@ -94,6 +102,11 @@ class MM_Settings_Field_types
 		(
 			'wrapper' => '<p class="description">%s</p>'
 		), $args);
+
+		if ( $value == '' )
+		{
+			return '';
+		}
 
 		printf( $options['wrapper'], $value );
 	}
@@ -289,6 +302,16 @@ class MM_Settings_Field_types
 		));
 
 		self::description( $options['description'] );
+	}
+
+	static public function type_code( $args = array() )
+	{
+		$options = array_merge(array
+		(
+			'class'       => 'large-text code',
+		), $args);
+
+		self::type_textarea( $options );
 	}
 }
 

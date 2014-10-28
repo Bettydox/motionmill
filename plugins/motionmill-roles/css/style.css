@@ -1,0 +1,11 @@
+.wrap ul.capabilities
+{
+	float: left;
+	width: 100%;
+}
+
+.wrap ul.capabilities li
+{
+	float: left;
+	width: 33%;
+}

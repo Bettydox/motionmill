@@ -75,32 +75,33 @@ ul.list li
 	display: none;
 }
 
-.wp-admin .mm-error
-{
-	color: #dd3d36;
-}
-
-.wp-admin .mm-success
-{
-	color: #7ad03a;
-}
-
 /*
 ------------------------------------------------------------------------------------------------------------------------
- Ajax Loader
+ Admin
 ------------------------------------------------------------------------------------------------------------------------
 */
 
-.mm-loader
+.wp-admin .fa
+.wp-admin a .fa
 {
-	display    : none;
-	width      : 16px;
-	height     : 16px;
-	margin     : 0px 5px;
-	line-height: 16px;
-	text-indent: 16px;
-	overflow   : hidden;
-	background : transparent url( '../images/ajax-loader.gif' ) no-repeat top left;
+	color: #666666;
+}
+
+.wp-admin .mm-admin-notice
+{
+	position: relative;
+}
+
+.wp-admin .mm-admin-notice.closeable
+{
+	padding-right: 30px;
+}
+
+.wp-admin .mm-admin-notice.closeable .close-button
+{
+	position: absolute;
+	top     : 5px;
+	right   : 10px; 
 }
 
 /*

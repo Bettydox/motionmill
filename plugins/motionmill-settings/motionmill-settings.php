@@ -20,28 +20,23 @@ if ( ! class_exists( 'MM_Settings' ) )
 	{	
 		const FILE = __FILE__;
 
-		protected $options     = array();
 		protected $pages       = array();
 		protected $sections    = array();
 		protected $fields      = array();
 		protected $field_types = array();
 
-		public function __construct( $args = array() )
-		{
-			$this->options = array_merge(array
-			(
-				'page_capability'    => 'manage_options',
-				'page_parent_slug'   => '',
-				'page_priority'      => 10,
-				'page_submit_button' => true,
-				'page_admin_bar'     => true,
-				'field_rules'        => array( 'trim' ),
-				'field_type'         => 'textfield'
-				
-			), $args);
-
+		public function __construct()
+		{	
 			add_filter( 'motionmill_helpers', array( &$this, 'on_helpers' ) );
+			add_filter( 'motionmill_wpml_config', array( &$this, 'on_wpml_config' ) );
+
+
 			add_action( 'motionmill_init', array( &$this, 'initialize' ), 5 );
+
+			add_filter( 'motionmill_settings_field_args', array( &$this, 'on_field_args' ), 5, 2 );
+			add_filter( 'motionmill_settings_field_title', array( &$this, 'on_field_title' ), 5, 2 );
+			
+			register_deactivation_hook( self::FILE, array( &$this, 'on_deactivate' ) );
 		}
 
 		public function initialize()
@@ -54,14 +49,14 @@ if ( ! class_exists( 'MM_Settings' ) )
 					continue;
 				}
 
-				if ( ( isset( $data['parent_slug'] ) && $data['parent_slug'] == '' ) || ( ! isset( $data['parent_slug'] ) && $this->options['page_parent_slug'] == '' ) )
+				if ( ( isset( $data['parent_slug'] ) && $data['parent_slug'] == '' ) )
 				{
 					$priority = null;
 				}
 
 				else
 				{
-					$priority = $this->options['page_priority'];
+					$priority = 10;
 				}
 
 				$this->pages[] = array_merge( array
@@ -69,20 +64,21 @@ if ( ! class_exists( 'MM_Settings' ) )
 					'id'            => $data['id'],
 					'title'         => $data['title'],
 					'menu_title'    => $data['title'],
-					'capability'    => $this->options['page_capability'],
+					'description'   => '',
+					'capability'    => 'manage_options',
 					'menu_slug'     => $data['id'],
 					'menu_counter'  => false,
-					'parent_slug'   => $this->options['page_parent_slug'],
-					'description'   => '',
-					'option_name'   => $data['id'],
-					'submit_button' => $this->options['page_submit_button'],
+					'parent_slug'   => 'motionmill',
+					'option_name'   => sprintf( 'motionmill_settings-%s', $data['id'] ),
+					'submit_button' => true,
 					'priority'      => $priority,
-					'admin_bar'     => $this->options['page_admin_bar'],
 					'styles'        => array(),
 					'scripts'       => array(),
 					'localize'      => array(),
-					'hook'          => '', // will be set later
-				), $data );
+					'url'           => null, // will be set later
+					'hook'          => null, // will be set later
+					'depth'         => null  // will be set later
+				), $data);
 			}
 
 			usort( $this->pages, array( &$this, 'on_sort_priority' ) );
@@ -100,7 +96,7 @@ if ( ! class_exists( 'MM_Settings' ) )
 					'id' 		   => $data['id'],
 					'title'  	   => '',
 					'description'  => '',
-					'page'         => $this->options['page_parent_slug']
+					'page'         => ''
 				), $data );
 			}
 
@@ -114,15 +110,16 @@ if ( ! class_exists( 'MM_Settings' ) )
 
 				$this->fields[] = array_merge( array
 				(
-					'id' 		   => $data['id'],
-					'title'  	   => '',
-					'type'         => $this->options['field_type'],
+					'id'           => $data['id'],
+					'title'        => '',
+					'type'         => 'textfield',
 					'type_args'    => array(),
 					'value'        => '',
 					'description'  => '',
-					'rules'        => $this->options['field_rules'], 
-					'page'         => $this->options['page_parent_slug'],
-					'section'      => ''
+					'rules'        => array( 'trim' ),
+					'page'         => '',
+					'section'      => '',
+					'translatable' => true
 				), $data );
 			}
 
@@ -149,41 +146,12 @@ if ( ! class_exists( 'MM_Settings' ) )
 			add_action( 'admin_bar_menu', array( &$this, 'on_admin_bar_menu' ), 100 );
 
 			add_filter( 'motionmill_settings_sanitize_option', array( &$this, 'on_sanitize_option' ), 5, 2 );
-
-			register_deactivation_hook( self::FILE, array( &$this, 'on_deactivate' ) );
-		}
-
-		public function get_available_field_types( $page_id )
-		{
-			$fields = MM_Array::get_elements_by( array( 'page' => $page_id ), $this->fields );
-
-			$types = array();
-
-			foreach ( $fields as $field )
-			{
-				$key = $field['type'];
-
-				if ( isset( $types[ $key ] ) )
-				{
-					continue;
-				}
-
-				$type = MM_Array::get_element_by( array( 'id' => $field['type'] ), $this->field_types );
-
-				if ( ! $type )
-				{
-					continue;
-				}
-
-				$types[ $key ] = $type;
-			}
-
-			return $types;
+			add_filter( 'motionmill_settings_page_title', array( &$this, 'on_page_title' ), 5, 2 );		
 		}
 
 		public function get_option( $page_id, $field_id = null, $default = '' )
 		{
-			$page = MM_Array::get_element_by( array( 'id' => $page_id ), $this->pages );
+			$page = $this->get_page( array( 'id' => $page_id ) );
 
 			if ( $page )
 			{
@@ -194,9 +162,9 @@ if ( ! class_exists( 'MM_Settings' ) )
 					return $options;
 				}
 
-				if ( isset( $options[$field_id] ) )
+				if ( isset( $options[ $field_id ] ) )
 				{
-					return $options[$field_id];
+					return $options[ $field_id ];
 				}
 			}
 
@@ -205,7 +173,7 @@ if ( ! class_exists( 'MM_Settings' ) )
 
 		public function get_default_options( $page_id )
 		{
-			$fields = MM_Array::get_elements_by( array( 'page' => $page_id ), $this->fields );
+			$fields = $this->get_fields( array( 'page' => $page_id ) );
 
 			$options = array();
 
@@ -217,9 +185,51 @@ if ( ! class_exists( 'MM_Settings' ) )
 			return $options;
 		}
 
-		public function get_page_ancestors( $page_id )
+		public function get_field( $search )
 		{
-			$page = MM_Array::get_element_by( array( 'id' => $page_id ), $this->pages );
+			return MM_Array::get_element_by( $search, $this->fields );
+		}
+
+		public function get_field_name( $page_id, $field_id )
+		{
+			$page = $this->get_page( array( 'id' => $page_id ) );
+
+			if ( ! $page )
+			{
+				return false;
+			}
+
+			return sprintf( '%s[%s]', $page['option_name'], $field_id );
+		}
+
+		public function get_fields( $search = null )
+		{
+			return MM_Array::get_elements_by( $search, $this->fields );
+		}
+
+		public function get_section( $search )
+		{
+			return MM_Array::get_element_by( $search, $this->sections );
+		}
+
+		public function get_sections( $search = '' )
+		{
+			return MM_Array::get_elements_by( $search, $this->sections );
+		}
+
+		public function get_page( $search = null )
+		{
+			if ( $search == null )
+			{
+				return $this->get_current_page();
+			}
+
+			return MM_Array::get_element_by( $search, $this->pages );
+		}
+
+		public function get_page_ancestors( $search = null )
+		{
+			$page = $this->get_page( $search );
 
 			if ( ! $page )
 			{
@@ -228,34 +238,112 @@ if ( ! class_exists( 'MM_Settings' ) )
 
 			$ancestors = array();
 
-			while ( $page['parent_slug'] )
+			while ( $page = $this->get_page( array( 'id' => $page['parent_slug'] ) ) )
 			{
-				$page = MM_Array::get_element_by( array( 'id' => $page['parent_slug'] ), $this->pages );
-
 				array_unshift( $ancestors, $page );
 			}
 
 			return $ancestors;
 		}
 
-		public function get_current_page()
+		public function get_page_trail( $search = null )
 		{
-			if ( $screen = get_current_screen() )
+			$page = $this->get_page( $search );
+
+			if ( ! $page )
 			{
-				$search = array( 'hook' => $screen->id );
+				return false;
 			}
 
-			else if ( isset( $_GET['page'] ) )
-			{
-				$search = array( 'menu_slug' => $_GET['page'] );
-			}
+			$trail = $this->get_page_ancestors( array( 'id' => $page['id'] ) );
+			$trail[] = $page;
 
-			else
+			return $trail;
+		}
+
+		public function is_page_ancestor( $ancestor_id, $search = null )
+		{
+			$page = $this->get_page( $search );
+
+			if ( ! $page )
 			{
 				return null;
 			}
 
-			return MM_Array::get_element_by( $search, $this->pages );
+			$ancestors = $this->get_page_ancestors( array( 'id' => $page['id'] ) );
+
+			foreach ( $ancestors as $ancestor )
+			{
+				if ( $ancestor['id'] == $ancestor_id )
+				{
+					return true;
+				}
+			}
+
+			return false;
+		}
+
+		public function get_current_page()
+		{
+			$screen = get_current_screen();
+
+			if ( isset( $_GET['page'] ) )
+			{
+				return $this->get_page( array( 'menu_slug' => $_GET['page'] ) );
+			}
+
+			// when saving
+			if ( $screen->id == 'options' )
+			{
+				return $this->get_page( array( 'menu_slug' => $_POST['option_page'] ) );
+			}
+
+			return null;
+		}
+
+		public function get_pages( $search = null )
+		{
+			return MM_Array::get_elements_by( $search, $this->pages );
+		}
+
+		public function get_field_type( $search )
+		{
+			return MM_Array::get_element_by( $search, $this->field_types );
+		}
+
+		public function get_field_types( $search = null )
+		{
+			return MM_Array::get_elements_by( $search, $this->field_types );
+		}
+
+		public function get_page_field_types( $search = null )
+		{	
+			$page = $this->get_page( $search );
+
+			$types = array();
+
+			$fields = $this->get_fields( array( 'page' => $page['id'] ) );
+
+			foreach ( $fields as $field )
+			{
+				$key = $field['type'];
+
+				if ( isset( $types[ $key ] ) )
+				{
+					continue;
+				}
+
+				$type = $this->get_field_type( array( 'id' => $field['type'] ) );
+
+				if ( ! $type )
+				{
+					continue;
+				}
+
+				$types[ $key ] = $type;
+			}
+
+			return $types;
 		}
 
 		public function on_admin_init()
@@ -269,7 +357,7 @@ if ( ! class_exists( 'MM_Settings' ) )
 			// adds sections
 			foreach ( $this->sections as $section )
 			{
-				$page =  MM_Array::get_element_by( array( 'id' => $section['page'] ), $this->pages );
+				$page = $this->get_page( array( 'id' => $section['page'] ) );
 
 				if ( $section['description'] && is_callable( $section['description'] ) )
 				{
@@ -287,19 +375,23 @@ if ( ! class_exists( 'MM_Settings' ) )
 			// adds fields
 			foreach ( $this->fields as $field )
 			{
-				$page = MM_Array::get_element_by( array( 'id' => $field['page'] ), $this->pages );
-				$type = MM_Array::get_element_by( array( 'id' => $field['type'] ), $this->field_types );
+				$page = $this->get_page( array( 'id' => $field['page'] ) );
+				$type = $this->get_field_type( array( 'id' => $field['type'] ) );
 
 				$args = array_merge( (array) $field['type_args'], array
 				(
 					'id'    	  => sprintf( '%s-%s', $page['id'], $field['id'] ),
 					'label_for'   => sprintf( '%s-%s', $page['id'], $field['id'] ), // WordPress needs this for the <label> element
-					'name'  	  => sprintf( '%s[%s]', $page['option_name'], $field['id'] ),
+					'name'  	  => $this->get_field_name( $page['id'], $field['id'] ),
 					'value' 	  => $this->get_option( $page['id'], $field['id'] ),
 					'description' => $field['description']
 				));
 
-				add_settings_field( $field['id'], $field['title'], $type['callback'], $page['menu_slug'], $field['section'], $args );
+				$args = apply_filters( 'motionmill_settings_field_args', $args, $field );
+
+				$title = apply_filters( 'motionmill_settings_field_title', $field['title'], $field );
+
+				add_settings_field( $field['id'], $title, $type['callback'], $page['menu_slug'], $field['section'], $args );
 			}
 		}
 
@@ -317,15 +409,18 @@ if ( ! class_exists( 'MM_Settings' ) )
 					$menu_title = $page['menu_title'];
 				}
 
-				if ( $page['parent_slug'] == '' )
+				if ( $page['parent_slug'] )
 				{
-					$page['hook'] = add_menu_page( $page['title'], $menu_title, $page['capability'], $page['menu_slug'], array( &$this, 'on_print_page'), null, $page['priority'] );
+					$page['hook'] = add_submenu_page( $page['parent_slug'], $page['title'], $menu_title, $page['capability'], $page['menu_slug'], array( &$this, 'on_print_page') );
 				}
 
 				else
 				{
-					$page['hook'] = add_submenu_page( $page['parent_slug'], $page['title'], $menu_title, $page['capability'], $page['menu_slug'], array( &$this, 'on_print_page') );
+					$page['hook'] = add_menu_page( $page['title'], $menu_title, $page['capability'], $page['menu_slug'], array( &$this, 'on_print_page'), null, $page['priority'] );
 				}
+
+				$page['url']   = admin_url( 'admin.php?page=' . $page['menu_slug'] );
+				$page['depth'] = count( $this->get_page_ancestors( array( 'id' => $page['id'] ) ) );
 			}
 		}
 
@@ -333,27 +428,22 @@ if ( ! class_exists( 'MM_Settings' ) )
 		{
 			global $wp_admin_bar;
     		
-	    		if ( ! is_super_admin() || ! is_admin_bar_showing() )
-	    		{
-	    			return;
-	    		}
-	
-	    		foreach ( $this->pages as $page )
-	    		{
-	    			if ( ! $page['admin_bar'] )
-	    			{
-	    				continue;
-	    			}
-	
-	    			$wp_admin_bar->add_menu(array
-	    			(
-						'id'     => $page['id'],
-						'meta'   => array(),
-						'title'  => $page['menu_title'],
-						'href'   => admin_url( 'admin.php?page=' . $page['menu_slug'] ),
-						'parent' => $page['parent_slug']
-				    ));
-	    		}
+    		if ( ! is_super_admin() || ! is_admin_bar_showing() )
+    		{
+    			return;
+    		}
+
+    		foreach ( $this->pages as $page )
+    		{
+    			$wp_admin_bar->add_menu(array
+    			(
+					'id'     => $page['id'],
+					'meta'   => array(),
+					'title'  => $page['menu_title'],
+					'href'   => $page['url'],
+					'parent' => $page['parent_slug']
+			    ));
+    		}
 		}
 
 		public function on_admin_enqueue_scripts()
@@ -365,80 +455,113 @@ if ( ! class_exists( 'MM_Settings' ) )
 				return;
 			}
 
-			$map = array( 'styles' => 'wp_enqueue_style', 'scripts' => 'wp_enqueue_script' );
-			
-			// gets all field types for this page
-			$types = $this->get_available_field_types( $page['id'] );
+			$map = array( 'styles' => 'wp_enqueue_style', 'scripts' => 'wp_enqueue_script', 'localize' => 'wp_localize_script' );
 
-			// gets all pages with same slug
-			$pages = MM_Array::get_elements_by( array( 'menu_slug' => $page['menu_slug'] ), $this->pages );
-
-			$subjects = array_merge( $types, $pages );
+			$subjects = array_merge
+			(
+				$this->get_page_field_types(),
+				$this->get_pages( array( 'menu_slug' => $page['menu_slug'] ) )
+			);
 
 			foreach ( $subjects as $subject )
 			{
 				foreach ( $map as $key => $callback )
 				{
-					if ( isset( $subject[$key] ) && is_array( $subject[$key] ) )
+					if ( ! isset( $subject[$key] ) || ! is_array( $subject[$key] ) )
 					{
-						foreach ( $subject[$key] as $args )
+						continue;
+					}
+				
+					foreach ( $subject[$key] as $args )
+					{
+						if ( ! is_array( $args ) )
 						{
-							if ( ! is_array( $args ) )
-							{
-								$args = array( $args );
-							}
-
-							call_user_func_array( $callback , $args );
+							$args = array( $args );
 						}
+
+						call_user_func_array( $callback , $args );
 					}
 				}
 			}
 
-			// localizes scripts
-			foreach ( $pages as $page )
-			{
-				if ( ! is_array( $page['localize'] ) )
-				{
-					continue;
-				}
+			wp_enqueue_style( 'motionmill-settings', plugins_url( 'css/style.css', self::FILE ), array( 'font-awesome' ) );
 
-				foreach ( $page['localize'] as $args )
-				{
-					call_user_func_array( 'wp_localize_script', $args );
-				}
-			}
+			do_action( 'motionmill_settings_enqueue_scripts', $page['id'] );
 		}
-	
+
+		public function on_field_args( $args, $field )
+		{
+			return $args;
+		}
+
+		public function on_field_title( $title, $field )
+		{
+			return $title;
+		}
+
+		public function on_page_title( $title, $page )
+		{
+			if ( $page['depth'] == 0 )
+			{
+				return $title;
+			}
+
+			return __( 'Motionmill - ', Motionmill::TEXTDOMAIN ) . $title;
+		}
+
 		public function on_print_page()
 		{
-			$page = $this->get_current_page();
+			$page = $this->get_page();
 
-			if ( $page['parent_slug'] == '' )
-			{
-				// children
-				$menu_pages = MM_Array::get_elements_by( array( 'parent_slug' => $page['id'] ), $this->pages );
-			}
+			$menu_pages = array(); 
+			$menu_pages[0] = $this->get_pages( array( 'depth' => 1 ) );
+			$menu_pages[1] = $this->get_pages( array( 'parent_slug' => $page['parent_slug'], 'depth' => 2 ) );
 
-			else
-			{
-				// siblings
-				$menu_pages = MM_Array::get_elements_by( array( 'parent_slug' => $page['parent_slug'] ), $this->pages );
-			}
+			$breadcrumbs = $this->get_page_trail();
 
 			?>
 
 			<div class="wrap">
 
-				<h2><?php _e( 'Motionmill - ', Motionmill::TEXTDOMAIN ); ?><?php echo esc_html( $page['title'] ); ?></h2>
+				<h2 class="page-title"><?php echo apply_filters( 'motionmill_settings_page_title', $page['title'], $page ); ?></h2>
 
 				<?php settings_errors(); ?>
 
+				<!-- breadcrumb navigation -->
+				<?php if ( count( $breadcrumbs ) > 1 ) : ?>
+				<ul class="motionmill-settings-breadcrumb-navigation subsubsub">
+					<?php foreach ( $breadcrumbs as $menu_page ) : ?>
+					<li><a href="<?php echo esc_attr( $menu_page['url'] ); ?>" class="<?php echo $menu_page['id'] == $page['id'] ? 'current' : ''; ?>"><?php echo $menu_page['menu_title']; ?></a></li>
+					<?php endforeach; ?>
+				</ul>
+				<br class="clear">
+				<?php endif; ?>
+				
+				<!-- page navigation -->
+				<?php for ( $i = 0; $i < count( $menu_pages ); $i++ ) : ?>
+
+				<?php if ( $i == 0 ) : ?>
+
 				<h2 class="nav-tab-wrapper">
-					<?php foreach ( $menu_pages as $menu_page ) : ?>
-					<a href="?page=<?php echo esc_attr( $menu_page['menu_slug'] ); ?>" class="nav-tab<?php echo $menu_page['menu_slug'] == $page['menu_slug'] ? ' nav-tab-active' : ''; ?>"><?php echo esc_html( $menu_page['menu_title'] ); ?></a>
+					<?php foreach ( $menu_pages[$i] as $menu_page ) : ?>
+					<a href="<?php echo esc_attr( $menu_page['url'] ); ?>" class="nav-tab<?php echo ( $menu_page['menu_slug'] == $page['menu_slug'] || $this->is_page_ancestor( $menu_page['id'] ) ) ? ' nav-tab-active' : ''; ?>"><?php echo $menu_page['menu_title']; ?></a>
 					<?php endforeach; ?>
 				</h2><!-- .nav-tab-wrapper -->
-				
+
+				<?php else : ?>
+
+				<ul class="subsubsub">
+					<?php foreach ( $menu_pages[$i] as $menu_page ) : ?>
+					<li><a href="<?php echo esc_attr( $menu_page['url'] ); ?>" class="<?php echo ( $menu_page['menu_slug'] == $page['menu_slug'] || $this->is_page_ancestor( $menu_page['id'] ) ) ? 'current' : ''; ?>"><?php echo $menu_page['menu_title']; ?></a></li>
+					<?php endforeach; ?>
+				</ul><!-- .subsubsub -->
+				<br class="clear">
+
+				<?php endif; ?>
+
+				<?php endfor; ?>
+
+				<!-- page content -->
 				<?php if ( $page['description'] != '' ) : ?>
 				<p><?php echo $page['description']; ?></p>
 				<?php endif; ?>
@@ -462,9 +585,9 @@ if ( ! class_exists( 'MM_Settings' ) )
 
 		public function on_sanitize_options( $options )
 		{	
-			$page_id = $_POST['option_page'];
+			$page = $this->get_page();
 
-			$fields = MM_Array::get_elements_by( array( 'page' => $page_id ), $this->fields );
+			$fields = $this->get_fields( array( 'page' => $page['id'] ) );
 
 			foreach ( $fields as $field )
 			{
@@ -484,7 +607,7 @@ if ( ! class_exists( 'MM_Settings' ) )
 				}
 			}
 
-			return apply_filters( 'motionmill_settings_sanitize_options', $options, $page_id );
+			return apply_filters( 'motionmill_settings_sanitize_options', $options, $page );
 		}
 
 		public function on_sanitize_option( $option, $rule )
@@ -526,9 +649,38 @@ if ( ! class_exists( 'MM_Settings' ) )
 
 		public function on_helpers( $helpers )
 		{
-			array_push( $helpers, 'MM_Array', 'MM_Wordpress' );
+			array_push( $helpers, 'MM_Common', 'MM_Array', 'MM_Wordpress' );
 
 			return $helpers;
+		}
+
+		public function on_wpml_config( $config )
+		{
+			if ( ! isset( $config->{'admin-texts'} ) )
+			{
+				$config->addChild( 'admin-texts' );
+			}
+
+			foreach ( $this->get_pages() as $page )
+			{
+				$page_option = $config->{'admin-texts'}->addChild( 'key' );
+				$page_option->addAttribute( 'name', $page['option_name'] );
+				
+				$fields = $this->get_fields( array( 'page' => $page['id'] ) );
+
+				foreach ( $fields as $field )
+				{
+					if ( ! $field['translatable'] )
+					{
+						continue;
+					}
+
+					$field_option = $page_option->addChild( 'key' );
+					$field_option->addAttribute( 'name', $field['id'] );
+				}
+			}
+
+			return $config;
 		}
 	}
 
@@ -540,7 +692,7 @@ if ( ! class_exists( 'MM_Settings' ) )
 		return $plugins;
 	}
 
-	add_filter( 'motionmill_plugins', 'motionmill_plugins_add_settings', 999 );
+	add_filter( 'motionmill_plugins', 'motionmill_plugins_add_settings', 99 );
 }
 
 ?>

@@ -44,7 +44,8 @@ if ( ! class_exists( 'MM_Google_Analytics' ) )
 			(
 				'id' 		   => 'motionmill_google_analytics',
 				'title' 	   => __('Google Analytics', Motionmill::TEXTDOMAIN),
-				'description'  => __('Connects your blog with <a href="http://www.google.com/analytics/" target="_blank">Google Analytics</a>.', Motionmill::TEXTDOMAIN)
+				'description'  => __('Connects your blog with <a href="http://www.google.com/analytics/" target="_blank">Google Analytics</a>.', Motionmill::TEXTDOMAIN),
+				'multilingual' => false,
 			);
 
 			return $pages;
@@ -67,24 +68,26 @@ if ( ! class_exists( 'MM_Google_Analytics' ) )
 		{
 			$fields[] = array
 			(
-				'id' 		  => 'tracking_code',
-				'title' 	  => __('Code', Motionmill::TEXTDOMAIN),
-				'description' => __('', Motionmill::TEXTDOMAIN),
-				'type'		  => 'textfield',
-				'value'       => '',
-				'page'		  => 'motionmill_google_analytics',
-				'section'     => 'motionmill_google_analytics_general'
+				'id'           => 'tracking_code',
+				'title'        => __('Code', Motionmill::TEXTDOMAIN),
+				'description'  => __('', Motionmill::TEXTDOMAIN),
+				'type'         => 'textfield',
+				'value'        => '',
+				'page'         => 'motionmill_google_analytics',
+				'section'      => 'motionmill_google_analytics_general',
+				'translatable' => false
 			);
 
 			$fields[] = array
 			(
-				'id' 		  => 'tracking_enable',
-				'title' 	  => __('Enable', Motionmill::TEXTDOMAIN),
-				'description' => __('', Motionmill::TEXTDOMAIN),
-				'type'		  => 'checkbox',
-				'value'       => '',
-				'page'		  => 'motionmill_google_analytics',
-				'section'     => 'motionmill_google_analytics_general'
+				'id'           => 'tracking_enable',
+				'title'        => __('Enable', Motionmill::TEXTDOMAIN),
+				'description'  => __('', Motionmill::TEXTDOMAIN),
+				'type'         => 'checkbox',
+				'value'        => '',
+				'page'         => 'motionmill_google_analytics',
+				'section'      => 'motionmill_google_analytics_general',
+				'translatable' => false
 			);
 
 			return $fields;

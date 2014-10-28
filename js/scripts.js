@@ -1,5 +1,7 @@
 (function($)
 {
+	Motionmill = $.extend( {}, Motionmill );
+
 	$(document).ready(function()
 	{
 		$('body').addClass( 'js' );

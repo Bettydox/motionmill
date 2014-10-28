@@ -1,0 +1,11 @@
+.js .tag-info ul.tags
+{
+	float: left;
+	width: 100%;
+}
+
+.js .tag-info ul.tags li
+{
+	float: left;
+	padding: 0 5px 5px 0;
+}

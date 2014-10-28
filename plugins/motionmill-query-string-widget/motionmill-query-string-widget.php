@@ -5,7 +5,7 @@
  Plugin Name: Motionmill Query String Widget
  Plugin URI: https://github.com/addwittz/motionmill/tree/master/plugins/motionmill-query-string-widget
  Description: Shows posts by query string in an editable template.
- Version: 1.0.0
+ Version: 1.0.1
  Author: Maarten Menten
  Author URI: http://motionmill.com
  License: GPL2
@@ -32,7 +32,7 @@ if ( ! class_exists( 'MM_Query_String_Widget' ) )
 
 			add_filter( 'motionmill_query_string_widget_tag_cats', array( &$this, 'on_tag_cats' ), 5, 1 );
 			add_filter( 'motionmill_query_string_widget_tags', array( &$this, 'on_tags' ), 5, 1 );
-			add_filter( 'motionmill_query_string_widget_tag_value', array( &$this, 'on_tag_value' ), 5, 2 );
+			add_filter( 'motionmill_query_string_widget_tag_value', array( &$this, 'on_tag_value' ), 5, 3 );
 
 			add_filter( 'motionmill_helpers', array( &$this, 'on_helpers' ) );
 
@@ -97,11 +97,53 @@ if ( ! class_exists( 'MM_Query_String_Widget' ) )
 			return sprintf( '[%s]', $str );
 		}
 
+		public function get_tag( $search )
+		{
+			return MM_Array::get_element_by( $search, $this->tags );
+		}
+
+		public function get_tags( $search = null )
+		{
+			return MM_Array::get_elements_by( $search, $this->tags );
+		}
+
+		public function get_tag_category( $search )
+		{
+			return MM_Array::get_element_by( $search, $this->tag_cats );
+		}
+
+		public function get_tag_categories( $search = null )
+		{
+			return MM_Array::get_elements_by( $search, $this->tag_cats );
+		}
+
+		protected function get_post_meta_keys( $post_type = 'post' )
+		{
+			global $wpdb;
+
+			$query = sprintf("
+			SELECT DISTINCT($wpdb->postmeta.meta_key) 
+			FROM $wpdb->posts 
+			LEFT JOIN $wpdb->postmeta 
+			ON $wpdb->posts.ID = $wpdb->postmeta.post_id 
+			WHERE $wpdb->posts.post_type = '%s' 
+			", esc_sql( $post_type ) );
+
+			return $wpdb->get_col( $query );
+		}
+
 		public function widget( $args, $instance )
 		{
+			// checks language
+
+			if ( $this->is_multilingual() && ! in_array( $instance['language'] , array( '', ICL_LANGUAGE_CODE ) ) )
+			{
+				return;
+			}
+
 			// checks conditions
 			$conditions = trim( $instance['conditions'] ) != '' ?  trim( $instance['conditions'] ) : false;
-			
+				
 			if ( $conditions )
 			{
 				global $wp_query;
@@ -122,6 +164,8 @@ if ( ! class_exists( 'MM_Query_String_Widget' ) )
 
 			echo $args['before_widget'];
 
+			printf( '<div id="%s">', esc_attr( $instance['id'] ) );
+			
 			if ( ! empty( $title ) )
 			{
 				if ( ! empty( $instance['display_title'] ) )
@@ -135,19 +179,28 @@ if ( ! class_exists( 'MM_Query_String_Widget' ) )
 				}
 			}
 
+			$before_template = $instance['before_post_template'];
+
+			if ( ! empty( $instance['wpautop'] ) )
+			{
+				$before_template = wpautop( $before_template, true );
+			}
+
+			printf( '<div class="before-posts">%s</div>', $before_template );
+
 			$the_query = new WP_Query( $instance['query_params'] );
 
 			if ( $the_query->have_posts() )
 			{
-				echo '<ul>';
+				echo '<ul class="posts">';
 
 				while ( $the_query->have_posts() )
 				{
 					$the_query->the_post();
 					
-					echo '<li>';
+					printf( '<li class="%s">', implode( ' ', get_post_class() ) );
 					
-					$template = $instance['template'];
+					$template = $instance['post_template'];
 
 					if ( ! empty( $instance['wpautop'] ) )
 					{
@@ -156,7 +209,7 @@ if ( ! class_exists( 'MM_Query_String_Widget' ) )
 
 					foreach ( $this->tags as $tag )
 					{
-						$value = apply_filters( 'motionmill_query_string_widget_tag_value', '', $tag );
+						$value = apply_filters( 'motionmill_query_string_widget_tag_value', '', $tag, get_the_ID() );
 
 						$template = str_replace( $this->get_tag_string( $tag ), $value, $template );
 					}
@@ -174,9 +227,39 @@ if ( ! class_exists( 'MM_Query_String_Widget' ) )
 				echo $instance['no_results_text'];
 			}
 
+			$after_template = $instance['after_post_template'];
+
+			if ( ! empty( $instance['wpautop'] ) )
+			{
+				$after_template = wpautop( $after_template, true );
+			}
+
+			printf( '<div class="after-posts">%s</div>', $after_template );
+
 			wp_reset_postdata();
 
+			echo '</div>';
+
 			echo $args['after_widget'];
+		}
+
+		public function is_multilingual()
+		{
+			include_once( ABSPATH . 'wp-admin/includes/plugin.php' );
+			
+			return is_plugin_active( 'sitepress-multilingual-cms/sitepress.php' );
+		}
+
+		public function get_languages()
+		{
+			$languages = array();
+
+			foreach ( icl_get_languages('skip_missing=N&orderby=KEY&order=DIR&link_empty_to=str') as $code => $lang )
+			{
+				$languages[ $code ] = $lang['translated_name'];
+			}
+
+			return $languages;
 		}
 
 		public function form( $instance )
@@ -184,16 +267,18 @@ if ( ! class_exists( 'MM_Query_String_Widget' ) )
 			// defaults
 			$instance = array_merge( array
 			(
-				'title' 		  => __( 'My Posts' ),
-				'query_params' 	  => 'post_type=post',
-				'conditions' 	  => '',
-				'no_results_text' => __( 'No posts found.' ),
-				'template' 	      => '<a href="[permalink]">[title]</a>',
-				'wpautop'         => true,
-				'display_title'   => true
-
+				'id'                   => '',
+				'title'                => __( 'My Posts' ),
+				'query_params'         => 'post_type=post',
+				'conditions'           => '',
+				'no_results_text'      => __( 'No posts found.' ),
+				'before_post_template' => '',
+				'post_template'        => '<a href="[permalink]">[title]</a>',
+				'after_post_template'  => '',
+				'wpautop'              => true,
+				'display_title'        => true,
+				'language'             => '' 
 			), $instance );
-
 
 			$id = 'mm-query-widget-' . rand();
 
@@ -206,6 +291,13 @@ if ( ! class_exists( 'MM_Query_String_Widget' ) )
 				<p>
 					<label for="<?php echo $this->get_field_id( 'title' ); ?>"><?php _e( 'Title:', Motionmill::TEXTDOMAIN ); ?></label><br>
 					<input type="text" id="<?php echo $this->get_field_id( 'title' ); ?>" class="widefat" name="<?php echo $this->get_field_name( 'title' ); ?>" value="<?php echo esc_attr( $instance['title'] ); ?>">
+				</p>
+
+				<!-- id -->
+
+				<p>
+					<label for="<?php echo $this->get_field_id( 'id' ); ?>"><?php _e( 'ID:', Motionmill::TEXTDOMAIN ); ?></label><br>
+					<input type="text" id="<?php echo $this->get_field_id( 'id' ); ?>" class="widefat" name="<?php echo $this->get_field_name( 'id' ); ?>" value="<?php echo esc_attr( $instance['id'] ); ?>">
 				</p>
 
 				<!-- query -->
@@ -229,11 +321,18 @@ if ( ! class_exists( 'MM_Query_String_Widget' ) )
 					<input type="text" id="<?php echo $this->get_field_id( 'no-results-text' ); ?>" class="widefat" name="<?php echo $this->get_field_name( 'no_results_text' ); ?>" value="<?php echo esc_attr( $instance['no_results_text'] ); ?>">
 				</p>
 
+				<!-- before template -->
+
+				<p>
+					<label for="<?php echo $this->get_field_id( 'before_post_template' ); ?>"><?php _e( 'Before template:', Motionmill::TEXTDOMAIN ); ?></label><br>
+					<textarea id="<?php echo $this->get_field_id( 'before_post_template' ); ?>" class="widefat code" name="<?php echo $this->get_field_name( 'before_post_template' ); ?>" rows="5"><?php echo esc_html( $instance['before_post_template'] ); ?></textarea>
+				</p>
+
 				<!-- template -->
 
 				<p>
-					<label for="<?php echo $this->get_field_id( 'template' ); ?>"><?php _e( 'Template:', Motionmill::TEXTDOMAIN ); ?></label><br>
-					<textarea id="<?php echo $this->get_field_id( 'template' ); ?>" class="widefat code template" name="<?php echo $this->get_field_name( 'template' ); ?>" rows="5"><?php echo esc_html( $instance['template'] ); ?></textarea>
+					<label for="<?php echo $this->get_field_id( 'post_template' ); ?>"><?php _e( 'Post Template:', Motionmill::TEXTDOMAIN ); ?></label><br>
+					<textarea id="<?php echo $this->get_field_id( 'post_template' ); ?>" class="widefat code template" name="<?php echo $this->get_field_name( 'post_template' ); ?>" rows="5"><?php echo esc_html( $instance['post_template'] ); ?></textarea>
 				</p>
 
 				<!-- tags -->
@@ -258,19 +357,52 @@ if ( ! class_exists( 'MM_Query_String_Widget' ) )
 
 					?>
 
-					<ul id="<?php echo esc_attr( $tags_id ); ?>" class="tags tags-<?php echo esc_attr( $cat['id'] ); ?>">
+					<div class="tags tags-<?php echo esc_attr( $cat['id'] ); ?>">
 
-						<?php foreach ( $tags as $tag ) : ?>
-							
-						<li><a href="#" class="button" data-tag="<?php echo esc_attr( $this->get_tag_string( $tag ) ); ?>"><?php echo esc_html( $tag['title'] ); ?></a></li>
+						<?php echo $cat['description']; ?>
 
-						<?php endforeach ?>
+						<ul>
 
-					</ul><!-- .tags -->
+							<?php foreach ( $tags as $tag ) : ?>
+								
+							<li><a href="#" class="button" data-tag="<?php echo esc_attr( $this->get_tag_string( $tag ) ); ?>"><?php echo esc_html( $tag['title'] ); ?></a></li>
+
+							<?php endforeach ?>
+
+						</ul><!-- .tags -->
+
+					</div>
 					
 					<?php endforeach; ?>
 
 				</div><!-- .tag-wrapper -->
+
+				<!-- after template -->
+
+				<p>
+					<label for="<?php echo $this->get_field_id( 'after_post_template' ); ?>"><?php _e( 'After template:', Motionmill::TEXTDOMAIN ); ?></label><br>
+					<textarea id="<?php echo $this->get_field_id( 'after_post_template' ); ?>" class="widefat code" name="<?php echo $this->get_field_name( 'after_post_template' ); ?>" rows="5"><?php echo esc_html( $instance['after_post_template'] ); ?></textarea>
+				</p>
+
+				<!-- language -->
+
+				<?php if ( $this->is_multilingual() ) :
+
+					$options = array_merge( $this->get_languages(), array( '' => __( '- all -', Motionmill::TEXTDOMAIN ) ) );
+
+					ksort( $options );
+				?>
+				
+				<p>
+					<label for="<?php echo $this->get_field_id( 'language' ); ?>"><?php _e( 'Language:', Motionmill::TEXTDOMAIN ); ?></label><br>
+					<select id="<?php echo $this->get_field_id( 'language' ); ?>" class="widefat" name="<?php echo $this->get_field_name( 'language' ); ?>">
+						<?php foreach ( $options as $key => $value ) : ?>
+						<option value="<?php echo esc_attr( $key ); ?>"<?php selected( $instance['language'], $key ); ?>><?php echo esc_html( $value ); ?></option>
+						<?php endforeach ?>
+					</select>
+				</p>
+
+				<?php endif; ?>
 
 				<!-- wpautop -->
 				
@@ -283,7 +415,7 @@ if ( ! class_exists( 'MM_Query_String_Widget' ) )
 				<p>
 					<label><input type="checkbox" id="<?php echo $this->get_field_id( 'display-title' ); ?>" name="<?php echo $this->get_field_name( 'display_title' ); ?>" value="1"<?php checked( $instance['display_title'], true ); ?>><?php _e( 'Display title.' ); ?></label>
 				</p>
-
+				
 				<script type="text/javascript">
 					
 					(function($)
@@ -358,7 +490,9 @@ if ( ! class_exists( 'MM_Query_String_Widget' ) )
 		public function on_tag_cats( $cats )
 		{
 			$cats[] = array( 'id' => '', 'title' => __( 'Uncategorized' ), 'description' => __( '' ) );
+			$cats[] = array( 'id' => 'meta', 'title' => __( 'Meta' ), 'description' => __( '' ) );
 			$cats[] = array( 'id' => 'tax', 'title' => __( 'Taxonomies' ), 'description' => __( '' ) );
+			$cats[] = array( 'id' => 'thumb', 'title' => __( 'Thumbnail' ), 'description' => __( '' ) );
 
 			return $cats;
 		}
@@ -369,10 +503,39 @@ if ( ! class_exists( 'MM_Query_String_Widget' ) )
 			$tags[] = array( 'name' => 'permalink' , 'title' => __( 'permalink' ) , 'description' => __( 'description' ) , 'category' => '' );
 			$tags[] = array( 'name' => 'date' , 'title' => __( 'date' ) , 'description' => __( 'description' ) , 'category' => '' );
 			$tags[] = array( 'name' => 'time' , 'title' => __( 'time' ) , 'description' => __( 'description' ) , 'category' => '' );
-			$tags[] = array( 'name' => 'thumbnail' , 'title' => __( 'thumbnail' ) , 'description' => __( 'description' ) , 'category' => '' );
 			$tags[] = array( 'name' => 'excerpt' , 'title' => __( 'excerpt' ) , 'description' => __( 'description' ) , 'category' => '' );
 			$tags[] = array( 'name' => 'content' , 'title' => __( 'content' ) , 'description' => __( 'description' ) , 'category' => '' );
 			$tags[] = array( 'name' => 'author' , 'title' => __( 'author' ) , 'description' => __( 'description' ) , 'category' => '' );
+
+			// meta
+
+			require_once( plugin_dir_path( Motionmill::FILE ) . 'includes/class-mm-database.php' );
+
+			foreach ( MM_Database::get_post_meta_keys() as $meta_key )
+			{
+				if ( stripos( $meta_key , '_' ) === 0 )
+				{
+					continue;
+				}
+
+				$tags[] = array
+				(
+					'name'     => $meta_key,
+					'title'    => ucfirst( str_replace( '-', ' ', $meta_key ) ),
+					'category' => 'meta',
+				);
+			}
+
+			// thumb
+			foreach ( array( 'thumb', 'medium', 'large', 'full' ) as $size )
+			{
+				$tags[] = array
+				(
+					'name'        => $size,
+					'title'       => ucfirst( $size ),
+					'category'    => 'thumb'
+				);
+			}
 
 			// tax related tags
 			$taxonomies = get_taxonomies( null, 'objects' );
@@ -385,13 +548,23 @@ if ( ! class_exists( 'MM_Query_String_Widget' ) )
 			return $tags;
 		}
 
-		public function on_tag_value( $value, $tag )
+		public function on_tag_value( $value, $tag, $post_id )
 		{
 			if ( $tag['category'] )
 			{
 				if ( $tag['category'] == 'tax' )
 				{
 					$value = get_the_term_list( 0, $tag['name'], '', ', ', '' );
+				}
+
+				else if ( $tag['category'] == 'thumb' )
+				{
+					$value = get_the_post_thumbnail( null, $tag['name'] );
+				}
+
+				else if ( $tag['category'] == 'meta' )
+				{
+					$value = get_post_meta( get_the_ID(), $tag['name'], true );
 				}
 			}
 
@@ -403,7 +576,6 @@ if ( ! class_exists( 'MM_Query_String_Widget' ) )
 					case 'permalink' 	: $value = get_the_permalink(); break;
 					case 'date'  	 	: $value = get_the_time( get_option('date_format') ); break;
 					case 'time'  	 	: $value = get_the_time(); break;
-					case 'thumbnail' 	: $value = get_the_post_thumbnail(); break;
 					case 'excerpt'   	: $value = get_the_excerpt(); break;
 					case 'content'   	: $value = get_the_content(); break;
 					case 'author'   	: $value = get_the_author(); break; 
@@ -416,7 +588,7 @@ if ( ! class_exists( 'MM_Query_String_Widget' ) )
 
 		public function on_helpers( $helpers )
 		{
-			array_push( $helpers , 'MM_Array' );
+			array_push( $helpers , 'MM_Array', 'MM_Database' );
 
 			return $helpers;
 		}

@@ -10,26 +10,34 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Poedit 1.5.7\n"
 
-#: motionmill-login/motionmill-login.php:28
+#: motionmill-login/motionmill-login.php:126
+msgid "Invalid login."
+msgstr "Ongeldige login."
+
+#: motionmill-login/motionmill-login.php:127
+msgid "Username is not registered."
+msgstr "Gebruikersnaam is niet geregistreerd."
+
+#: motionmill-login/motionmill-login.php:128
+msgid "Email is not registered."
+msgstr "E-mailadres is niet geregistreerd."
+
+#: motionmill-login/motionmill-login.php:129
+msgid "Username or email is not registered."
+msgstr "Gebruikersnaam of E-mailadres is niet geregistreerd."
+
+#: motionmill-login/motionmill-login.php:167
+msgid "Password is incorrect."
+msgstr "Wachtwoord is niet geldig."
+
+#: motionmill-login/motionmill-login.php:185
 msgid "Username"
 msgstr "Gebruikersnaam"
 
-#: motionmill-login/motionmill-login.php:29
-msgid "Invalid username."
-msgstr "Ongeldige gebruikersnaam"
-
-#: motionmill-login/motionmill-login.php:34
+#: motionmill-login/motionmill-login.php:186
 msgid "Email"
-msgstr "E-mail"
+msgstr "E-mailadres"
 
-#: motionmill-login/motionmill-login.php:35
-msgid "Invalid email."
-msgstr "Ongeldig e-mail adres."
-
-#: motionmill-login/motionmill-login.php:40
-msgid "Username or Email"
-msgstr "Gebruikersnaam of e-mail"
-
-#: motionmill-login/motionmill-login.php:41
-msgid "Invalid username or email."
-msgstr "Ongeldige gebruikersnaam of e-mails"
+#: motionmill-login/motionmill-login.php:187
+msgid "Username or email"
+msgstr "Gebruikersnaam of E-mailadres"

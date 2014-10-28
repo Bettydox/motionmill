@@ -5,31 +5,40 @@ Motionmill provides tools that facilitates the creation process of WordPress plu
 
 it includes following plugins:
 
-Motionmill Settings
--------------------
+Motionmill Admin Columns
+------------------------
 
-[read more](https://github.com/addwittz/motionmill/tree/master/plugins/motionmill-settings)
+[read more](https://github.com/addwittz/motionmill/tree/master/plugins/motionmill-admin-columns)
+
+Motionmill Ajax
+---------------
+
+[read more](https://github.com/addwittz/motionmill/tree/master/plugins/motionmill-ajax)
+
+Motionmill Dashboard
+--------------------
+
+[read more](https://github.com/addwittz/motionmill/tree/master/plugins/motionmill-dashboard)
+
+Motionmill Dashboard Widget
+---------------------------
+
+[read more](https://github.com/addwittz/motionmill/tree/master/plugins/motionmill-dashboard-widget)
 
 Motionmill General
 ------------------
 
 [read more](https://github.com/addwittz/motionmill/tree/master/plugins/motionmill-general)
 
-
-Motionmill Query String Widget
-------------------------------
-
-[read more](https://github.com/addwittz/motionmill/tree/master/plugins/motionmill-query-string-widget)
-
 Motionmill Google Analytics
 ---------------------------
 
 [read more](https://github.com/addwittz/motionmill/tree/master/plugins/motionmill-google-analytics)
 
-Motionmill Roles
-----------------
+Motionmill Log
+--------------
 
-[read more](https://github.com/addwittz/motionmill/tree/master/plugins/motionmill-roles)
+[read more](https://github.com/addwittz/motionmill/tree/master/plugins/motionmill-log)
 
 Motionmill Login
 ----------------
@@ -41,17 +50,23 @@ Motionmill Mail
 
 [read more](https://github.com/addwittz/motionmill/tree/master/plugins/motionmill-mail)
 
-Motionmill Dashboard
---------------------
+Motionmill Query String Widget
+------------------------------
 
-[read more](https://github.com/addwittz/motionmill/tree/master/plugins/motionmill-dashboard)
+[read more](https://github.com/addwittz/motionmill/tree/master/plugins/motionmill-query-string-widget)
 
-Motionmill GitHub
---------------------
+Motionmill Roles
+----------------
 
-[read more](https://github.com/addwittz/motionmill/tree/master/plugins/motionmill-github)
+[read more](https://github.com/addwittz/motionmill/tree/master/plugins/motionmill-roles)
 
-Motionmill Updates
---------------------
+Motionmill Settings
+-------------------
 
-[read more](https://github.com/addwittz/motionmill/tree/master/plugins/motionmill-updates)
+[read more](https://github.com/addwittz/motionmill/tree/master/plugins/motionmill-settings)
+
+
+Motionmill Status
+-----------------
+
+[read more](https://github.com/addwittz/motionmill/tree/master/plugins/motionmill-status)

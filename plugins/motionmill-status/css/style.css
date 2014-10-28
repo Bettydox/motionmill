@@ -1,0 +1,16 @@
+/*
+.mm-status-current-message-type- .mm-status-message-type-error .message-text
+{
+	color: red;
+}
+
+.mm-status-current-message-type- .mm-status-message-type-warning .message-text
+{
+	color: orange;
+}
+
+.mm-status-current-message-type- .mm-status-message-type-success .message-text
+{
+	color: green;
+}
+*/

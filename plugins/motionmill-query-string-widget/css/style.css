@@ -45,13 +45,13 @@
 ------------------------------------------------------------------------------------------------------------------------
 */
 
-.mm-query-string-widget ul.tags
+.mm-query-string-widget .tags
 {
 	margin: 10px 0;
 	display: none;
 }
 
-.mm-query-string-widget ul.tags > li
+.mm-query-string-widget .tags ul li
 {
 	display: inline;
 	line-height: 32px;
