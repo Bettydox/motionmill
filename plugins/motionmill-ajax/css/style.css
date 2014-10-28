@@ -1,0 +1,17 @@
+/*
+------------------------------------------------------------------------------------------------------------------------
+ Ajax Loader
+------------------------------------------------------------------------------------------------------------------------
+*/
+
+.mm-loader
+{
+	display    : inline-block;
+	width      : 16px;
+	height     : 16px;
+	margin     : 0px 5px;
+	line-height: 16px;
+	text-indent: 16px;
+	overflow   : hidden;
+	background : transparent url( '../images/ajax-loader.gif' ) no-repeat top left;
+}
