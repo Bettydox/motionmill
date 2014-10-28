@@ -43,7 +43,8 @@ if ( ! class_exists( 'MM_Dashboard' ) )
 				'priority'      => 0,
 				'styles'   		=> array(),
 				'scripts'  		=> array( 'common', 'wp-lists', 'postbox' ),
-				'submit_button' => false
+				'submit_button' => false,
+				'multilingual'  => false
 			);
 
 			return $pages;
@@ -128,7 +129,7 @@ if ( ! class_exists( 'MM_Dashboard' ) )
 		{
 			$plugins = array();
 
-			foreach ( MM()->get_all_plugins() as $file => $plugin )
+			foreach ( MM()->get_plugins() as $file => $plugin )
 			{
 				if ( $plugin['Description'] == '' )
 				{
@@ -160,7 +161,7 @@ if ( ! class_exists( 'MM_Dashboard' ) )
 		{
 			$plugins = array();
 
-			foreach ( MM()->get_all_plugins() as $file => $plugin )
+			foreach ( MM()->get_plugins() as $file => $plugin )
 			{
 				if ( $plugin['PluginURI'] == '' )
 				{
