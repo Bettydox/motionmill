@@ -1,27 +1,5 @@
 <?php if ( ! defined('ABSPATH') ) exit; // Exits when accessed directly
 
-if ( ! function_exists( 'MM' ) )
-{
-	function MM( $plugin = null )
-	{
-		$motionmill = Motionmill::get_instance();
-
-		if ( ! $plugin )
-		{
-			return $motionmill;
-		}
-
-		$plugin_class_prefix = 'MM_';
-
-		if ( stripos( $plugin, $plugin_class_prefix ) !== 0 )
-		{
-			$plugin = $plugin_class_prefix . $plugin;
-		}
-		
-		return $motionmill->get_plugin( $plugin );
-	}
-}
-
 if ( ! class_exists( 'MM_Common' ) )
 {
 	class MM_Common
@@ -29,6 +7,8 @@ if ( ! class_exists( 'MM_Common' ) )
 		static public function get_icon( $id, $content = '', $extra = array() )
 		{	
 			// see: http://fortawesome.github.io/Font-Awesome/icons/
+
+			MM( 'Loader' )->load_class( 'MM_HTML' );
 
 			return sprintf( '<i class="fa fa-%s"%s>%s</i>', $id, MM_HTML::parse_attributes( $extra ), $content );
 		}
@@ -54,7 +34,7 @@ if ( ! class_exists( 'MM_Common' ) )
 		{
 			if ( $closeable )
 			{
-				$notices = MM('Options')->get( 'admin_notices', array() );
+				$notices = get_option( 'motionmill_admin_notices', array() );
 				
 				$user_id = get_current_user_id();
 
@@ -69,17 +49,17 @@ if ( ! class_exists( 'MM_Common' ) )
 				{
 					$user_notices[ $id ] = true;
 
-					MM('Options')->set( 'admin_notices', $notices );
+					update_option( 'motionmill_admin_notices', $notices );
 				}
 
 				if ( isset( $_GET['notice'] ) && $_GET['notice'] == $id )
 				{
 					$user_notices[ $id ] = false;
 
-					MM('Options')->set( 'admin_notices', $notices );
+					update_option( 'motionmill_admin_notices', $notices );
 				}
 
-				$notices = MM('Options')->get( 'admin_notices', array() );
+				$notices = get_option( 'motionmill_admin_notices', array() );
 
 				if ( $notices[ $user_id ][ $id ] == false )
 				{
@@ -109,16 +89,14 @@ if ( ! class_exists( 'MM_Common' ) )
 
 			if ( $error )
 			{
-				$html .= ' ' . sprintf( __( 'You may contact the <a href="mailto:%s">administrator</a> regarding this issue.', Motionmill::TEXTDOMAIN ), 
-					get_option( 'admin_email' ) );
+				$html .= ' ' . sprintf( __( 'You may contact the <a href="mailto:%s">administrator</a> regarding this issue.', Motionmill::TEXTDOMAIN ), get_option( 'admin_email' ) );
 			}
 
 			if ( $closeable )
 			{
 				$css_classes[] = 'closeable';
 
-				$html .= sprintf( ' <a href="?page=%s&notice=%s" title="%s" class="close-button"><i class="fa fa-close"></i></a>', 
-					$_GET['page'], $id, __( 'Close', Motionmill::TEXTDOMAIN ) );		
+				$html .= sprintf( ' <a href="?page=%s&notice=%s" title="%s" class="close-button"><i class="fa fa-close"></i></a>', $_GET['page'], $id, __( 'Close', Motionmill::TEXTDOMAIN ) );		
 			}
 
 			return sprintf( '<div class="%s"><p>%s</p></div>', implode( ' ', $css_classes ), $html );

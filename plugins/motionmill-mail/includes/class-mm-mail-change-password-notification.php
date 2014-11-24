@@ -21,7 +21,7 @@ class MM_Mail_Change_Password_Notification
 				'id'     => 'wp_password_change_notification_function',
 				'text'   => __( 'wp_password_change_notification function already exists.', Motionmill::TEXTDOMAIN ),
 				'type'   => 'warning',
-				'author' => 'Motionmill Mail'
+				'author' => 'MM_Mail'
 			);
 		}
 
@@ -32,7 +32,7 @@ class MM_Mail_Change_Password_Notification
 				'id'     => 'motionmill_mail_wp_new_user_notification_function',
 				'text'   => __( 'wp_password_change_notification function does not exist.', Motionmill::TEXTDOMAIN ),
 				'type'   => 'success',
-				'author' => 'Motionmill Mail'
+				'author' => 'MM_Mail'
 			);
 		}
 		
@@ -51,15 +51,13 @@ class MM_Mail_Change_Password_Notification
 			'message'      => 'Password Lost and Changed for user: ${user:user_login}',
 			'headers'      => '',
 			'attachments'  => '',
-			'enable'       => false,
+			'enable'       => true,
 			'tag_cats'     => array( 'blog', 'general', 'user' ) 
 		);
 
 		return $templates;
 	}
 }
-
-$mm_mail_change_password_notification = new MM_Mail_Change_Password_Notification();
 
 if ( ! function_exists( 'wp_password_change_notification' ) )
 {
@@ -70,5 +68,7 @@ if ( ! function_exists( 'wp_password_change_notification' ) )
 		MM('Mail')->mail_template( 'change_password_notification' );
 	}
 }
+
+$mm_mail_change_password_notification = new MM_Mail_Change_Password_Notification();
 
 ?>

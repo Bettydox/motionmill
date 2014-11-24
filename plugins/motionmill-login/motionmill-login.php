@@ -20,9 +20,8 @@ if ( ! class_exists('MM_Login') )
 
 		public function __construct()
 		{
-			//require_once( plugin_dir_path( self::FILE ) . 'includes/class-mm-login-form.php' );
+			MM( 'Loader' )->load_class( 'MM_Form' );
 
-			add_filter( 'motionmill_helpers', array( &$this, 'on_helpers' ) );
 			add_filter( 'motionmill_settings_pages', array(&$this, 'on_settings_pages') );
 			add_filter( 'motionmill_settings_sections', array(&$this, 'on_settings_sections') );
 			add_filter( 'motionmill_settings_fields', array(&$this, 'on_settings_fields') );
@@ -74,6 +73,8 @@ if ( ! class_exists('MM_Login') )
 			{
 				return;
 			}
+
+			MM( 'Loader' )->load_class( 'MM_Image' );
 
 			$image_sizes = MM_Image::get_size( $image );
 
@@ -206,13 +207,6 @@ if ( ! class_exists('MM_Login') )
 			return $translated_text;
 		}
 
-		public function on_helpers( $helpers )
-		{
-			array_push( $helpers , 'MM_Image', 'MM_Form' );
-
-			return $helpers;
-		}
-
 		public function on_settings_pages($pages)
 		{
 			$pages[] = array
@@ -265,7 +259,7 @@ if ( ! class_exists('MM_Login') )
 				'value'        => __( plugins_url('images/logo-motionmill.png', Motionmill::FILE), Motionmill::TEXTDOMAIN ),
 				'page'         => 'motionmill_login',
 				'section'      => 'motionmill_login_layout',
-				'translatable' => true
+				'multilingual' => true
 			);
 
 			$fields[] = array
@@ -277,7 +271,7 @@ if ( ! class_exists('MM_Login') )
 				'value'        => __( 'Powered by Motionmill', Motionmill::TEXTDOMAIN ),
 				'page'         => 'motionmill_login',
 				'section'      => 'motionmill_login_layout',
-				'translatable' => true
+				'multilingual' => true
 			);
 
 			$fields[] = array
@@ -289,7 +283,7 @@ if ( ! class_exists('MM_Login') )
 				'value'        => __( 'http://motionmill.com', Motionmill::TEXTDOMAIN ),
 				'page'         => 'motionmill_login',
 				'section'      => 'motionmill_login_layout',
-				'translatable' => true
+				'multilingual' => true
 			);
 
 			$fields[] = array
@@ -301,7 +295,7 @@ if ( ! class_exists('MM_Login') )
 				'value'        => '',
 				'page'         => 'motionmill_login',
 				'section'      => 'motionmill_login_layout',
-				'translatable' => true
+				'multilingual' => true
 			);
 
 			$fields[] = array
@@ -313,7 +307,7 @@ if ( ! class_exists('MM_Login') )
 				'value'        => '',
 				'page'         => 'motionmill_login',
 				'section'      => 'motionmill_login_layout',
-				'translatable' => true
+				'multilingual' => true
 			);
 
 			$fields[] = array
@@ -322,7 +316,7 @@ if ( ! class_exists('MM_Login') )
 				'title'       => __( 'Type', Motionmill::TEXTDOMAIN ),
 				'description' => __( '', Motionmill::TEXTDOMAIN ),
 				'type'		  => 'dropdown',
-				'type_args'   => array
+				'args'   => array
 				(
 					'options' => array
 					(
@@ -335,7 +329,7 @@ if ( ! class_exists('MM_Login') )
 				'value'        => '',
 				'page'         => 'motionmill_login',
 				'section'      => 'motionmill_login_authentication',
-				'translatable' => false
+				'multilingual' => false
 			);
 			
 			$options = array
@@ -351,11 +345,11 @@ if ( ! class_exists('MM_Login') )
 				'title'        => __( 'Redirect', Motionmill::TEXTDOMAIN ),
 				'description'  => __( 'The page to go to when user is authenticated.', Motionmill::TEXTDOMAIN ),
 				'type'         => 'dropdown',
-				'type_args'    => array( 'options' => $options ),
+				'args'    => array( 'options' => $options ),
 				'value'        => '',
 				'page'         => 'motionmill_login',
 				'section'      => 'motionmill_login_authentication',
-				'translatable' => true
+				'multilingual' => true
 			);
 
 			$fields[] = array
@@ -367,7 +361,7 @@ if ( ! class_exists('MM_Login') )
 				'value'        => 1,
 				'page'         => 'motionmill_login',
 				'section'      => 'motionmill_login_activation',
-				'translatable' => false
+				'multilingual' => false
 			);
 
 			return $fields;

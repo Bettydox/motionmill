@@ -75,7 +75,7 @@ if ( ! class_exists( 'MM_Google_Analytics' ) )
 				'value'        => '',
 				'page'         => 'motionmill_google_analytics',
 				'section'      => 'motionmill_google_analytics_general',
-				'translatable' => false
+				'multilingual' => false
 			);
 
 			$fields[] = array
@@ -87,7 +87,7 @@ if ( ! class_exists( 'MM_Google_Analytics' ) )
 				'value'        => '',
 				'page'         => 'motionmill_google_analytics',
 				'section'      => 'motionmill_google_analytics_general',
-				'translatable' => false
+				'multilingual' => false
 			);
 
 			return $fields;

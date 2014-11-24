@@ -23,6 +23,9 @@ if ( ! class_exists( 'MM_Query_String_Widget' ) )
 
 		public function __construct()
 		{
+			MM( 'Loader' )->load_class( 'MM_Array' );
+			MM( 'Loader' )->load_class( 'MM_Database' );
+
 			parent::__construct( 'motionmill_query_string_widget', __( 'Motionmill Query String', Motionmill::TEXTDOMAIN ), array
 			(
 				'description' => __( 'Shows posts by query parameters in an editable template.', Motionmill::TEXTDOMAIN )
@@ -33,8 +36,6 @@ if ( ! class_exists( 'MM_Query_String_Widget' ) )
 			add_filter( 'motionmill_query_string_widget_tag_cats', array( &$this, 'on_tag_cats' ), 5, 1 );
 			add_filter( 'motionmill_query_string_widget_tags', array( &$this, 'on_tags' ), 5, 1 );
 			add_filter( 'motionmill_query_string_widget_tag_value', array( &$this, 'on_tag_value' ), 5, 3 );
-
-			add_filter( 'motionmill_helpers', array( &$this, 'on_helpers' ) );
 
 			// registers tag groups
 			foreach ( apply_filters( 'motionmill_query_string_widget_tag_cats', array() ) as $data )
@@ -584,13 +585,6 @@ if ( ! class_exists( 'MM_Query_String_Widget' ) )
 			}
 
 			return $value;
-		}
-
-		public function on_helpers( $helpers )
-		{
-			array_push( $helpers , 'MM_Array', 'MM_Database' );
-
-			return $helpers;
 		}
 	}
 

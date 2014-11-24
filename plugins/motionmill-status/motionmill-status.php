@@ -23,14 +23,15 @@ if ( ! class_exists( 'MM_Status' ) )
 
 		public function __construct()
 		{	
-			require_once( plugin_dir_path( self::FILE ) . 'includes/messages.php' );
+			MM( 'Loader' )->load_class( 'MM_Common' );
+			MM( 'Loader' )->load_class( 'MM_Array' );
+			MM( 'Loader' )->load_class( 'MM_Status_Messages', self::FILE );
 
-			add_filter( 'motionmill_helpers', array( &$this, 'on_helpers' ) );
 			add_filter( 'motionmill_settings_pages', array( &$this, 'on_settings_pages' ) );
 			add_filter( 'motionmill_settings_sections', array( &$this, 'on_settings_sections' ) );
 			add_filter( 'motionmill_dashboard_widget_messages', array( &$this, 'on_dashboard_widget_messages' ) );
 
-			add_action( 'motionmill_init', array( &$this, 'initialize' ), 3 );
+			add_action( 'init', array( &$this, 'initialize' ), 999 );
 		}
 		
 		public function initialize()
@@ -225,13 +226,6 @@ if ( ! class_exists( 'MM_Status' ) )
 			);
 
 			return $sections;
-		}
-
-		public function on_helpers( $helpers )
-		{
-			array_push( $helpers, 'MM_Array' );
-
-			return $helpers;
 		}
 	}
 }

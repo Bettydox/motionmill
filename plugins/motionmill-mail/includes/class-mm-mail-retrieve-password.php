@@ -4,6 +4,8 @@ class MM_Mail_Retrieve_Password
 {	
 	public function __construct()
 	{
+		MM( 'Loader' )->load_class( 'MM_Template' );
+
 		add_filter( 'motionmill_mail_templates', array( &$this, 'on_mail_templates' ) );
 		add_filter( 'motionmill_mail_tag_categories', array( &$this, 'on_mail_tag_categories' ) );
 		add_filter( 'motionmill_mail_tags', array( &$this, 'on_mail_tags' ) );
@@ -27,7 +29,7 @@ class MM_Mail_Retrieve_Password
 								.  '${retrieve_password_message:change_password_url}' . "\r\n\r\n",
 			'headers'      => null,
 			'attachments'  => null,
-			'enable'       => false,
+			'enable'       => true,
 			'tag_cats'     => array( 'blog', 'general', 'user', 'retrieve_password_message' ) 
 		);
 

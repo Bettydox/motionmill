@@ -14,8 +14,6 @@
 
 if ( ! class_exists( 'MM_Settings' ) )
 {
-	require_once( plugin_dir_path( __FILE__ ) . '/includes/field-types.php' );
-
 	class MM_Settings
 	{	
 		const FILE = __FILE__;
@@ -26,15 +24,12 @@ if ( ! class_exists( 'MM_Settings' ) )
 		protected $field_types = array();
 
 		public function __construct()
-		{	
-			add_filter( 'motionmill_helpers', array( &$this, 'on_helpers' ) );
-			add_filter( 'motionmill_wpml_config', array( &$this, 'on_wpml_config' ) );
-
+		{
+			MM( 'Loader' )->load_class( 'MM_Array' );
+			MM( 'Loader' )->load_class( 'MM_WordPress' );
+			MM( 'Loader' )->load_class( 'MM_Settings_Field_Types', self::FILE );
 
 			add_action( 'motionmill_init', array( &$this, 'initialize' ), 5 );
-
-			add_filter( 'motionmill_settings_field_args', array( &$this, 'on_field_args' ), 5, 2 );
-			add_filter( 'motionmill_settings_field_title', array( &$this, 'on_field_title' ), 5, 2 );
 			
 			register_deactivation_hook( self::FILE, array( &$this, 'on_deactivate' ) );
 		}
@@ -113,13 +108,12 @@ if ( ! class_exists( 'MM_Settings' ) )
 					'id'           => $data['id'],
 					'title'        => '',
 					'type'         => 'textfield',
-					'type_args'    => array(),
+					'args'         => array(),
 					'value'        => '',
 					'description'  => '',
 					'rules'        => array( 'trim' ),
 					'page'         => '',
-					'section'      => '',
-					'translatable' => true
+					'section'      => ''
 				), $data );
 			}
 
@@ -147,41 +141,32 @@ if ( ! class_exists( 'MM_Settings' ) )
 
 			add_filter( 'motionmill_settings_sanitize_option', array( &$this, 'on_sanitize_option' ), 5, 2 );
 			add_filter( 'motionmill_settings_page_title', array( &$this, 'on_page_title' ), 5, 2 );
-
-			// makes sure all options are saved (for WPML String Translation)
-
-			if ( is_admin() )
-			{
-				foreach ( $this->get_pages() as $page )
-				{
-					$options = get_option( $page['option_name'] );
-
-					if ( is_array( $options ) )
-					{
-						continue;
-					}
-
-					$options = array();
-
-					$fields = $this->get_fields( array( 'page' => $page['id'] ) );
-
-					foreach ( $fields as $field )
-					{
-						$options[ $field['id'] ] = $field['value'];
-					}
-
-					update_option( $page['option_name'], $options );
-				}
-			}
 		}
 
-		public function get_option( $page_id, $field_id = null, $default = '' )
+		public function get_option( $page_id, $field_id = null, $default = '', $lang = null )
 		{
 			$page = $this->get_page( array( 'id' => $page_id ) );
 
 			if ( $page )
 			{
-				$options = get_option( $page['option_name'], $this->get_default_options( $page['id'] ) );
+				if ( ! $lang )
+				{
+					$lang = MM_Wordpress::get_language_code();
+				}
+
+				$options = get_option( $page['option_name'] );
+
+				if ( ! is_array( $options ) )
+				{
+					$options = array();
+				}
+
+				if ( ! isset( $options[$lang] ) )
+				{
+					$options[ $lang ] = $this->get_default_options( $page['id'] );
+				}
+
+				$options = $options[ $lang ];
 
 				if ( ! $field_id )
 				{
@@ -216,16 +201,24 @@ if ( ! class_exists( 'MM_Settings' ) )
 			return MM_Array::get_element_by( $search, $this->fields );
 		}
 
-		public function get_field_name( $page_id, $field_id )
+		public function get_field_name( $field_id, $page_id = null )
 		{
-			$page = $this->get_page( array( 'id' => $page_id ) );
+			if ( $page_id )
+			{
+				$page = $this->get_page( array( 'id' => $page_id ) );
+			}
+
+			else
+			{
+				$page = $this->get_page();
+			}
 
 			if ( ! $page )
 			{
 				return false;
 			}
 
-			return sprintf( '%s[%s]', $page['option_name'], $field_id );
+			return sprintf( '%s[%s][%s]', $page['option_name'], MM_WordPress::get_language_code(), $field_id );
 		}
 
 		public function get_fields( $search = null )
@@ -404,20 +397,16 @@ if ( ! class_exists( 'MM_Settings' ) )
 				$page = $this->get_page( array( 'id' => $field['page'] ) );
 				$type = $this->get_field_type( array( 'id' => $field['type'] ) );
 
-				$args = array_merge( (array) $field['type_args'], array
+				$args = array_merge( (array) $field['args'], array
 				(
 					'id'    	  => sprintf( '%s-%s', $page['id'], $field['id'] ),
 					'label_for'   => sprintf( '%s-%s', $page['id'], $field['id'] ), // WordPress needs this for the <label> element
-					'name'  	  => $this->get_field_name( $page['id'], $field['id'] ),
+					'name'  	  => $this->get_field_name( $field['id'], $page['id'] ),
 					'value' 	  => $this->get_option( $page['id'], $field['id'] ),
 					'description' => $field['description']
 				));
 
-				$args = apply_filters( 'motionmill_settings_field_args', $args, $field );
-
-				$title = apply_filters( 'motionmill_settings_field_title', $field['title'], $field );
-
-				add_settings_field( $field['id'], $title, $type['callback'], $page['menu_slug'], $field['section'], $args );
+				add_settings_field( $field['id'], $field['title'], $type['callback'], $page['menu_slug'], $field['section'], $args );
 			}
 		}
 
@@ -458,6 +447,15 @@ if ( ! class_exists( 'MM_Settings' ) )
     		{
     			return;
     		}
+
+    		$wp_admin_bar->add_menu(array
+			(
+				'id'     => 'motionmill',
+				'meta'   => array(),
+				'title'  => __( 'Motionmill' ),
+				'href'   => admin_url( 'admin.php?page=motionmill' ),
+				'parent' => null
+		    ));
 
     		foreach ( $this->pages as $page )
     		{
@@ -515,24 +513,16 @@ if ( ! class_exists( 'MM_Settings' ) )
 			do_action( 'motionmill_settings_enqueue_scripts', $page['id'] );
 		}
 
-		public function on_field_args( $args, $field )
-		{
-			return $args;
-		}
-
-		public function on_field_title( $title, $field )
-		{
-			return $title;
-		}
-
 		public function on_page_title( $title, $page )
 		{
-			if ( $page['depth'] == 0 )
+			$title = __( 'Motionmill - ', Motionmill::TEXTDOMAIN ) . $title;
+
+			if ( MM_Wordpress::is_multilingual() )
 			{
-				return $title;
+				$title .= sprintf( ' (%s)', MM_Wordpress::get_language_code() );
 			}
 
-			return __( 'Motionmill - ', Motionmill::TEXTDOMAIN ) . $title;
+			return $title;
 		}
 
 		public function on_print_page()
@@ -540,10 +530,8 @@ if ( ! class_exists( 'MM_Settings' ) )
 			$page = $this->get_page();
 
 			$menu_pages = array(); 
-			$menu_pages[0] = $this->get_pages( array( 'depth' => 1 ) );
-			$menu_pages[1] = $this->get_pages( array( 'parent_slug' => $page['parent_slug'], 'depth' => 2 ) );
-
-			$breadcrumbs = $this->get_page_trail();
+			$menu_pages[0] = $this->get_pages( array( 'depth' => 0 ) );
+			$menu_pages[1] = $this->get_pages( array( 'parent_slug' => $page['parent_slug'], 'depth' => 1 ) );
 
 			?>
 
@@ -552,16 +540,6 @@ if ( ! class_exists( 'MM_Settings' ) )
 				<h2 class="page-title"><?php echo apply_filters( 'motionmill_settings_page_title', $page['title'], $page ); ?></h2>
 
 				<?php settings_errors(); ?>
-
-				<!-- breadcrumb navigation -->
-				<?php if ( count( $breadcrumbs ) > 1 ) : ?>
-				<ul class="motionmill-settings-breadcrumb-navigation subsubsub">
-					<?php foreach ( $breadcrumbs as $menu_page ) : ?>
-					<li><a href="<?php echo esc_attr( $menu_page['url'] ); ?>" class="<?php echo $menu_page['id'] == $page['id'] ? 'current' : ''; ?>"><?php echo $menu_page['menu_title']; ?></a></li>
-					<?php endforeach; ?>
-				</ul>
-				<br class="clear">
-				<?php endif; ?>
 				
 				<!-- page navigation -->
 				<?php for ( $i = 0; $i < count( $menu_pages ); $i++ ) : ?>
@@ -611,6 +589,8 @@ if ( ! class_exists( 'MM_Settings' ) )
 
 		public function on_sanitize_options( $options )
 		{	
+			$options = $options[ MM_WordPress::get_language_code() ];
+
 			$page = $this->get_page();
 
 			$fields = $this->get_fields( array( 'page' => $page['id'] ) );
@@ -633,7 +613,18 @@ if ( ! class_exists( 'MM_Settings' ) )
 				}
 			}
 
-			return apply_filters( 'motionmill_settings_sanitize_options', $options, $page );
+			$options = apply_filters( 'motionmill_settings_sanitize_options', $options, $page );
+
+			$all_options = get_option( $page['option_name'] );
+
+			if ( ! is_array( $all_options ) )
+			{
+				$all_options = array();
+			}
+
+			$all_options[ MM_Wordpress::get_language_code() ] = $options;
+
+			return $all_options;
 		}
 
 		public function on_sanitize_option( $option, $rule )
@@ -671,42 +662,6 @@ if ( ! class_exists( 'MM_Settings' ) )
 			}
 
 			return $a['priority'] > $b['priority'] ? 1 : -1;
-		}
-
-		public function on_helpers( $helpers )
-		{
-			array_push( $helpers, 'MM_Common', 'MM_Array', 'MM_Wordpress' );
-
-			return $helpers;
-		}
-
-		public function on_wpml_config( $config )
-		{
-			if ( ! isset( $config->{'admin-texts'} ) )
-			{
-				$config->addChild( 'admin-texts' );
-			}
-
-			foreach ( $this->get_pages() as $page )
-			{
-				$page_option = $config->{'admin-texts'}->addChild( 'key' );
-				$page_option->addAttribute( 'name', $page['option_name'] );
-				
-				$fields = $this->get_fields( array( 'page' => $page['id'] ) );
-
-				foreach ( $fields as $field )
-				{
-					if ( ! $field['translatable'] )
-					{
-						continue;
-					}
-
-					$field_option = $page_option->addChild( 'key' );
-					$field_option->addAttribute( 'name', $field['id'] );
-				}
-			}
-
-			return $config;
 		}
 	}
 

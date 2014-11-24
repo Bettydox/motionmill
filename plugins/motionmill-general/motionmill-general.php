@@ -16,9 +16,13 @@ if ( ! class_exists( 'MM_General' ) )
 {
 	class MM_General
 	{
+		const FILE = __FILE__;
+
 		public function __construct()
 		{
-			add_filter( 'motionmill_helpers', array(&$this, 'on_helpers') );
+			MM( 'Loader' )->load_class( 'MM_Array' );
+			MM( 'Loader' )->load_class( 'MM_WordPress' );
+
 			add_filter( 'motionmill_settings_pages', array(&$this, 'on_settings_pages') );
 			add_filter( 'motionmill_settings_sections', array(&$this, 'on_settings_sections') );
 			add_filter( 'motionmill_settings_fields', array(&$this, 'on_settings_fields') );
@@ -45,119 +49,11 @@ if ( ! class_exists( 'MM_General' ) )
 
 			if ( $this->get_option( 'enable_widget_shortcodes' ) )
 			{
-				add_filter('widget_text', 'do_shortcode');
+				add_filter( 'widget_text', 'do_shortcode' );
 			}
 
-			if ( $this->get_option( 'wpautop_enable' ) )
-			{
-				add_action( 'add_meta_boxes', array( &$this, 'on_add_meta_boxes' ) );
-				add_action( 'save_post', array( $this, 'on_save_post' ) );
-				add_action( 'the_post', array( $this, 'on_the_post' ) );
-				add_action( 'loop_end', array( $this, 'on_loop_end' ) );
-			}
-		}
-
-		public function on_add_meta_boxes()
-		{
-			add_meta_box( 'motionmill-wpautop', __( 'Motionmill Auto Paragraphs', Motionmill::TEXTDOMAIN ), array( &$this, 'on_print_metabox_autop' ), null, 'side', 'default' );
-		}
-
-		public function on_print_metabox_autop( $post )
-		{
-			wp_nonce_field( 'motionmill_wpautop_save_post', Motionmill::NONCE_NAME );
-
-			$wpautop = get_post_meta( $post->ID, '_motionmill_wpautop', true );
-
-			if ( $wpautop === '' )
-			{
-				$wpautop = true;
-			}
-
-			?>
-
-			<p class="description"><?php _e( 'Changes double line-breaks into HTML paragraphs for content and excerpt fields.', Motionmill::TEXTDOMAIN ); ?></p>
-
-			<p>
-				<label><input type="checkbox" name="motionmill_wpautop" value="1"<?php checked( $wpautop, true ); ?>><?php _e( 'Enable', Motionmill::TEXTDOMAIN ); ?></label>
-			</p>
-
-			<?php
-		}
-
-		public function on_save_post( $post_id )
-		{
-			if ( empty( $_POST[ Motionmill::NONCE_NAME ] ) || ! wp_verify_nonce( $_POST[ Motionmill::NONCE_NAME ], 'motionmill_wpautop_save_post' ) )
-			{
-				return $post_id;
-			}
-
-			if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE )
-			{
-				return $post_id;
-			}
-
-			if ( 'page' == $_POST['post_type'] )
-			{
-				if ( ! current_user_can( 'edit_page', $post_id ) )
-				{
-					return $post_id;
-				}
-			}
-
-			else
-			{
-				if ( ! current_user_can( 'edit_post', $post_id ) )
-				{
-					return $post_id;
-				}
-					
-			}
-
-			update_post_meta( $post_id, '_motionmill_wpautop', ! empty( $_POST[ 'motionmill_wpautop' ] ) );
-		}
-
-		public function the_post( $post )
-		{
-			$wpautop = (boolean) get_post_meta( $post->ID, '_motionmill_wpautop', true );
-
-			if ( $wpautop )
-			{
-				remove_filter( 'the_content', 'wpautop' );
-				remove_filter( 'the_excerpt', 'wpautop' );
-			}
-
-			else
-			{
-				if ( ! has_filter( 'the_content', 'wpautop' ) )
-				{
-					add_filter( 'the_content', 'wpautop' );
-				}
-
-				if ( ! has_filter( 'the_excerpt', 'wpautop' ) )
-				{
-					add_filter( 'the_excerpt', 'wpautop' );
-				}
-			}
-		}
-
-		/**
-		 * loop_end function.
-		 * After we run our loop, everything should be set back to normal
-		 *
-		 * @access public
-		 * @return void
-		 */
-		public function on_loop_end()
-		{
-			if ( ! has_filter( 'the_content', 'wpautop' ) )
-			{
-				add_filter( 'the_content', 'wpautop' );
-			}
-
-			if ( ! has_filter( 'the_excerpt', 'wpautop' ) )
-			{
-				add_filter( 'the_excerpt', 'wpautop' );
-			}
+			add_action( 'wp_enqueue_scripts', array( &$this, 'on_enqueue_scripts' ) );
+			add_action( 'admin_enqueue_scripts', array( &$this, 'on_enqueue_scripts' ) );
 		}
 
 		public function get_option( $key = null, $default = '' )
@@ -180,8 +76,6 @@ if ( ! class_exists( 'MM_General' ) )
 
 		public function on_settings_sections($sections)
 		{
-			// favicon
-
 			$sections[] = array
 			(
 				'id' 		  => 'motionmill_general_general',
@@ -190,8 +84,6 @@ if ( ! class_exists( 'MM_General' ) )
 				'page'        => 'motionmill_general'
 			);
 
-			// posts
-
 			$sections[] = array
 			(
 				'id' 		  => 'motionmill_general_post',
@@ -199,8 +91,6 @@ if ( ! class_exists( 'MM_General' ) )
 				'description' => __( '', Motionmill::TEXTDOMAIN ),
 				'page'        => 'motionmill_general'
 			);
-
-			// body class
 
 			$sections[] = array
 			(
@@ -225,8 +115,7 @@ if ( ! class_exists( 'MM_General' ) )
 				'type'         => 'media',
 				'value'        => '',
 				'page'         => 'motionmill_general',
-				'section'      => 'motionmill_general_general',
-				'translatable' => false
+				'section'      => 'motionmill_general_general'
 			);
 
 			// post
@@ -239,8 +128,7 @@ if ( ! class_exists( 'MM_General' ) )
 				'type'         => 'textfield',
 				'value'        => '',
 				'page'         => 'motionmill_general',
-				'section'      => 'motionmill_general_post',
-				'translatable' => true
+				'section'      => 'motionmill_general_post'
 			);
 
 			$fields[] = array
@@ -251,8 +139,7 @@ if ( ! class_exists( 'MM_General' ) )
 				'type'		  => 'textfield',
 				'value'       => '',
 				'page'		  => 'motionmill_general',
-				'section'     => 'motionmill_general_post',
-				'translatable' => true
+				'section'     => 'motionmill_general_post'
 			);
 
 			$fields[] = array
@@ -263,8 +150,7 @@ if ( ! class_exists( 'MM_General' ) )
 				'type'		  => 'textarea',
 				'value'       => '',
 				'page'		  => 'motionmill_general',
-				'section'     => 'motionmill_general_post',
-				'translatable' => false
+				'section'     => 'motionmill_general_post'
 			);
 
 			$fields[] = array
@@ -275,32 +161,29 @@ if ( ! class_exists( 'MM_General' ) )
 				'type'         => 'checkbox',
 				'value'        => '',
 				'page'         => 'motionmill_general',
-				'section'      => 'motionmill_general_general',
-				'translatable' => false
+				'section'      => 'motionmill_general_general'
 			);
 
 			$fields[] = array
 			(
 				'id' 		  => 'body_class_language',
-				'title' 	  => __( 'language', Motionmill::TEXTDOMAIN ),
-				'description' => __( 'Example: lang-en', Motionmill::TEXTDOMAIN ),
+				'title' 	  => __( 'Language', Motionmill::TEXTDOMAIN ),
+				'description' => __( 'Example: <code>lang-en</code>', Motionmill::TEXTDOMAIN ),
 				'type'		  => 'checkbox',
 				'value'       => '',
 				'page'		  => 'motionmill_general',
-				'section'     => 'motionmill_general_body_class',
-				'translatable' => false
+				'section'     => 'motionmill_general_body_class'
 			);
 
 			$fields[] = array
 			(
-				'id'           => 'wpautop_enable',
-				'title'        => __( 'Toggle Auto Paragraphs', Motionmill::TEXTDOMAIN ),
-				'description'  => __( 'Provides the ability to enable/disable <a href="http://codex.wordpress.org/Function_Reference/wpautop" title="wpautop" target="_blank">wpautop</a>. (see post edit screen).', Motionmill::TEXTDOMAIN ),
-				'type'         => 'checkbox',
-				'value'        => '',
-				'page'         => 'motionmill_general',
-				'section'      => 'motionmill_general_general',
-				'translatable' => false
+				'id' 		  => 'body_class_javascript',
+				'title' 	  => __( 'Javascript', Motionmill::TEXTDOMAIN ),
+				'description' => __( 'Example: <code>js</code> or <code>no-js</code>', Motionmill::TEXTDOMAIN ),
+				'type'		  => 'checkbox',
+				'value'       => '',
+				'page'		  => 'motionmill_general',
+				'section'     => 'motionmill_general_body_class'
 			);
 
 			return $fields;
@@ -328,6 +211,11 @@ if ( ! class_exists( 'MM_General' ) )
 			if ( $this->get_option( 'body_class_language' ) )
 			{
 				$classes[] = sprintf( 'lang-%s', MM_WordPress::get_language_code() );
+			}
+
+			if ( $this->get_option( 'body_class_javascript' ) )
+			{
+				$classes[] = 'no-js';
 			}
 
 			return $classes;
@@ -367,21 +255,20 @@ if ( ! class_exists( 'MM_General' ) )
 			}
 
 			return $mce_css;
-		}
-		
-		public function on_helpers( $helpers )
-		{
-			array_push( $helpers , 'MM_Array', 'MM_WordPress' );
-
-			return $helpers;
-		}
+		}		
 
 		public function on_javascript_vars( $vars )
 		{
 			return array_merge(array
 			(
-				'lang' => MM_WordPress::get_language_code()
+				'lang'                  => MM_WordPress::get_language_code(),
+				'body_class_javascript' => (boolean) $this->get_option( 'body_class_javascript' )
 			), $vars);
+		}
+
+		public function on_enqueue_scripts()
+		{
+			wp_enqueue_script( 'motionmill-general', plugins_url( 'js/scripts.js', self::FILE ), array( 'jquery' ) );
 		}
 	}
 

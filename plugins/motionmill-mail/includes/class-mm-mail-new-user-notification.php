@@ -23,7 +23,7 @@ class MM_Mail_New_User_Notification
 				'id'     => 'motionmill_mail_wp_new_user_notification_function',
 				'text'   => __( "wp_new_user_notification function already exists.", Motionmill::TEXTDOMAIN ),
 				'type'   => 'warning',
-				'author' => 'Motionmill Mail'
+				'author' => 'MM_Mail'
 			);
 		}
 
@@ -34,7 +34,7 @@ class MM_Mail_New_User_Notification
 				'id'     => 'motionmill_mail_wp_new_user_notification_function',
 				'text'   => __( "wp_new_user_notification function does not exist.", Motionmill::TEXTDOMAIN ),
 				'type'   => 'success',
-				'author' => 'Motionmill Mail'
+				'author' => 'MM_Mail'
 			);
 		}
 		
@@ -55,7 +55,7 @@ class MM_Mail_New_User_Notification
 							. '${general:wp_login_url}' . "\r\n",
 			'headers'      => '',
 			'attachments'  => '',
-			'enable'       => false,
+			'enable'       => true,
 			'tag_cats'     => array( 'blog', 'general', 'user', 'user_registration' ) 
 		);
 
@@ -69,7 +69,7 @@ class MM_Mail_New_User_Notification
 			'message'      => 'Username: ${user:user_login}' . "\r\n\r\n" . 'E-mail: ${user:user_email}',
 			'headers'      => '',
 			'attachments'  => '',
-			'enable'       => false,
+			'enable'       => true,
 			'tag_cats'     => array( 'blog', 'general', 'user' ) 
 		);
 

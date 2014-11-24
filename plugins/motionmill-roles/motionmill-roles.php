@@ -3,7 +3,7 @@
 /*
 ------------------------------------------------------------------------------------------------------------------------
  Plugin Name: Motionmill Roles
- Plugin URI: https://github.com/addwittz/motionmill/tree/master/plugins/motionmill-roles
+ Plugin URI:
  Description: Manages roles and capabilities.
  Version: 1.0.2
  Author: Maarten Menten

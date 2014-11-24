@@ -22,7 +22,7 @@ if ( ! class_exists( 'MM_Dashboard_Widget' ) )
 
 		public function __construct()
 		{	
-			add_filter( 'motionmill_helpers', array( &$this, 'on_helpers' ) );
+			MM( 'Loader' )->load_class( 'MM_Array' );
 
 			add_action( 'motionmill_init', array( &$this, 'initialize' ) );
 		}
@@ -75,13 +75,6 @@ if ( ! class_exists( 'MM_Dashboard_Widget' ) )
 			</ul>
 
 			<?php
-		}
-
-		public function on_helpers( $helpers )
-		{
-			array_push( $helpers , 'MM_Array' );
-
-			return $helpers;
 		}
 	}
 }

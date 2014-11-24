@@ -1,6 +1,6 @@
 <?php
 
-class MM_Settings_Field_types
+class MM_Settings_Field_Types
 {
 	static public function initialize()
 	{
@@ -308,13 +308,13 @@ class MM_Settings_Field_types
 	{
 		$options = array_merge(array
 		(
-			'class'       => 'large-text code',
+			'class' => 'large-text code',
 		), $args);
 
 		self::type_textarea( $options );
 	}
 }
 
-MM_Settings_Field_types::initialize();
+MM_Settings_Field_Types::initialize();
 
 ?>

@@ -5,7 +5,7 @@
  Plugin Name: Motionmill
  Plugin URI: https://github.com/addwittz/motionmill
  Description: Motionmill provides tools that facilitates the creation process of WordPress plugins.
- Version: 1.7.0
+ Version: 1.7.1
  Author: Maarten Menten
  Author URI: http://motionmill.com
  License: GPL2
@@ -20,12 +20,10 @@ if ( ! class_exists( 'Motionmill' ) )
 		const TEXTDOMAIN   = 'motionmill';
 		const NONCE_NAME   = '_motionmill_nonce';
 		const NEWLINE      = "\n";
+		const VERSION      = '1.7.1';
 
 		static private $instance = null;
 		
-		protected $plugins   = array();
-		protected $helpers   = array();
-
 		static public function get_instance()
 		{
 			if ( self::$instance == null )
@@ -43,179 +41,114 @@ if ( ! class_exists( 'Motionmill' ) )
 
 		public function initialize()
 		{
-			require_once( ABSPATH . 'wp-admin/includes/plugin.php' ); // needed for <code>get_plugins()</code>
-
-			$this->helpers = array( 'MM_Common', 'MM_HTML', 'MM_Wordpress' );
-
-			/*
-			------------------------------------------------------------------------------------------------------------
-			Loads plugins
-			------------------------------------------------------------------------------------------------------------
-			*/
-
-			$active_plugins = array();
-
-			foreach ( $this->get_plugins() as $file => $data )
-			{
-				require_once( trailingslashit( WP_PLUGIN_DIR ) . $file );
-
-				$active_plugins[] = $file;
-			}
-
-			update_option( 'motionmill_active_plugins', $active_plugins );
-
-			/*
-			------------------------------------------------------------------------------------------------------------
-			Registers plugins
-			------------------------------------------------------------------------------------------------------------
-			*/
-
-			foreach ( apply_filters( 'motionmill_plugins', $this->plugins ) as $class )
-			{
-				if ( isset( $this->plugins[ $class ] ) )
-				{	
-					continue;
-				}
-
-				$this->plugins[ $class ] = new $class();
-			}
-
-			/*
-			------------------------------------------------------------------------------------------------------------
-			Loads helpers
-			------------------------------------------------------------------------------------------------------------
-			*/
-
-			foreach ( apply_filters( 'motionmill_helpers', $this->helpers ) as $class )
-			{
-				if ( isset( $this->helpers[ $class ] ) )
-				{
-					continue;
-				}
-
-				$file = 'class-' . str_replace( '_' , '-', strtolower( $class ) ) . '.php'; // MM_Array => class-mm-array.php
-
-				require_once( plugin_dir_path( self::FILE ) . 'includes/' . $file );
-
-				$this->helpers[ $class ] = true;
-			}
-
-			/* ------------------------------------------------------------------------------------------------------ */
-
-			register_activation_hook( self::FILE, array( &$this, 'on_activate' ), 5 );
-			register_deactivation_hook( self::FILE, array( &$this, 'on_deactivate' ), 5 );
-
-			add_action( 'wp_enqueue_scripts', array( &$this, 'on_enqueue_scripts' ), 5 );
-			add_action( 'admin_enqueue_scripts', array( &$this, 'on_enqueue_scripts' ), 5 );
+			// loads assets
 			
-			add_action( 'plugins_loaded', array( &$this, 'load_textdomain' ), 5 );
+			require_once( plugin_dir_path( self::FILE ) . 'includes/common.php' );
+			require_once( plugin_dir_path( self::FILE ) . 'includes/class-mm-loader.php' );
 
-			add_filter( 'motionmill_settings_pages', array( &$this, 'on_settings_pages' ), 5 );
-			
-			add_action( 'init', array( &$this, 'on_init' ) );
-		}
+			// stops when this plugin is uninstalling
 
-		public function on_init()
-		{
-			do_action( 'motionmill_init' ); // prefered hook for plugin initialization
-			
-			if ( MM_Wordpress::is_multilingual() )
-			{
-				$this->create_wpml_config_file();
-			}
-		}
-
-		public function get_plugin( $class )
-		{
-			return $this->plugins[ $class ];
-		}
-
-		public function get_plugins()
-		{
-			$dir = trailingslashit( dirname( plugin_basename( self::FILE ) ) ) . trailingslashit( 'plugins' );
-
-			$plugins = array();
-
-			foreach ( get_plugins( '/' . $dir ) as $file => $data )
-			{	
-				// makes file relative to the WordPress plugin directory
-				$file = trailingslashit( $dir ) . $file;
-				
-				$plugins[ $file ] = $data;
-			}
-
-			return $plugins;
-		}
-
-		public function load_textdomain()
-		{
-			// loads plugins textdomain
-			foreach ( $this->get_plugins() as $file => $data )
-			{
-				$dir = trailingslashit( dirname( $file ) ) . trailingslashit( 'languages' );
-
-				if ( ! file_exists( trailingslashit( WP_PLUGIN_DIR ) . $dir ) )
-				{
-					continue;
-				}
-
-				load_plugin_textdomain( Motionmill::TEXTDOMAIN, false, $dir );
-			}
-		}
-
-		public function create_wpml_config_file()
-		{
-			$file = plugin_dir_path( Motionmill::FILE ) . 'wpml-config.xml';
-
-			if ( file_exists( $file ) )
+			if ( defined( 'WP_UNINSTALL_PLUGIN' ) )
 			{
 				return;
 			}
 
-			$str = '';
-			$str .= '<?xml version="1.0" standalone="yes"?>' . "\n";
-			$str .= '<wpml-config></wpml-config>';
+			do_action( 'motionmill_loaded' );
 
-			$config = new SimpleXMLElement( $str );
+			// loads plugins
 
-			$config = apply_filters( 'motionmill_wpml_config', $config );
+			foreach ( MM( 'Plugins' )->get_plugins() as $plugin )
+			{
+				MM( 'Plugins' )->load( $plugin );
+			}
 
-			$config->asXML( $file );
+			// registers plugins
+
+			foreach ( apply_filters( 'motionmill_plugins', array() ) as $class )
+			{
+				MM( $class ); // registers and instantiates
+			}
+
+			// plugins can initialize from here
+			
+			do_action( 'motionmill_init' );
+
+			// hooks
+
+			register_activation_hook( self::FILE, array( &$this, 'activate' ), 5 );
+			register_deactivation_hook( self::FILE, array( &$this, 'deactivate' ), 5 );
+
+			add_filter( 'admin_menu', array( &$this, 'add_menu_page' ), 5 );
+			add_action( 'wp_enqueue_scripts', array( &$this, 'enqueue_scripts' ), 5 );
+			add_action( 'admin_enqueue_scripts', array( &$this, 'enqueue_scripts' ), 5 );
+			add_action( 'plugins_loaded', array( &$this, 'load_textdomain' ), 5 );
+			add_action( 'update_option_motionmill_version', array( &$this, 'update' ), 5, 2 );
+			
 		}
 
-		public function on_activate()
+		public function add_menu_page()
 		{
-			// triggers plugins activation hook
-			foreach ( $this->get_plugins() as $file => $data )
+			add_menu_page( __( 'Motionmill', Motionmill::TEXTDOMAIN ), __( 'Motionmill', Motionmill::TEXTDOMAIN ), 'manage_options', 'motionmill' );
+		}
+
+		public function load_textdomain()
+		{			
+			foreach ( MM( 'Plugins' )->get_plugins() as $plugin )
 			{
-				do_action( 'activate_' . $file );
+				MM( 'Plugins' )->load_textdomain( $plugin );
 			}
 		}
 
-		public function on_deactivate()
+		public function activate()
 		{
-			// triggers plugins deactivation hook
-			foreach ( $this->get_plugins() as $file => $data )
+			foreach ( MM( 'Plugins' )->get_plugins() as $plugin )
 			{
-				do_action( 'deactivate_' . $file );
+				MM( 'Plugins' )->activate( $plugin );
+			}
+
+			update_option( 'motionmill_version', self::VERSION );
+		}
+
+		public function deactivate()
+		{
+			foreach ( MM( 'Plugins' )->get_plugins() as $plugin )
+			{
+				MM( 'Plugins' )->deactivate( $plugin );
 			}
 		}
 
-		public function on_settings_pages( $pages )
+		public function uninstall()
 		{
-			$pages[] = array
-			(
-				'id'            => 'motionmill',
-				'title'         => __( 'Motionmill', Motionmill::TEXTDOMAIN ),
-				'description'   => __( '', Motionmill::TEXTDOMAIN ),
-				'parent_slug'   => '',
-				'submit_button' => false
-			);
+			if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) )
+			{
+				return;
+			}
 
-			return $pages;
+			// uninstalls plugins
+
+			foreach ( MM( 'Plugins' )->get_plugins() as $plugin )
+			{
+				MM( 'Plugins' )->uninstall( $plugin );
+			}
+
+			// deletes all options that starts with 'motionmill'
+
+			global $wpdb;
+
+			$wpdb->query( "DELETE FROM $wpdb->options WHERE option_name LIKE 'motionmill%';" );
 		}
 
-		public function on_enqueue_scripts()
+		public function update( $old_version, $new_version )
+		{
+			if ( version_compare( $old_version, $new_version, '>=' ) )
+			{
+				return;
+			}
+
+			do_action( 'motionmill_update', $old_version, $new_version );
+		}
+
+		public function enqueue_scripts()
 		{	
 			// styles
 			wp_register_style( 'font-awesome', plugins_url( 'css/font-awesome.min.css', self::FILE ), '4.2.0' );
@@ -227,7 +160,6 @@ if ( ! class_exists( 'Motionmill' ) )
 			// scripts
 			wp_register_script( 'motionmill-plugins', plugins_url( 'js/plugins.js', self::FILE ), array( 'jquery' ), '1.0.0', false );
 			wp_register_script( 'motionmill', plugins_url('js/scripts.js', self::FILE), array( 'jquery', 'motionmill-plugins' ), '1.0.0', false );
-			
 			wp_localize_script( 'motionmill', 'Motionmill', apply_filters( 'motionmill_javascript_vars', array() ) );
 		
 			wp_enqueue_script( 'motionmill' );

@@ -24,12 +24,13 @@ if ( ! class_exists( 'MM_Mail' ) )
 
 		public function __construct( $config = array() )
 		{	
-			require_once( plugin_dir_path( self::FILE ) . 'includes/tags.php' );
-			require_once( plugin_dir_path( self::FILE ) . 'includes/template-new-user-notification.php' );
-			require_once( plugin_dir_path( self::FILE ) . 'includes/template-change-password-notification.php' );
-			require_once( plugin_dir_path( self::FILE ) . 'includes/template-retrieve-password.php' );
+			MM( 'Loader' )->load_class( 'MM_Array' );
+			MM( 'Loader' )->load_class( 'MM_Template' );
+			MM( 'Loader' )->load_class( 'MM_Mail_Tags', self::FILE );
+			MM( 'Loader' )->load_class( 'MM_Mail_Retrieve_Password', self::FILE );
+			MM( 'Loader' )->load_class( 'MM_Mail_New_User_Notification', self::FILE );
+			MM( 'Loader' )->load_class( 'MM_Mail_Change_Password_Notification', self::FILE );
 			
-			add_filter( 'motionmill_helpers', array( &$this, 'on_helpers' ) );
 			add_filter( 'motionmill_settings_pages', array( &$this, 'on_settings_pages' ) );
 			add_filter( 'motionmill_settings_sections', array( &$this, 'on_settings_sections' ) );
 			add_filter( 'motionmill_settings_fields', array( &$this, 'on_settings_fields' ) );
@@ -441,7 +442,7 @@ if ( ! class_exists( 'MM_Mail' ) )
 				'value'        => 'Motionmill',
 				'section'      => 'motionmill_mail_general',
 				'page'         => 'motionmill_mail',
-				'translatable' => true
+				'multilingual' => true
 			);
 
 			$fields[] = array
@@ -453,7 +454,7 @@ if ( ! class_exists( 'MM_Mail' ) )
 				'value'        => 'admin@motionmill.com',
 				'section'      => 'motionmill_mail_general',
 				'page'         => 'motionmill_mail',
-				'translatable' => true
+				'multilingual' => true
 			);
 
 			foreach ( $this->templates as $template )
@@ -472,7 +473,7 @@ if ( ! class_exists( 'MM_Mail' ) )
 						'value'        => $template['to'],
 						'section'      => $section,
 						'page'         => $page_id,
-						'translatable' => true
+						'multilingual' => true
 					);
 				}
 
@@ -487,7 +488,7 @@ if ( ! class_exists( 'MM_Mail' ) )
 						'value'       => $template['subject'],
 						'section'     => $section,
 						'page'        => $page_id,
-						'translatable' => true
+						'multilingual' => true
 					);
 				}
 
@@ -502,7 +503,7 @@ if ( ! class_exists( 'MM_Mail' ) )
 						'value'       => $template['message'],
 						'section'     => $section,
 						'page'        => $page_id,
-						'translatable' => true
+						'multilingual' => true
 					);
 				}
 
@@ -517,7 +518,7 @@ if ( ! class_exists( 'MM_Mail' ) )
 						'value'       => $template['headers'],
 						'section'     => $section,
 						'page'        => $page_id,
-						'translatable' => true
+						'multilingual' => true
 					);
 				}
 
@@ -532,7 +533,7 @@ if ( ! class_exists( 'MM_Mail' ) )
 						'value'        => $template['attachments'],
 						'section'      => $section,
 						'page'         => $page_id,
-						'translatable' => true
+						'multilingual' => true
 					);
 				}
 
@@ -547,19 +548,12 @@ if ( ! class_exists( 'MM_Mail' ) )
 						'value'        => (boolean) $template['enable'],
 						'section'      => $section,
 						'page'         => $page_id,
-						'translatable' => false
+						'multilingual' => false
 					);
 				}
 			}
 
 			return $fields;
-		}
-
-		public function on_helpers( $helpers )
-		{	
-			array_push( $helpers , 'MM_Array', 'MM_Template' );
-
-			return $helpers;
 		}
 	}
 }
