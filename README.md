@@ -5,11 +5,6 @@ Motionmill provides tools that facilitates the creation process of WordPress plu
 
 it includes following plugins:
 
-Motionmill Admin Columns
-------------------------
-
-[read more](https://github.com/addwittz/motionmill/tree/master/plugins/motionmill-admin-columns)
-
 Motionmill Ajax
 ---------------
 
@@ -35,11 +30,6 @@ Motionmill Google Analytics
 
 [read more](https://github.com/addwittz/motionmill/tree/master/plugins/motionmill-google-analytics)
 
-Motionmill Log
---------------
-
-[read more](https://github.com/addwittz/motionmill/tree/master/plugins/motionmill-log)
-
 Motionmill Login
 ----------------
 
@@ -64,7 +54,6 @@ Motionmill Settings
 -------------------
 
 [read more](https://github.com/addwittz/motionmill/tree/master/plugins/motionmill-settings)
-
 
 Motionmill Status
 -----------------
