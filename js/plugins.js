@@ -1,5 +1,12 @@
 (function($, window, document, undefined)
 {
+	$.fn.selectAll = function()
+	{
+		var elem = $(this).get(0);
+
+		elem.setSelectionRange( 0, elem.value.length );
+	}
+
 	// based on: http://stackoverflow.com/questions/6361465/how-to-check-if-click-event-is-already-bound-jquery
 	$.fn.isBound = function(type, fn)
 	{
