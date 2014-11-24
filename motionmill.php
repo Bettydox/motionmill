@@ -5,7 +5,7 @@
  Plugin Name: Motionmill
  Plugin URI: https://github.com/addwittz/motionmill
  Description: Motionmill provides tools that facilitates the creation process of WordPress plugins.
- Version: 1.7.1
+ Version: 1.7.2
  Author: Maarten Menten
  Author URI: http://motionmill.com
  License: GPL2
@@ -20,7 +20,7 @@ if ( ! class_exists( 'Motionmill' ) )
 		const TEXTDOMAIN   = 'motionmill';
 		const NONCE_NAME   = '_motionmill_nonce';
 		const NEWLINE      = "\n";
-		const VERSION      = '1.7.1';
+		const VERSION      = '1.7.2';
 
 		static private $instance = null;
 		
