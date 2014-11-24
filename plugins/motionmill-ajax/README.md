@@ -28,29 +28,25 @@ Examples
 
 	### ajax call
 
-	var data =
+	var args : { name : 'John' }
+
+	Motionmill.doAjax( 'my_plugin_callback', args,
 	{
-		action : Motionmill.ajaxEvent,
-		method : 'my_plugin_callback',
-		args   : { name : 'John' }
-	};
-
-	jQuery.post( Motionmill.ajaxurl, data, null, 'json' )
-
-		.done( function( response )
+		success : function( data )
 		{
-			if ( response.success )
-			{
-				alert( response.data );
-			}
-		});
-
-Changelog
----------
-
-_1.0.0_
-
-First release.
+			alert( data ); // John says: Hallo World!
+		}
+		
+		error : function( message )
+		{
+			alert( message );
+		}
+		
+		complete : function()
+		{
+		
+		}
+	});
 
 Dependencies
 ------------
