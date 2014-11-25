@@ -39,4 +39,12 @@ Add a message type
 
 		add_filter( 'motionmill_status_message_types', 'my_message_types' );
 
+Screenshots
+-----------
 
+![Status page](https://raw.githubusercontent.com/addwittz/motionmill/master/plugins/motionmill-status/screenshot-1.png)
+
+Notes
+-----
+
+This plugin is included in the [Motionmill](https://github.com/addwittz/motionmill) plugin.
