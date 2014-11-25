@@ -4,7 +4,7 @@
 ------------------------------------------------------------------------------------------------------------------------
  Plugin Name: Motionmill Roles
  Plugin URI:
- Description: Manages roles and capabilities.
+ Description: Manages WordPress roles and capabilities.
  Version: 1.0.2
  Author: Maarten Menten
  Author URI: http://motionmill.com
