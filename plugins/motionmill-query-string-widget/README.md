@@ -43,7 +43,7 @@ __Display title__
 
 Wether you want to display the Widget title on the website.
 
-Dependencies
-------------
+Notes
+-----
 
-[Motionmill](https://github.com/addwittz/motionmill)
+This plugin is includes in the [Motionmill](https://github.com/addwittz/motionmill) plugin

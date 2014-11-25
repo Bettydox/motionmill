@@ -45,7 +45,7 @@ Screenshots
 
 ![Settings page](https://raw.githubusercontent.com/addwittz/motionmill/master/plugins/motionmill-login/screenshot-1.png)
 
-Dependencies
-------------
+Notes
+-----
 
-[Motionmill](https://github.com/addwittz/motionmill)
+This plugin is includes in the [Motionmill](https://github.com/addwittz/motionmill) plugin

@@ -275,7 +275,7 @@ __scripts__
 
 see page options
 
-Dependencies
-------------
+Notes
+-----
 
-[Motionmill](https://github.com/addwittz/motionmill)
+This plugin is includes in the [Motionmill](https://github.com/addwittz/motionmill) plugin

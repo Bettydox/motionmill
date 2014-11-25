@@ -12,9 +12,9 @@ The tracking code
 
 __Enable__
 
-Enable tracking
+Writes tracking code to the website
 
-Dependencies
-------------
+Notes
+-----
 
-[Motionmill](https://github.com/addwittz/motionmill)
+This plugin is includes in the [Motionmill](https://github.com/addwittz/motionmill) plugin

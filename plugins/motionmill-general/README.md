@@ -10,6 +10,10 @@ __Favicon__
 
 Choose a favicon
 
+__Widget Shortcode Support__
+
+Enables shortcodes for widgets
+
 __Excerpt length__
 
 The maximum number of words for a single post excerpt.
@@ -22,7 +26,11 @@ __Post Editor CSS__
 
 Additional CSS file URLs for the rich text editor
 
-Dependencies
-------------
+__Body classes__
 
-[Motionmill](https://github.com/addwittz/motionmill)
+Add css classes that are assigned to the body HTML element on the current page.
+
+Notes
+-----
+
+This plugin is includes in the [Motionmill](https://github.com/addwittz/motionmill) plugin

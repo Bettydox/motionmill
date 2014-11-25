@@ -1,9 +1,9 @@
 Motionmill Roles
 ================
 
-Creates Motionmill Client role and provides capability management.
+Manages WordPress roles and capabilities.
 
-Dependencies
-------------
+Notes
+-----
 
-[Motionmill](https://github.com/addwittz/motionmill)
+This plugin is includes in the [Motionmill](https://github.com/addwittz/motionmill) plugin

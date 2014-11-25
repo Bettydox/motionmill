@@ -48,8 +48,8 @@ Examples
 		}
 	});
 
-Dependencies
-------------
+Notes
+-----
 
-[Motionmill](https://github.com/addwittz/motionmill)
+This plugin is included in the [Motionmill](https://github.com/addwittz/motionmill) plugin.
 
