@@ -30,7 +30,7 @@ __Body classes__
 
 Add css classes that are assigned to the body HTML element on the current page.
 
-Notes
------
+Download
+--------
 
-This plugin is includes in the [Motionmill](https://github.com/addwittz/motionmill) plugin
+This plugin is included in the [Download Motionmill](https://github.com/addwittz/motionmill/releases/latest) plugin.

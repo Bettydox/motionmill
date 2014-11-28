@@ -48,8 +48,8 @@ Examples
 		}
 	});
 
-Notes
------
+Download
+--------
 
-This plugin is included in the [Motionmill](https://github.com/addwittz/motionmill) plugin.
+This plugin is included in the [Download Motionmill](https://github.com/addwittz/motionmill/releases/latest) plugin.
 
