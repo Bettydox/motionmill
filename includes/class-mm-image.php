@@ -12,7 +12,7 @@ if ( ! class_exists('MM_Image') )
 
 			if ( is_wp_error( $response ) )
 			{
-				trigger_error( 'Unable to load image: ' . $response->get_message() );
+				trigger_error( 'Unable to load image: ' . $response->get_error_message() );
 
 				return null;
 			}
